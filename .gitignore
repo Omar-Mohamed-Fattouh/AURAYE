@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+
+# Production build
+dist/
+build/
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.development
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor directories and files
+.vscode/
+.idea/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Optional caches
+.cache/
+.parcel-cache/
+.next/
+out/
+
+# Local dev tools
+*.local
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Lock file backups
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Git
+.git/
+
