@@ -21,9 +21,7 @@ import Success from "../pages/Success.jsx";
 // Components
 import Navbar from "../components/Navbar";
 import StripePage from "../pages/StripePage.jsx";
-import { Home } from "lucide-react";
-import HomeHero from "../components/HomeHero.jsx";
-
+import Home from "../pages/Home.jsx";
 const queryClient = new QueryClient();
 const stripePromise = loadStripe(
   import.meta.env.VITE_STRIPE_KEY ||
