@@ -11,7 +11,6 @@ const Products = () => {
   
 const BASE_URL = "http://graduation-project1.runasp.net";
 
-    console.log(products?.[0]?.productImages?.[0]?.imageUrl);
   
 
   return (

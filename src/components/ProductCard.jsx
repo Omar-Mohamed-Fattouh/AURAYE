@@ -3,9 +3,10 @@ import { toast } from "sonner";
 import { addToCart } from "../api/productsApi";
 
 export const ProductCard = ({ product }) => {
-  console.log("Product received:", product);
+  // console.log("Product received:", product);
 
-  const BASE_URL = "http://graduation-project1.runasp.net";
+  const BASE_URL = "http://graduation-project1.runasp.net/api/Products/";
+  const FALLBACK_IMAGE = "/fallback.png"; // لو الصورة الافتراضية مش موجودة
 
   const handleAddToCart = async () => {
     const chosenColor = product.colors?.[0] || null;
@@ -29,10 +30,11 @@ export const ProductCard = ({ product }) => {
     }
   };
 
-  // الصورة تكون دايمًا من image_url
-  const imageSrc = product.image_url?.startsWith("http")
-    ? product.image_url
-    : `${BASE_URL}${product.image_url}`;
+  // دايمًا نجيب الصورة من defaultImgUrl أو fallback
+  const imageSrc = product.defaultImgUrl
+      ? product.defaultImgUrl
+      : `${BASE_URL}${product.defaultImgUrl}`;
+console.log(imageSrc);
 
   return (
     <div className="group rounded-2xl bg-gray-100 border shadow-sm hover:shadow-xl transition-all duration-300 p-4">
