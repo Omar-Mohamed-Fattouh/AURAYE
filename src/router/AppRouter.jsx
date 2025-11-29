@@ -21,6 +21,8 @@ import Success from "../pages/Success.jsx";
 // Components
 import Navbar from "../components/Navbar";
 import StripePage from "../pages/StripePage.jsx";
+import { Home } from "lucide-react";
+import HomeHero from "../components/HomeHero.jsx";
 
 const queryClient = new QueryClient();
 const stripePromise = loadStripe(
@@ -81,9 +83,18 @@ export default function AppRouter() {
             <Route path="/forget-password" element={<ForgetPassword />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
 
-            {/* Shop / Payment Routes */}
             <Route
               path="/"
+              element={
+                <ProtectedRoute user={user}>
+                  <Home />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Shop / Payment Routes */}
+            <Route
+              path="/products"
               element={
                 <ProtectedRoute user={user}>
                   <Products />
