@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { addRandomDiscounts } from "../utils/addRandomDiscounts";
-import { getProducts } from "../api/productsApi";
-import { addToCart } from "../api/productsApi";
+import { getProducts, addToCart } from "../api/productsApi";
 import { Heart, ChevronRight, ChevronLeft, ShoppingCart } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -41,10 +40,14 @@ export default function DealsSection() {
   return (
     <section className="py-14 bg-white">
       <div className="container mx-auto px-6">
-
-        <h2 className="text-3xl font-bold text-gray-900 mb-6">
-          🔥 Best Deals Today
+        {/* Improved Text */}
+        <h2 className="text-3xl text-center font-bold text-gray-900 mb-2">
+          Exclusive Eyewear Offers
         </h2>
+
+        <p className="text-gray-600 text-center text-base mb-6">
+          Discover our latest collection of eyeglasses and accessories at special prices. Find the perfect style that suits your look.
+        </p>
 
         {/* CUSTOM NAV BUTTONS */}
         <div className="flex justify-end gap-4 mb-4">
@@ -65,6 +68,13 @@ export default function DealsSection() {
           spaceBetween={20}
           slidesPerView={5}
           loop={true}
+          breakpoints={{
+            320: { slidesPerView: 1, spaceBetween: 10 },
+            480: { slidesPerView: 2, spaceBetween: 15 },
+            768: { slidesPerView: 3, spaceBetween: 20 },
+            1024: { slidesPerView: 4, spaceBetween: 20 },
+            1280: { slidesPerView: 5, spaceBetween: 20 },
+          }}
           className="pb-10"
         >
           {deals.map((p) => (
@@ -73,11 +83,10 @@ export default function DealsSection() {
                 className="
                   bg-white transition p-4 relative 
                   flex flex-col 
-                  h-[360px]   /* FIXED HEIGHT */
+                  h-[360px] 
                   rounded-xl  
                 "
               >
-
                 {/* Heart Button */}
                 <button className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-sm">
                   <Heart size={18} className="text-gray-700" />
@@ -98,8 +107,8 @@ export default function DealsSection() {
                 </h3>
 
                 {/* Description */}
-                <p className="text-gray-600 text-xs line-clamp-1 h-[18px]">
-                  {p.description || "Eyeglasses"}
+                <p className="text-gray-600 text-xs line-clamp-2 h-[36px]">
+                  {p.description || "High-quality eyeglasses for everyday use."}
                 </p>
 
                 {/* Prices */}
@@ -117,8 +126,8 @@ export default function DealsSection() {
                   </span>
                 </div>
 
-                {/* Colors FROM API */}
-                <div className="flex items-center gap-1 mt-2">
+                {/* Colors */}
+                <div className="flex items-center gap-1 mt-1">
                   {p.colors?.slice(0, 3).map((c, i) => (
                     <span
                       key={i}
@@ -133,9 +142,6 @@ export default function DealsSection() {
                     </span>
                   )}
                 </div>
-
-                <p className="text-gray-500 text-xs mt-1">excl. lenses</p>
-
                 {/* Add to Cart Button */}
                 <button
                   onClick={() => handleAddToCart(p.id)}
@@ -153,7 +159,6 @@ export default function DealsSection() {
             </SwiperSlide>
           ))}
         </Swiper>
-
       </div>
     </section>
   );

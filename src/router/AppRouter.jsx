@@ -23,6 +23,7 @@ import Home from "../pages/Home.jsx";
 
 // Layout
 import Layout from "../components/Layout.jsx";
+import NotFoundPage from "../pages/NotFoundPage.jsx";
 
 const queryClient = new QueryClient();
 const stripePromise = loadStripe(
@@ -50,12 +51,22 @@ export default function AppRouter() {
             <Route
               path="/register"
               element={
-                !user ? <Register setUser={setUser} /> : <Navigate to="/dashboard" replace />
+                !user ? (
+                  <Register setUser={setUser} />
+                ) : (
+                  <Navigate to="/dashboard" replace />
+                )
               }
             />
             <Route
               path="/login"
-              element={!user ? <Login setUser={setUser} /> : <Navigate to="/" replace />}
+              element={
+                !user ? (
+                  <Login setUser={setUser} />
+                ) : (
+                  <Navigate to="/" replace />
+                )
+              }
             />
             <Route path="/forget-password" element={<ForgetPassword />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
@@ -118,13 +129,10 @@ export default function AppRouter() {
                   </ProtectedRoute>
                 }
               />
-            </Route>
 
-            {/* Catch-all */}
-            <Route
-              path="*"
-              element={<Navigate to={user ? "/cart" : "/login"} replace />}
-            />
+              {/* Catch-all inside Layout */}
+              <Route path="*" element={<NotFoundPage />} />
+            </Route>
           </Routes>
         </BrowserRouter>
       </CartProvider>
