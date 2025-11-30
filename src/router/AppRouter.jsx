@@ -9,19 +9,21 @@ import { Toaster } from "sonner";
 import Register from "../pages/Register";
 import Login from "../pages/Login";
 import Dashboard from "../pages/Dashboard";
-import ProtectedRoute from "../features/auth/ProtectedRoute";
 import ForgetPassword from "../pages/ForgetPassword";
 import ResetPassword from "../pages/ResetPassword";
+import ProtectedRoute from "../features/auth/ProtectedRoute";
 
 // Shop Pages
 import Products from "../pages/Products.jsx";
 import Cart from "../pages/Cart.jsx";
 import Checkout from "../pages/Checkout.jsx";
 import Success from "../pages/Success.jsx";
-// Components
-import Navbar from "../components/Navbar";
 import StripePage from "../pages/StripePage.jsx";
 import Home from "../pages/Home.jsx";
+
+// Layout
+import Layout from "../components/Layout.jsx";
+
 const queryClient = new QueryClient();
 const stripePromise = loadStripe(
   import.meta.env.VITE_STRIPE_KEY ||
@@ -43,97 +45,81 @@ export default function AppRouter() {
       <CartProvider>
         <Toaster />
         <BrowserRouter>
-          <Navbar user={user} setUser={setUser} />
-
           <Routes>
-            {/* Auth Routes */}
+            {/* Auth routes (no layout) */}
             <Route
               path="/register"
               element={
-                !user ? (
-                  <Register setUser={setUser} />
-                ) : (
-                  <Navigate to="/dashboard" replace />
-                )
+                !user ? <Register setUser={setUser} /> : <Navigate to="/dashboard" replace />
               }
             />
-
             <Route
               path="/login"
-              element={
-                !user ? (
-                  <Login setUser={setUser} />
-                ) : (
-                  <Navigate to="/" replace />
-                )
-              }
+              element={!user ? <Login setUser={setUser} /> : <Navigate to="/" replace />}
             />
-
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute user={user}>
-                  <Dashboard user={user} setUser={setUser} />
-                </ProtectedRoute>
-              }
-            />
-
             <Route path="/forget-password" element={<ForgetPassword />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
 
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute user={user}>
-                  <Home />
-                </ProtectedRoute>
-              }
-            />
+            {/* Routes with Layout */}
+            <Route element={<Layout user={user} setUser={setUser} />}>
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute user={user}>
+                    <Home />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute user={user}>
+                    <Dashboard user={user} setUser={setUser} />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/products"
+                element={
+                  <ProtectedRoute user={user}>
+                    <Products />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/cart"
+                element={
+                  <ProtectedRoute user={user}>
+                    <Cart />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/checkout"
+                element={
+                  <ProtectedRoute user={user}>
+                    <Checkout stripePromise={stripePromise} />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/success"
+                element={
+                  <ProtectedRoute user={user}>
+                    <Success />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/stripe"
+                element={
+                  <ProtectedRoute user={user}>
+                    <StripePage stripePromise={stripePromise} />
+                  </ProtectedRoute>
+                }
+              />
+            </Route>
 
-            {/* Shop / Payment Routes */}
-            <Route
-              path="/products"
-              element={
-                <ProtectedRoute user={user}>
-                  <Products />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="/cart"
-              element={
-                <ProtectedRoute user={user}>
-                  <Cart />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="/checkout"
-              element={
-                <ProtectedRoute user={user}>
-                  <Checkout stripePromise={stripePromise} />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="/success"
-              element={
-                <ProtectedRoute user={user}>
-                  <Success />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/stripe"
-              element={
-                <ProtectedRoute user={user}>
-                  <StripePage stripePromise={stripePromise} />
-                </ProtectedRoute>
-              }
-            />
             {/* Catch-all */}
             <Route
               path="*"

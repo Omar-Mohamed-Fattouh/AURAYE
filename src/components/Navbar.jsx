@@ -27,6 +27,7 @@ export default function Navbar({ user, setUser }) {
           <div className="w-px h-7 bg-neutral-600"></div>
 
           <div className="hidden lg:flex items-center gap-6 truncate">
+            
             <NavItem to="/">Home</NavItem>
 
             <Dropdown label="About">
