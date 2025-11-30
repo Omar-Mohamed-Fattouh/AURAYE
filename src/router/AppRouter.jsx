@@ -123,7 +123,7 @@ export default function AppRouter() {
             {/* Catch-all */}
             <Route
               path="*"
-              element={<Navigate to={user ? "/dashboard" : "/login"} replace />}
+              element={<Navigate to={user ? "/cart" : "/login"} replace />}
             />
           </Routes>
         </BrowserRouter>
