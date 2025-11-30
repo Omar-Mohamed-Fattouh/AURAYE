@@ -1,14 +1,21 @@
 import { Link } from "react-router-dom";
-import { Mail, Phone, MapPin, Facebook, Instagram, Twitter, Linkedin, Youtube } from "lucide-react";
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Facebook,
+  Instagram,
+  Twitter,
+  Linkedin,
+  Youtube,
+} from "lucide-react";
 
 export default function Footer() {
   return (
     <footer className="bg-black text-white pt-16 pb-10 border-t border-white/10">
       <div className="container mx-auto px-6">
-        
         {/* TOP SECTION */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-14">
-
           {/* BRAND + ABOUT */}
           <div className="space-y-4">
             <h2 className="text-3xl font-bold tracking-widest">AURAYE</h2>
@@ -27,12 +34,12 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* QUICK LINKS */}
+          {/* COMPANY SECTION */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
-            <FooterLink to="/products">Products</FooterLink>
-            <FooterLink to="/try">AR Try-On</FooterLink>
+            <h3 className="text-lg font-semibold mb-4">Company</h3>
             <FooterLink to="/about">About Us</FooterLink>
+            <FooterLink to="/mission">Our Mission</FooterLink>
+            <FooterLink to="/team">Team</FooterLink>
             <FooterLink to="/contact">Contact</FooterLink>
             <FooterLink to="/faq">FAQs</FooterLink>
           </div>
@@ -40,11 +47,14 @@ export default function Footer() {
           {/* CUSTOMER SUPPORT */}
           <div>
             <h3 className="text-lg font-semibold mb-4">Support</h3>
-            <FooterLink to="/shipping">Shipping & Delivery</FooterLink>
-            <FooterLink to="/refunds">Returns Policy</FooterLink>
-            <FooterLink to="/track">Track Order</FooterLink>
-            <FooterLink to="/privacy">Privacy Policy</FooterLink>
-            <FooterLink to="/terms">Terms & Conditions</FooterLink>
+            <ul className="space-y-2 text-white/70">
+              <FooterLink to="/faq">FAQs</FooterLink>
+              <FooterLink to="/contact">Contact Us</FooterLink>
+              <FooterLink to="/shipping">Shipping Info</FooterLink>
+              <FooterLink to="/refunds">Returns & Refunds</FooterLink>
+              <FooterLink to="/track">Track Order</FooterLink>
+              <FooterLink to="/privacy">Privacy Policy</FooterLink>
+            </ul>
           </div>
 
           {/* NEWSLETTER */}

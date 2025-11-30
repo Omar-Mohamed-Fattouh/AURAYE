@@ -29,8 +29,10 @@ export default function AchievementsSection() {
   return (
     <section className="w-full py-20 bg-white">
       <div className="container mx-auto px-4 text-center">
-        <h2 className="text-4xl font-bold mb-10">Explore Our Achievements</h2>
-
+        <h2 className="text-4xl font-bold mb-4">Explore Our Achievements</h2>
+        <p className="text-xl text-gray-400 mb-10">
+          We take pride in our growth and the trust our customers place in us.
+        </p>
         {/* CIRCLE ICONS DESIGN LIKE THE IMAGE */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-8 justify-center">
           {stats.map((item, index) => (
@@ -51,8 +53,6 @@ export default function AchievementsSection() {
           ))}
         </div>
       </div>
-
     </section>
-
   );
 }

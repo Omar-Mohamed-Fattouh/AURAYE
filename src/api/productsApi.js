@@ -15,6 +15,7 @@ export const getCart = async () => {
 /* -------------------------- GET PRODUCTS -------------------------- */
 export const getProducts = async () => {
   const response = await axiosClient.get("/Products");
+  const BASE_URL = "http://graduation-project1.runasp.net";
   // خلى البيانات match اللي احنا محتاجينه
   return response.data.map((product) => ({
     id: product.productId,
@@ -22,7 +23,11 @@ export const getProducts = async () => {
     description: product.description,
     price: product.price,
     stockQuantity: product.stockQuantity,
-    image_url: product.defaultImgUrl || product.productImages?.[0]?.imgUrl,
+    // IMPORTANT
+
+    image_url: product.defaultImgUrl
+      ? `${BASE_URL}/${product.defaultImgUrl}`
+      : `${BASE_URL}${product.productImages?.[0]?.imgUrl}`,
     colors: product.productImages?.map((img) => img.color),
   }));
 };

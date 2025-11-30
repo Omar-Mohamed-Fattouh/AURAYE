@@ -34,7 +34,7 @@ export const ProductCard = ({ product }) => {
   const imageSrc = product.defaultImgUrl
       ? product.defaultImgUrl
       : `${BASE_URL}${product.defaultImgUrl}`;
-console.log(imageSrc);
+// console.log(imageSrc);
 
   return (
     <div className="group rounded-2xl bg-gray-100 border shadow-sm hover:shadow-xl transition-all duration-300 p-4">
