@@ -1,11 +1,12 @@
 import React from "react";
-import HomeHero from "../components/HomeHero";
+// import HomeHero from "../components/HomeHero";
 import AchievementsSection from "../components/AchievementsSection";
+import HeroSection from "../components/HeroSection";
 
 const Home = () => {
   return (
     <div>
-      <HomeHero />
+      <HeroSection />
       <AchievementsSection />
     </div>
   );
