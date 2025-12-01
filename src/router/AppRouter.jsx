@@ -49,6 +49,7 @@ export default function AppRouter() {
         <BrowserRouter>
           <Routes>
             {/* Auth routes (no layout) */}
+            <Route element={<Layout user={user} setUser={setUser} />}>
             <Route
               path="/register"
               element={
@@ -73,7 +74,6 @@ export default function AppRouter() {
             <Route path="/reset-password/:token" element={<ResetPassword />} />
 
             {/* Routes with Layout */}
-            <Route element={<Layout user={user} setUser={setUser} />}>
               <Route
                 path="/"
                 element={
