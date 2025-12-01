@@ -24,6 +24,7 @@ import Home from "../pages/Home.jsx";
 // Layout
 import Layout from "../components/Layout.jsx";
 import NotFoundPage from "../pages/NotFoundPage.jsx";
+import ProductDetails from "../components/ProductDetails.jsx";
 
 const queryClient = new QueryClient();
 const stripePromise = loadStripe(
@@ -94,6 +95,14 @@ export default function AppRouter() {
                 element={
                   <ProtectedRoute user={user}>
                     <Products />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/product/:id"
+                element={
+                  <ProtectedRoute user={user}>
+                    <ProductDetails />
                   </ProtectedRoute>
                 }
               />
