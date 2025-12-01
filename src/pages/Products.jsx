@@ -9,7 +9,6 @@ const Products = () => {
     queryFn: getProducts,
   });
   
-const BASE_URL = "http://graduation-project1.runasp.net";
 
   
 

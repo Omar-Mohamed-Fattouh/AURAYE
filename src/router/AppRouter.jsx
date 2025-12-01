@@ -99,7 +99,7 @@ export default function AppRouter() {
                 }
               />
               <Route
-                path="/product/:id"
+                path="/products/:id"
                 element={
                   <ProtectedRoute user={user}>
                     <ProductDetails />

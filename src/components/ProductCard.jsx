@@ -9,14 +9,7 @@ export const ProductCard = ({ product }) => {
     product.colors?.[0] || null
   );
 
-  const FALLBACK_IMAGE = "/fallback.png";
 
-  const imageSrc =
-    product.defaultImgUrl && product.defaultImgUrl.startsWith("https")
-      ? product.defaultImgUrl
-      : product.defaultImgUrl
-      ? product.defaultImgUrl
-      : FALLBACK_IMAGE;
 
   const handleAddToCart = async () => {
     if (!selectedSize) {
@@ -49,7 +42,7 @@ export const ProductCard = ({ product }) => {
       {/* Image */}
       <div className="relative overflow-hidden rounded-xl aspect-[4/3] bg-gray-50">
         <img
-          src={imageSrc}
+          src={product.images?.[0]?.url}
           alt={product.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500"
         />

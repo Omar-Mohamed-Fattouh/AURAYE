@@ -2,16 +2,11 @@ import axiosClient from "./axiosClient";
 
 /* -------------------------- ADD TO CART -------------------------- */
 // data = { productId, color, quantity }
-export const addToCart = async (data) => {
-  return axiosClient.post("/Cart/add", data);
-};
+export const addToCart = (data) => axiosClient.post("/Cart/add", data);
 
 /* -------------------------- ADD TO WISHLIST -------------------------- */
 
-export const addToWishlist = async (data) => {
-  return axiosClient.post("/Wishlist/add", data);
-};
-
+export const addToWishlist = (data) => axiosClient.post("/Wishlist/add", data);
 
 /* -------------------------- GET CART -------------------------- */
 export const getCart = async () => {
@@ -23,20 +18,27 @@ export const getCart = async () => {
 export const getProducts = async () => {
   const response = await axiosClient.get("/Products");
   const BASE_URL = "http://graduation-project1.runasp.net";
-  // خلى البيانات match اللي احنا محتاجينه
-  return response.data.map((product) => ({
-    id: product.productId,
-    name: product.title,
-    description: product.description,
-    price: product.price,
-    stockQuantity: product.stockQuantity,
-    // IMPORTANT
 
-    image_url: product.defaultImgUrl
-      ? `${BASE_URL}${product.defaultImgUrl}`
-      : `${BASE_URL}${product.productImages?.[0]?.imgUrl}`,
-    colors: product.productImages?.map((img) => img.color),
-  }));
+  return response.data.map((product) => {
+    const images =
+      product.productImages && product.productImages.length > 0
+        ? product.productImages.map((img) => ({
+            url: BASE_URL + img.imgUrl,
+            color: img.color || "Default",
+          }))
+        : [{ url: product.defaultImgUrl, color: "Default" }];
+
+    return {
+      id: product.productId,
+      name: product.title,
+      description: product.description,
+      price: product.price,
+      stockQuantity: product.stockQuantity,
+      images, // ← هنا الـ images الصح
+      category: product.category?.name || "Other",
+      gender: product.gender || "Unisex",
+    };
+  });
 };
 
 /* -------------------------- REMOVE ITEM FROM CART -------------------------- */
