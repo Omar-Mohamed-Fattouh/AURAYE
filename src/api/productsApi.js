@@ -6,6 +6,13 @@ export const addToCart = async (data) => {
   return axiosClient.post("/Cart/add", data);
 };
 
+/* -------------------------- ADD TO WISHLIST -------------------------- */
+
+export const addToWishlist = async (data) => {
+  return axiosClient.post("/Wishlist/add", data);
+};
+
+
 /* -------------------------- GET CART -------------------------- */
 export const getCart = async () => {
   const response = await axiosClient.get("/Cart");
@@ -26,7 +33,7 @@ export const getProducts = async () => {
     // IMPORTANT
 
     image_url: product.defaultImgUrl
-      ? `${BASE_URL}/${product.defaultImgUrl}`
+      ? `${BASE_URL}${product.defaultImgUrl}`
       : `${BASE_URL}${product.productImages?.[0]?.imgUrl}`,
     colors: product.productImages?.map((img) => img.color),
   }));

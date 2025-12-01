@@ -41,11 +41,11 @@ export default function DealsSection() {
     <section className="py-14 bg-white">
       <div className="container mx-auto px-6">
         {/* Improved Text */}
-        <h2 className="text-3xl text-center font-bold text-gray-900 mb-2">
+        <h2 className="text-2xl md:text-4xl text-center font-bold text-gray-900 mb-2">
           Exclusive Eyewear Offers
         </h2>
 
-        <p className="text-gray-600 text-center text-base mb-6">
+        <p className="text-gray-600 text-center text-sm md:text-base mb-6">
           Discover our latest collection of eyeglasses and accessories at special prices. Find the perfect style that suits your look.
         </p>
 
@@ -71,7 +71,7 @@ export default function DealsSection() {
           breakpoints={{
             320: { slidesPerView: 1, spaceBetween: 10 },
             480: { slidesPerView: 2, spaceBetween: 15 },
-            768: { slidesPerView: 3, spaceBetween: 20 },
+            768: { slidesPerView: 2, spaceBetween: 20 },
             1024: { slidesPerView: 4, spaceBetween: 20 },
             1280: { slidesPerView: 5, spaceBetween: 20 },
           }}
@@ -102,12 +102,12 @@ export default function DealsSection() {
                 </Link>
 
                 {/* Product Title */}
-                <h3 className="font-bold text-gray-900 text-sm uppercase line-clamp-2 h-[38px]">
+                <h3 className="font-bold text-gray-900 text-sm uppercase line-clamp- h-[38px]">
                   {p.name}
                 </h3>
 
                 {/* Description */}
-                <p className="text-gray-600 text-xs line-clamp-2 h-[36px]">
+                <p className="text-gray-600 text-xs line-clamp- h-[36px]">
                   {p.description || "High-quality eyeglasses for everyday use."}
                 </p>
 
