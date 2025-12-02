@@ -293,25 +293,25 @@ export default function Navbar({ user, setUser }) {
             </div>
           )}
 
-          {user ? (
-            <ProfileMenu user={user} logout={logout} />
-          ) : (
+          {!user && (
             <>
-              <div className="border-t border-white/50"></div>
-              <Link
-                to="/login"
-                onClick={() => setMobileOpen(false)}
-                className="block px-4 py-2 hover:bg-white/10 rounded-md"
-              >
-                Login
-              </Link>
-              <Link
-                to="/register"
-                onClick={() => setMobileOpen(false)}
-                className="block px-4 py-2 bg-white text-black rounded-md hover:bg-white/90"
-              >
-                Register
-              </Link>
+              <div className="md:hidden">
+                <div className="border-t border-white/50"></div>
+                <Link
+                  to="/login"
+                  onClick={() => setMobileOpen(false)}
+                  className="block px-4 py-2 hover:bg-white/10 rounded-md"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/register"
+                  onClick={() => setMobileOpen(false)}
+                  className="block px-4 py-2 bg-white text-black rounded-md hover:bg-white/90"
+                >
+                  Register
+                </Link>
+              </div>
             </>
           )}
         </div>
