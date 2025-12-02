@@ -1,8 +1,9 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { contactSchema } from "../schemas/contactSchema";
+import { contactSchema } from "../forms/contactSchema.js";
 import { sendContactMessage } from "../api/contactApi";
+import { toast } from "sonner";
 
 export default function ContactForm() {
   const {
@@ -16,16 +17,19 @@ export default function ContactForm() {
 
   const onSubmit = async (data) => {
     try {
-      await sendContactMessage(data);
-      alert("Message sent successfully!");
+      const res = await sendContactMessage(data);
+      toast.success(res.message || "Message sent successfully!");
       reset();
     } catch (error) {
-      alert(error.message);
+      toast.error(error.message || "Failed to send message");
     }
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-w-lg mx-auto">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="space-y-4 max-w-lg mx-auto"
+    >
       <div>
         <input
           type="text"
@@ -53,7 +57,9 @@ export default function ContactForm() {
           {...register("subject")}
           className="w-full border p-2 rounded"
         />
-        {errors.subject && <p className="text-red-500">{errors.subject.message}</p>}
+        {errors.subject && (
+          <p className="text-red-500">{errors.subject.message}</p>
+        )}
       </div>
 
       <div>
@@ -62,7 +68,9 @@ export default function ContactForm() {
           {...register("message")}
           className="w-full border p-2 rounded h-32"
         />
-        {errors.message && <p className="text-red-500">{errors.message.message}</p>}
+        {errors.message && (
+          <p className="text-red-500">{errors.message.message}</p>
+        )}
       </div>
 
       <button
