@@ -119,7 +119,7 @@ export default function Navbar({ user, setUser }) {
             <div className="md:hidden ">
               <NavItem to="/cart">
                 <ShoppingCart size={22} />{" "}
-                <span className="ml-1 text-lg">Cart</span>
+                <span className=" text-lg">Cart</span>
               </NavItem>
             </div>
             <button
