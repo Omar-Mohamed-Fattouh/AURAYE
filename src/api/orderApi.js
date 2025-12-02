@@ -1,6 +1,10 @@
 import axiosClient from "./axiosClient";
-
-export const getOrderById = async (id) => {
-  const response = await axiosClient.get(`/Orders/${id}`);
-  return response.data;
+export const getOrders = async () => {
+  try {
+    const response = await axiosClient.get("/Orders");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+    throw error;
+  }
 };

@@ -46,7 +46,8 @@ export default function DealsSection() {
         </h2>
 
         <p className="text-gray-600 text-center text-sm md:text-base mb-6">
-          Discover our latest collection of eyeglasses and accessories at special prices. Find the perfect style that suits your look.
+          Discover our latest collection of eyeglasses and accessories at
+          special prices. Find the perfect style that suits your look.
         </p>
 
         {/* CUSTOM NAV BUTTONS */}
@@ -78,75 +79,74 @@ export default function DealsSection() {
           className="pb-10"
         >
           {deals.map((p) => (
-       <SwiperSlide key={p.id}>
-  <Link
-    to={`/products/${p.id}`}
-    className="
+            <SwiperSlide key={p.id}>
+              <Link
+                to={`/products/${p.id}`}
+                className="
       bg-white transition p-4 relative 
       flex flex-col 
       h-[360px] 
       rounded-xl  
     "
-  >
-    {/* Heart Button */}
-    <button
-      className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-sm z-10"
-      onClick={(e) => e.preventDefault()}
-    >
-      <Heart size={18} className="text-gray-700" />
-    </button>
+              >
+                {/* Heart Button */}
+                <button
+                  className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-sm z-10"
+                  onClick={(e) => e.preventDefault()}
+                >
+                  <Heart size={18} className="text-gray-700" />
+                </button>
 
-    {/* Image */}
-    <img
-      src={p.images?.[0]?.url}
-      alt={p.name}
-      className="w-full h-36 object-contain mb-4"
-    />
+                {/* Image */}
+                <img
+                  src={p.images?.[0]?.url}
+                  alt={p.name}
+                  className="w-full h-36 object-contain mb-4"
+                />
 
-    {/* Product Title */}
-    <h3 className="font-bold text-gray-900 text-sm uppercase h-[38px] overflow-hidden">
-      {p.name}
-    </h3>
+                {/* Product Title */}
+                <h3 className="font-bold text-gray-900 text-sm uppercase h-[38px] overflow-hidden">
+                  {p.name}
+                </h3>
 
-    {/* Description */}
-    <p className="text-gray-600 text-xs h-[36px] overflow-hidden">
-      {p.description || "High-quality eyeglasses for everyday use."}
-    </p>
+                {/* Description */}
+                <p className="text-gray-600 text-xs h-[36px] overflow-hidden">
+                  {p.description || "High-quality eyeglasses for everyday use."}
+                </p>
 
-    {/* Prices */}
-    <div className="flex items-center gap-2 mt-2">
-      <span className="line-through text-gray-400 text-sm">
-        EGP {Number(p.oldPrice).toLocaleString()}
-      </span>
+                {/* Prices */}
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="line-through text-gray-400 text-sm">
+                    EGP {Number(p.oldPrice).toLocaleString()}
+                  </span>
 
-      <span className="text-red-600 font-bold text-base">
-        EGP {Number(p.price).toLocaleString()}
-      </span>
+                  <span className="text-red-600 font-bold text-base">
+                    EGP {Number(p.price).toLocaleString()}
+                  </span>
 
-      <span className="text-red-600 text-sm font-semibold">
-        -{p.discountPercent}%
-      </span>
-    </div>
+                  <span className="text-red-600 text-sm font-semibold">
+                    -{p.discountPercent}%
+                  </span>
+                </div>
 
-    {/* Colors */}
-    <div className="flex items-center gap-1 mt-1">
-      {p.colors?.slice(0, 3).map((c, i) => (
-        <span
-          key={i}
-          className="w-3 h-3 rounded-full border"
-          style={{ backgroundColor: c }}
-        ></span>
-      ))}
+                {/* Colors */}
+                <div className="flex items-center gap-1 mt-1">
+                  {p.colors?.slice(0, 3).map((c, i) => (
+                    <span
+                      key={i}
+                      className="w-3 h-3 rounded-full border"
+                      style={{ backgroundColor: c }}
+                    ></span>
+                  ))}
 
-      {p.colors?.length > 3 && (
-        <span className="text-gray-500 text-xs ml-1">
-          +{p.colors.length - 3}
-        </span>
-      )}
-    </div>
-  </Link>
-</SwiperSlide>
-
+                  {p.colors?.length > 3 && (
+                    <span className="text-gray-500 text-xs ml-1">
+                      +{p.colors.length - 3}
+                    </span>
+                  )}
+                </div>
+              </Link>
+            </SwiperSlide>
           ))}
         </Swiper>
       </div>

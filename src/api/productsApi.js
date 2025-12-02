@@ -1,3 +1,4 @@
+import { size } from "zod";
 import axiosClient from "./axiosClient";
 
 /* -------------------------- ADD TO CART -------------------------- */
@@ -33,14 +34,17 @@ export const getProducts = async () => {
       name: product.title,
       description: product.description,
       price: product.price,
+      sizes: product.sizes || [],
       stockQuantity: product.stockQuantity,
-      images, // ← هنا الـ images الصح
+      images,
+      oldPrice: product.oldPrice || '100',
       category: product.category?.name || "Other",
       gender: product.gender || "Unisex",
+      shape: product.shape || "Standard",
+      frameMaterial: product.frameMaterial || "Standard",
     };
   });
 };
-
 /* -------------------------- REMOVE ITEM FROM CART -------------------------- */
 export const removeCartItem = async (itemId) => {
   const response = await axiosClient.delete(`/Cart/remove/${itemId}`);

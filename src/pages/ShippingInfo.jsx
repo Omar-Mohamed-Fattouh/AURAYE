@@ -1,55 +1,49 @@
-// ShippingInfo.jsx
-import React, { useEffect, useState } from "react";
-import { getOrderById } from "../api/orderApi";
+import { useEffect, useState } from "react";
+import { getOrders } from "../api/orderApi";
 
-export default function ShippingInfo({ orderId }) {
-  const [order, setOrder] = useState(null);
+export default function ShippingInfo() {
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!orderId) return;
+    const fetchOrders = async () => {
+      try {
+        const data = await getOrders();
+        setOrders(data);
+      } catch (err) {
+        setError("Failed to fetch orders.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrders();
+  }, []);
 
-    getOrderById(orderId)
-      .then((data) => setOrder(data))
-      .catch((error) => console.error(error.message))
-      .finally(() => setLoading(false));
-  }, [orderId]);
-
-  if (!orderId) {
-    return <p className="text-red-500">No order ID provided.</p>;
-  }
-
-  if (loading) {
-    return <p className="text-gray-600">Loading shipping info...</p>;
-  }
-
-  if (!order) {
-    return <p className="text-red-500">Failed to load order data.</p>;
-  }
-
-  const {
-    orderId: id,
-    shippingAddress,
-    shippingStatus,
-    paymentStatus,
-    deliveryDate,
-    shippingCost,
-    totalAmount,
-  } = order;
+  if (loading) return <p>Loading shipping info...</p>;
+  if (error) return <p className="text-red-500">{error}</p>;
+  if (orders.length === 0) return <p>No orders found.</p>;
 
   return (
-    <div className="border p-4 rounded-xl shadow-md bg-white space-y-4">
-      <h2 className="text-2xl font-semibold">Shipping Information</h2>
-
-      <div className="space-y-2">
-        <p><strong>Order ID:</strong> {id}</p>
-        <p><strong>Shipping Address:</strong> {shippingAddress}</p>
-        <p className="capitalize"><strong>Shipping Status:</strong> {shippingStatus}</p>
-        <p className="capitalize"><strong>Payment Status:</strong> {paymentStatus}</p>
-        <p><strong>Delivery Date:</strong> {new Date(deliveryDate).toLocaleDateString()}</p>
-        <p><strong>Shipping Cost:</strong> {shippingCost} EGP</p>
-        <p><strong>Total Amount:</strong> {totalAmount} EGP</p>
-      </div>
+    <div className="space-y-4">
+      {orders.map((order) => (
+        <div
+          key={order.orderId}
+          className="border p-4 rounded shadow-sm"
+        >
+          <p><strong>Order ID:</strong> {order.orderId}</p>
+          <p><strong>Total Amount:</strong> ${order.totalAmount}</p>
+          <p><strong>Status:</strong> {order.status}</p>
+          <p><strong>Payment Status:</strong> {order.paymentStatus}</p>
+          <p><strong>Shipping Status:</strong> {order.shippingStatus}</p>
+          <p><strong>Shipping Cost:</strong> ${order.shippingCost}</p>
+          <p>
+            <strong>Delivery Date:</strong>{" "}
+            {new Date(order.deliveryDate).toLocaleString()}
+          </p>
+          <p><strong>Shipping Address:</strong> {order.shippingAddress}</p>
+        </div>
+      ))}
     </div>
   );
 }

@@ -1,7 +1,16 @@
+// دالة توليد رقم عشوائي ثابت بناءً على id
+function pseudoRandom(id) {
+  const x = Math.sin(id) * 10000;
+  return x - Math.floor(x);
+}
+
 export const addRandomDiscounts = (products) => {
   return products.map((p) => {
-    const hasDiscount = Math.random() < 0.3; // نسبة الخصم 30%
-    const discountFactor = 1 + (Math.random() * 0.3 + 0.1); // خصم عشوائي 10% - 40%
+    const rndForDiscount = pseudoRandom(p.id); // لتحديد إذا فيه خصم
+    const rndForFactor = pseudoRandom(p.id + 1); // لتحديد نسبة الخصم
+
+    const hasDiscount = rndForDiscount < 0.3; // 30% احتمالية خصم
+    const discountFactor = 1 + (rndForFactor * 0.3 + 0.1); // خصم ثابت بين 10% - 40%
 
     return {
       ...p,
