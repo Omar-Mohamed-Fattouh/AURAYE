@@ -74,7 +74,7 @@ export default function Navbar({ user, setUser }) {
           </div>
 
           {user ? (
-            <ProfileMenu user={user} logout={logout} />
+            <ProfileMenu  user={user} logout={logout} />
           ) : (
             <div className="hidden md:flex gap-2">
               <Link
@@ -93,7 +93,12 @@ export default function Navbar({ user, setUser }) {
           )}
 
           {/* MOBILE ICON - show on small screens only */}
-          <div className="flex lg:hidden">
+          <div className="flex lg:hidden items-center gap-2">
+            <div className="md:hidden ">
+                <NavItem to="/cart">
+                  <ShoppingCart size={24} /> <span className="ml-1 text-xl">Cart</span>
+                </NavItem>
+              </div>
             <button
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
               onClick={() => setMobileOpen(!mobileOpen)}
@@ -107,6 +112,7 @@ export default function Navbar({ user, setUser }) {
 
       {/* MOBILE MENU */}
       {mobileOpen && (
+        
         <div className="lg:hidden bg-black text-white w-full px-4 pb-4 space-y-2">
           <NavItemMobile to="/" onClick={() => setMobileOpen(false)}>
             Home
@@ -228,17 +234,7 @@ export default function Navbar({ user, setUser }) {
               Track Order
             </DropItemMobile>
           </DropdownMobile>
-
-          {user ? (
-            <>
-              <div className="md:hidden ">
-                <div className="border-t  border-white/50"></div>
-                <NavItem to="/cart">
-                  <ShoppingCart size={18} /> <span className="ml-1">Cartt</span>
-                </NavItem>
-              </div>
-            </>
-          ) : (
+          {!user && (
             <>
               <div className="border-t border-white/50"></div>
               <Link
@@ -280,10 +276,10 @@ function ProfileMenu({ user, logout }) {
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger
-        className="flex items-center gap-2 hover:text-gray-300 truncate max-w-[180px]"
+        className="flex items-center gap-2 hover:text-gray-300 truncate max-w-[180px] text-xl"
         aria-label="Open profile menu"
       >
-        <User size={18} /> <span className="truncate">{user.fullName}</span>
+        <User size={24} /> <span className="truncate">{user.fullName}</span>
       </DropdownMenu.Trigger>
 
       <DropdownMenu.Content
@@ -315,6 +311,7 @@ function Dropdown({ label, children }) {
         className="bg-[#111] text-white rounded-md p-4 shadow-xl min-w-[220px] border border-white/10 grid grid-cols-3 gap-2"
         sideOffset={8}
       >
+        
         {children}
       </DropdownMenu.Content>
     </DropdownMenu.Root>
@@ -354,6 +351,7 @@ function DropdownMobile({ label, children, closeMenu }) {
 
   return (
     <div className="flex flex-col">
+      
       <button
         onClick={() => setOpen(!open)}
         className="flex justify-between items-center w-full px-4 py-2 text-left rounded-md hover:bg-white/10 transition"
@@ -366,6 +364,7 @@ function DropdownMobile({ label, children, closeMenu }) {
         />
       </button>
       {open && <div className="flex flex-col pl-4">{children}</div>}
+      
     </div>
   );
 }
