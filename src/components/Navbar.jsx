@@ -68,11 +68,9 @@ export default function Navbar({ user, setUser }) {
         <div className="flex items-center gap-4 min-w-0">
           {/* CART */}
           <div className="hidden md:flex">
-            {user && (
               <NavItem to="/cart">
                 <ShoppingCart size={18} /> <span className="ml-1">Cart</span>
               </NavItem>
-            )}
           </div>
 
           {user ? (

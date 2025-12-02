@@ -1,16 +1,10 @@
-// ProtectedRoute.jsx
 import { Navigate } from "react-router-dom";
 
 export default function ProtectedRoute({ user, children }) {
-
-  if (user === null) {
-    return <div>go to login</div>;
-  }
-
   if (!user) {
+    // أي حد مش مسجل دخول يروح login
     return <Navigate to="/login" replace />;
   }
-
-  // user exists → allow
+  // لو موجود user → يسمح بالدخول
   return children;
 }

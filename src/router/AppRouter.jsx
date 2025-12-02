@@ -77,41 +77,31 @@ export default function AppRouter() {
               <Route
                 path="/"
                 element={
-                  <ProtectedRoute user={user}>
                     <Home />
-                  </ProtectedRoute>
                 }
               />
               <Route
                 path="/dashboard"
                 element={
-                  <ProtectedRoute user={user}>
                     <Dashboard user={user} setUser={setUser} />
-                  </ProtectedRoute>
                 }
               />
               <Route
                 path="/products"
                 element={
-                  <ProtectedRoute user={user}>
                     <Products />
-                  </ProtectedRoute>
                 }
               />
               <Route
                 path="/products/:id"
                 element={
-                  <ProtectedRoute user={user}>
                     <ProductDetails />
-                  </ProtectedRoute>
                 }
               />
               <Route
                 path="/cart"
                 element={
-                  <ProtectedRoute user={user}>
                     <Cart />
-                  </ProtectedRoute>
                 }
               />
               <Route
