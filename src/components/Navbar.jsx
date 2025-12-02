@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { Menu, ChevronDown, ShoppingCart, User, X } from "lucide-react";
@@ -12,7 +12,27 @@ export default function Navbar({ user, setUser }) {
     sessionStorage.removeItem("user");
     setMobileOpen(false);
   };
+  const mobileMenuRef = useRef(null);
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(event.target)
+      ) {
+        setMobileOpen(false);
+      }
+    }
 
+    if (mobileOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [mobileOpen]);
   return (
     <nav className="w-full bg-black text-white shadow-xl backdrop-blur-md sticky top-0 z-50 border-b border-white/10 font-semibold">
       <div className="container mx-auto px-6 py-4 flex items-center justify-between">
@@ -27,7 +47,6 @@ export default function Navbar({ user, setUser }) {
           <div className="w-px h-7 bg-neutral-600"></div>
 
           <div className="hidden lg:flex items-center gap-6 truncate">
-            
             <NavItem to="/">Home</NavItem>
 
             <Dropdown label="About">
@@ -68,14 +87,17 @@ export default function Navbar({ user, setUser }) {
         <div className="flex items-center gap-4 min-w-0">
           {/* CART */}
           <div className="hidden md:flex">
-              <NavItem to="/cart">
-                <ShoppingCart size={18} /> <span className="ml-1">Cart</span>
-              </NavItem>
+            <NavItem to="/cart">
+              <ShoppingCart size={18} /> <span className="ml-1">Cart</span>
+            </NavItem>
+            {user && (
+              <div className="hidden md:flex">
+                <ProfileMenu user={user} logout={logout} />
+              </div>
+            )}
           </div>
 
-          {user ? (
-            <ProfileMenu  user={user} logout={logout} />
-          ) : (
+          {!user && (
             <div className="hidden md:flex gap-2">
               <Link
                 to="/login"
@@ -95,10 +117,11 @@ export default function Navbar({ user, setUser }) {
           {/* MOBILE ICON - show on small screens only */}
           <div className="flex lg:hidden items-center gap-2">
             <div className="md:hidden ">
-                <NavItem to="/cart">
-                  <ShoppingCart size={24} /> <span className="ml-1 text-xl">Cart</span>
-                </NavItem>
-              </div>
+              <NavItem to="/cart">
+                <ShoppingCart size={22} />{" "}
+                <span className="ml-1 text-lg">Cart</span>
+              </NavItem>
+            </div>
             <button
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
               onClick={() => setMobileOpen(!mobileOpen)}
@@ -112,8 +135,10 @@ export default function Navbar({ user, setUser }) {
 
       {/* MOBILE MENU */}
       {mobileOpen && (
-        
-        <div className="lg:hidden bg-black text-white w-full px-4 pb-4 space-y-2">
+        <div
+          ref={mobileMenuRef}
+          className="lg:hidden bg-black text-white w-full px-4 pb-4 space-y-2"
+        >
           <NavItemMobile to="/" onClick={() => setMobileOpen(false)}>
             Home
           </NavItemMobile>
@@ -234,7 +259,43 @@ export default function Navbar({ user, setUser }) {
               Track Order
             </DropItemMobile>
           </DropdownMobile>
-          {!user && (
+
+          {user && (
+            <div className="md:hidden">
+              <DropdownMobile
+                label={
+                  <>
+                    {user.fullName}'s Profile
+                    <UserIcon />
+                  </>
+                }
+                closeMenu={() => setMobileOpen(false)}
+              >
+                <DropItemMobile
+                  to="/profile"
+                  closeMenu={() => setMobileOpen(false)}
+                >
+                  My Profile
+                </DropItemMobile>
+                <DropItemMobile
+                  to="/orders"
+                  closeMenu={() => setMobileOpen(false)}
+                >
+                  My Orders
+                </DropItemMobile>
+                <button
+                  onClick={logout}
+                  className="w-full text-left px-4 py-2 rounded-md hover:bg-white/10 transition text-sm"
+                >
+                  Logout
+                </button>
+              </DropdownMobile>
+            </div>
+          )}
+
+          {user ? (
+            <ProfileMenu user={user} logout={logout} />
+          ) : (
             <>
               <div className="border-t border-white/50"></div>
               <Link
@@ -276,10 +337,11 @@ function ProfileMenu({ user, logout }) {
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger
-        className="flex items-center gap-2 hover:text-gray-300 truncate max-w-[180px] text-xl"
+        className="flex items-center gap-2 hover:text-gray-300 truncate max-w-[180px] text-lg"
         aria-label="Open profile menu"
       >
-        <User size={24} /> <span className="truncate">{user.fullName}</span>
+        <User size={22} />{" "}
+        <span className="truncate">{user.fullName}'s Profile</span>
       </DropdownMenu.Trigger>
 
       <DropdownMenu.Content
@@ -311,12 +373,12 @@ function Dropdown({ label, children }) {
         className="bg-[#111] text-white rounded-md p-4 shadow-xl min-w-[220px] border border-white/10 grid grid-cols-3 gap-2"
         sideOffset={8}
       >
-        
         {children}
       </DropdownMenu.Content>
     </DropdownMenu.Root>
   );
 }
+const UserIcon = () => <User size={22} className="" />;
 
 /* DROPDOWN ITEM DESKTOP */
 function DropItem({ to, children }) {
@@ -346,25 +408,40 @@ function NavItemMobile({ to, children, onClick }) {
 }
 
 /* MOBILE DROPDOWN */
-function DropdownMobile({ label, children, closeMenu }) {
+function DropdownMobile({ label, children, closeMenu, icon: Icon }) {
   const [open, setOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Close menu if clicked outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [dropdownRef]);
 
   return (
-    <div className="flex flex-col">
-      
+    <div ref={dropdownRef} className="flex flex-col">
       <button
         onClick={() => setOpen(!open)}
         className="flex justify-between items-center w-full px-4 py-2 text-left rounded-md hover:bg-white/10 transition"
         aria-expanded={open}
       >
-        {label}
+        <span className="flex items-center gap-2">
+          {Icon && <Icon size={22} />}
+          {label}
+        </span>
         <ChevronDown
           size={16}
           className={`${open ? "rotate-180" : ""} transition`}
         />
       </button>
       {open && <div className="flex flex-col pl-4">{children}</div>}
-      
     </div>
   );
 }
