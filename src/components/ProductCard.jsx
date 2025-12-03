@@ -210,7 +210,7 @@ export default function ProductCard({
         {colors.slice(0, 3).map((c, i) => (
           <span
             key={i}
-            className="w-3 h-3 rounded-full border"
+            className="w-3 h-3 rounded-full "
             style={{ backgroundColor: c }}
           ></span>
         ))}

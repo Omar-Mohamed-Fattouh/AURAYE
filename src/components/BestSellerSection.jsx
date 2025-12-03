@@ -1,50 +1,51 @@
-// DealsSection.jsx
+// BestSellerSection.jsx
 import { useEffect, useState } from "react";
-// import { addRandomDiscounts } from "../utils/addRandomDiscounts";
-import { getProducts } from "../api/productsApi";
 import { ChevronRight, ChevronLeft } from "lucide-react";
-
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 
 import "swiper/css";
 import "swiper/css/navigation";
 
+import { getBestSellerProducts } from "../api/productsApi";
 import ProductCard from "./ProductCard";
 
-export default function DealsSection() {
-  const [deals, setDeals] = useState([]);
+export default function BestSellerSection() {
+  const [products, setProducts] = useState([]);
 
   useEffect(() => {
-    const loadDeals = async () => {
-      const products = await getProducts();
-      // const discounted = addRandomDiscounts(products);
-
-      const dealsOnly = products.filter((p) => p.oldPrice !== null);
-      setDeals(dealsOnly);
+    const loadBestSellers = async () => {
+      try {
+        const data = await getBestSellerProducts();
+        setProducts(data);
+      } catch (err) {
+        console.error("Failed to load best seller products:", err);
+      }
     };
 
-    loadDeals();
+    loadBestSellers();
   }, []);
+
+  if (!products || products.length === 0) return null;
 
   return (
     <section className="py-14 bg-white">
       <div className="container mx-auto px-6">
+        {/* Title */}
         <h2 className="text-2xl md:text-4xl text-center font-bold text-gray-900 mb-2">
-          Exclusive Eyewear Offers
+          Best Sellers
         </h2>
 
         <p className="text-gray-600 text-center text-sm md:text-base mb-6">
-          Discover our latest collection of eyeglasses and accessories at
-          special prices. Find the perfect style that suits your look.
+          Our most popular frames chosen by our customers.
         </p>
 
-        {/* CUSTOM NAV BUTTONS */}
+        {/* Navigation buttons for this slider only */}
         <div className="flex justify-end gap-4 mb-4">
-          <button className="swiper-prev p-2 border rounded-full hover:bg-gray-100">
+          <button className="bestseller-prev p-2 border rounded-full hover:bg-gray-100">
             <ChevronLeft size={22} />
           </button>
-          <button className="swiper-next p-2 border rounded-full hover:bg-gray-100">
+          <button className="bestseller-next p-2 border rounded-full hover:bg-gray-100">
             <ChevronRight size={22} />
           </button>
         </div>
@@ -52,12 +53,12 @@ export default function DealsSection() {
         <Swiper
           modules={[Navigation]}
           navigation={{
-            nextEl: ".swiper-next",
-            prevEl: ".swiper-prev",
+            nextEl: ".bestseller-next",
+            prevEl: ".bestseller-prev",
           }}
           spaceBetween={20}
           slidesPerView={5}
-          loop={deals.length > 5}
+          loop={products.length > 5}
           breakpoints={{
             320: { slidesPerView: 1, spaceBetween: 10 },
             480: { slidesPerView: 2, spaceBetween: 15 },
@@ -67,12 +68,13 @@ export default function DealsSection() {
           }}
           className="pb-10"
         >
-          {deals.map((p) => (
+          {products.map((p) => (
             <SwiperSlide key={p.id}>
               <ProductCard
                 product={p}
                 linkTo={`/products/${p.id}`}
-                showAddToCart={true}   // Deals فيها Add to Cart
+                showAddToCart={true}
+                badge="Best Seller"  // 👈 العلامة اللي إنتِ طلبتيها
               />
             </SwiperSlide>
           ))}
