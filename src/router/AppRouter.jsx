@@ -37,6 +37,7 @@ import ColorsPage from "../pages/ColorPages.jsx";
 import FramesPage from "../pages/FramesPage.jsx";
 import ShapesPage from "../pages/ShapesPage.jsx";
 import AllProductPage from "../pages/AllProductPage.jsx";
+import WishlistPage from "../pages/WishlistPage.jsx";
 
 const queryClient = new QueryClient();
 const stripePromise = loadStripe(
@@ -144,6 +145,12 @@ export default function AppRouter() {
               path="/products/colors"
               element={
                   <ColorsPage />
+              }
+              />
+              <Route 
+              path="/wishlist"
+              element={
+                  <WishlistPage />
               }
               />
               <Route 

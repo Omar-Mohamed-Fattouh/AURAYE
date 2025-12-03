@@ -19,6 +19,9 @@ export const addToWishlist = (productId) =>
 export const isProductInWishlist = (productId) =>
   axiosClient.get(`/Wishlist/isExist?productId=${productId}`);
 
+/* -------------------------- GET WISHLIST -------------------------- */
+export const getWishlist = () => axiosClient.get("/Wishlist");
+
 
 /* -------------------------- GET CART -------------------------- */
 export const getCart = async () => {

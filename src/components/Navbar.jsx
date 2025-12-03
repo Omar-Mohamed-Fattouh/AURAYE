@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { Menu, ChevronDown, ShoppingCart, User, X } from "lucide-react";
+import { Menu, ChevronDown, ShoppingCart, User, X, Heart } from "lucide-react";
 import { logoutUser } from "../api/authApi.js";
 
 export default function Navbar({ user, setUser }) {
@@ -99,14 +99,19 @@ export default function Navbar({ user, setUser }) {
 
         {/* RIGHT SIDE */}
         <div className="flex items-center gap-4 min-w-0">
-          {/* CART */}
-          <div className="hidden md:flex">
-            <NavItem to="/cart">
-              <ShoppingCart size={20} /> <span className="ml-1 text-lg">Cart</span>
+          {/* CART + WISHLIST DESKTOP */}
+          <div className="hidden md:flex items-center gap-2">
+            <NavItem to="/wishlist">
+              <Heart size={20} /> <span className="ml-1 text-lg">Wishlist</span>
             </NavItem>
+
+            <NavItem to="/cart">
+              <ShoppingCart size={20} />{" "}
+              <span className="ml-1 text-lg">Cart</span>
+            </NavItem>
+
             {user && (
               <div className="hidden md:flex">
-                {/* استخدمنا logout اللي فوق بدل logoutUser مباشرة */}
                 <ProfileMenu user={user} logout={logout} />
               </div>
             )}
@@ -131,12 +136,20 @@ export default function Navbar({ user, setUser }) {
 
           {/* MOBILE ICON - show on small screens only */}
           <div className="flex lg:hidden items-center gap-2">
-            <div className="md:hidden ">
-              <NavItem to="/cart">
-                <ShoppingCart size={22} />{" "}
-                <span className=" text-lg">Cart</span>
+            {/* Wishlist mobile */}
+            <div className="md:hidden">
+              <NavItem to="/wishlist">
+                <Heart size={22} /> <span className="text-lg">Wishlist</span>
               </NavItem>
             </div>
+
+            {/* Cart mobile */}
+            <div className="md:hidden">
+              <NavItem to="/cart">
+                <ShoppingCart size={22} /> <span className="text-lg">Cart</span>
+              </NavItem>
+            </div>
+
             <button
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
               onClick={() => setMobileOpen(!mobileOpen)}
@@ -214,7 +227,7 @@ export default function Navbar({ user, setUser }) {
               to="/products/shapes"
               closeMenu={() => setMobileOpen(false)}
             >
-             Shapes
+              Shapes
             </DropItemMobile>
             <DropItemMobile
               to="/products/frames"
@@ -226,7 +239,7 @@ export default function Navbar({ user, setUser }) {
               to="/products/colors"
               closeMenu={() => setMobileOpen(false)}
             >
-            Colors
+              Colors
             </DropItemMobile>
           </DropdownMobile>
 
