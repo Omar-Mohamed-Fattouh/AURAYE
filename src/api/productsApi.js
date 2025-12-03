@@ -6,7 +6,8 @@ export const addToCart = (data) => axiosClient.post("/Cart/add", data);
 
 /* -------------------------- ADD TO WISHLIST -------------------------- */
 
-export const addToWishlist = (data) => axiosClient.post("/Wishlist/add", data);
+export const addToWishlist = (productId) =>
+  axiosClient.post(`/Wishlist/add?productId=${productId}`);
 
 /* -------------------------- GET CART -------------------------- */
 export const getCart = async () => {

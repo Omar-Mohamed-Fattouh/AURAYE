@@ -22,6 +22,7 @@ export default function ProductDetails() {
   const [mainImageIndex, setMainImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState("");
   const [quantity, setQuantity] = useState(1);
+  const [isWishlisted, setIsWishlisted] = useState(false);
   const [openAccordions, setOpenAccordions] = useState({
     description: true,
     details: false,
@@ -208,7 +209,6 @@ export default function ProductDetails() {
   async function handleAddToWishlist() {
     if (!product) return;
 
-    // Optional: check token before calling
     const token = localStorage.getItem("token");
     if (!token) {
       toast.error("You need to log in to use the wishlist.");
@@ -216,8 +216,8 @@ export default function ProductDetails() {
     }
 
     try {
-      // ✅ use product.id (that’s what you mapped in getProducts)
-      await addToWishlist({ productId: Number(product.id) });
+      await addToWishlist(Number(product.id));
+      setIsWishlisted(true); // 🔴 ← يخلي القلب أحمر بعد النجاح
       toast.success("Product added to wishlist.");
     } catch (err) {
       console.error(err);
@@ -427,7 +427,10 @@ export default function ProductDetails() {
                   onClick={handleAddToWishlist}
                   className="bg-white p-2 mb-1 rounded-full shadow-md border border-gray-200 flex items-center justify-center"
                 >
-                  <Heart size={20} className="text-gray-700" />
+                  <Heart
+                    size={20}
+                    className={isWishlisted ? "text-red-500" : "text-gray-700"}
+                  />
                 </button>
               </div>
             </div>
