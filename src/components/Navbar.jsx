@@ -210,16 +210,22 @@ export default function Navbar({ user, setUser }) {
               Eyeglasses
             </DropItemMobile>
             <DropItemMobile
-              to="/products/new"
+              to="/products/shapes"
               closeMenu={() => setMobileOpen(false)}
             >
-              New Arrivals
+             Shapes
             </DropItemMobile>
             <DropItemMobile
-              to="/products/best"
+              to="/products/frames"
               closeMenu={() => setMobileOpen(false)}
             >
-              Best Sellers
+              Frames
+            </DropItemMobile>
+            <DropItemMobile
+              to="/products/colors"
+              closeMenu={() => setMobileOpen(false)}
+            >
+            Colors
             </DropItemMobile>
           </DropdownMobile>
 

@@ -33,6 +33,9 @@ import MenPage from "../pages/MenPage.jsx";
 import WomenPage from "../pages/WomenPage.jsx";
 import EyeGlassesPage from "../pages/EyeGlassesPage.jsx";
 import SunGlassesPage from "../pages/SunGlassesPage.jsx";
+import ColorsPage from "../pages/ColorPages.jsx";
+import FramesPage from "../pages/FramesPage.jsx";
+import ShapesPage from "../pages/ShapesPage.jsx";
 
 const queryClient = new QueryClient();
 const stripePromise = loadStripe(
@@ -122,6 +125,24 @@ export default function AppRouter() {
               path="/products/eyeglasses"
               element={
                   <EyeGlassesPage />
+              }
+              />
+              <Route 
+              path="/products/shapes"
+              element={
+                  <ShapesPage />
+              }
+              />
+              <Route 
+              path="/products/frames"
+              element={
+                  <FramesPage />
+              }
+              />
+              <Route 
+              path="/products/colors"
+              element={
+                  <ColorsPage />
               }
               />
               <Route 
