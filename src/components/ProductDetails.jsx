@@ -216,8 +216,8 @@ export default function ProductDetails() {
     }
 
     try {
-      await addToWishlist(Number(product.id));
-      setIsWishlisted(true); // 🔴 ← يخلي القلب أحمر بعد النجاح
+      await addToWishlist(Number(product.id)); // ✅ بنبعت رقم بس
+      setIsWishlisted(true); // ✅ خليه أحمر بعد ما ينجح
       toast.success("Product added to wishlist.");
     } catch (err) {
       console.error(err);

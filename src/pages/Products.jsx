@@ -2,15 +2,19 @@ import { useQuery } from "@tanstack/react-query";
 import { getProducts } from "../api/productsApi.js";
 import { ProductCard } from "../components/ProductCard.jsx";
 import { Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Products = () => {
-  const { data: products, isLoading, error } = useQuery({
+  const {
+    data: product,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["products"],
     queryFn: getProducts,
   });
-  
 
-  
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -33,7 +37,9 @@ const Products = () => {
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center space-y-4">
               <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
-              <p className="text-gray-500 text-lg">Loading amazing products...</p>
+              <p className="text-gray-500 text-lg">
+                Loading amazing products...
+              </p>
             </div>
           </div>
         )}
@@ -48,10 +54,14 @@ const Products = () => {
           </div>
         )}
 
-        {products && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
+        {product && (
+          <div
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
+          >
+            {product.map((p) => (
+              <div key={p.id} onClick={() => navigate(`/products/${p.id}`)}>
+                <ProductCard product={p} />
+              </div>
             ))}
           </div>
         )}
