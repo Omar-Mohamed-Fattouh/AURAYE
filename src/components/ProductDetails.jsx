@@ -314,7 +314,7 @@ export default function ProductDetails() {
   const isLoggedIn = !!localStorage.getItem("token");
 
   return (
-    <div className="max-w-[1400px] mx-auto px-4 lg:px-8 py-6">
+    <div className="max-w-[1400px] mx-auto px-4 lg:px-8 py-14">
       <div className="grid gap-8 lg:grid-cols-12">
         {/* Gallery (images) */}
         <div className="lg:col-span-7">

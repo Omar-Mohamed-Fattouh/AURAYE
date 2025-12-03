@@ -29,9 +29,10 @@ export default function BestSellerSection() {
   if (!products || products.length === 0) return null;
 
   return (
-    <section className="py-5 bg-white">
+    <section className="relative py-14 bg-white">
       <div className="container mx-auto px-6">
-        
+        <div className="absolute left-1/2 -translate-x-1/2 top-0 w-full max-w-6xl border-t border-gray-300" />
+
         {/* Title */}
         <h2 className="text-2xl md:text-4xl text-center font-bold text-gray-900 mb-2">
           Best Sellers

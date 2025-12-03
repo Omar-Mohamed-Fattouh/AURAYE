@@ -1,11 +1,11 @@
-// src/pages/MenProduct.jsx
+// src/pages/WomenProduct.jsx
 import { useEffect, useMemo, useState } from "react";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { getProducts } from "../api/productsApi";
 import ProductCard from "../components/ProductCard";
 
-export default function MenProduct() {
-  const [menProducts, setMenProducts] = useState([]);
+export default function WomenProduct() {
+  const [womenProducts, setWomenProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // search + filters
@@ -16,58 +16,58 @@ export default function MenProduct() {
   const [filtersOpen, setFiltersOpen] = useState(false); // advanced filters panel
 
   useEffect(() => {
-    const loadMenProducts = async () => {
+    const loadWomenProducts = async () => {
       try {
         const all = await getProducts();
 
         const filtered = all.filter(
           (p) =>
-            String(p.gender).toLowerCase() === "men" ||
-            String(p.category).toLowerCase() === "men"
+            String(p.gender).toLowerCase() === "women" ||
+            String(p.category).toLowerCase() === "women"
         );
 
-        setMenProducts(filtered);
+        setWomenProducts(filtered);
       } catch (err) {
-        console.error("Failed to load men products:", err);
+        console.error("Failed to load women products:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    loadMenProducts();
+    loadWomenProducts();
   }, []);
 
   // dropdown options from data
   const shapes = useMemo(() => {
     const set = new Set(
-      menProducts
+      womenProducts
         .map((p) => p.shape)
         .filter((s) => s && String(s).trim() !== "")
     );
     return Array.from(set);
-  }, [menProducts]);
+  }, [womenProducts]);
 
   const frameMaterials = useMemo(() => {
     const set = new Set(
-      menProducts
+      womenProducts
         .map((p) => p.frameMaterial)
         .filter((m) => m && String(m).trim() !== "")
     );
     return Array.from(set);
-  }, [menProducts]);
+  }, [womenProducts]);
 
   const types = useMemo(() => {
     const set = new Set(
-      menProducts
+      womenProducts
         .map((p) => p.category)
         .filter((c) => c && String(c).trim() !== "")
     );
     return Array.from(set);
-  }, [menProducts]);
+  }, [womenProducts]);
 
   // filtered list
   const filteredProducts = useMemo(() => {
-    return menProducts.filter((p) => {
+    return womenProducts.filter((p) => {
       const nameMatch = p.name
         .toLowerCase()
         .includes(searchTerm.toLowerCase().trim());
@@ -86,7 +86,7 @@ export default function MenProduct() {
 
       return nameMatch && shapeMatch && frameMatch && typeMatch;
     });
-  }, [menProducts, searchTerm, shapeFilter, frameFilter, typeFilter]);
+  }, [womenProducts, searchTerm, shapeFilter, frameFilter, typeFilter]);
 
   const hasActiveFilters = !!(typeFilter || shapeFilter || frameFilter);
 
@@ -112,11 +112,11 @@ export default function MenProduct() {
         {/* Header */}
         <div className="mb-6 space-y-3">
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-            Men’s Collection
+            Women’s Collection
           </h1>
           <p className="text-gray-600 text-sm md:text-base max-w-xl">
-            Explore men’s eyeglasses and sunglasses. Use search and filters to
-            quickly find your perfect frame.
+            Discover our curated selection of eyeglasses and sunglasses for
+            women. Use search and filters to find your perfect pair.
           </p>
         </div>
 
@@ -141,7 +141,7 @@ export default function MenProduct() {
               />
               <input
                 type="text"
-                placeholder="Search men’s frames by name..."
+                placeholder="Search women’s frames by name..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="
@@ -151,7 +151,7 @@ export default function MenProduct() {
               />
             </div>
 
-            {/* Filters toggle button (especially useful on mobile) */}
+            {/* Filters toggle button */}
             <button
               onClick={() => setFiltersOpen((prev) => !prev)}
               className="
@@ -191,7 +191,7 @@ export default function MenProduct() {
             </div>
           )}
 
-          {/* Advanced filters panel (shape + frame) with transition */}
+          {/* Advanced filters panel */}
           <div
             className={`
               overflow-hidden transition-all duration-300 ease-out
@@ -274,7 +274,7 @@ export default function MenProduct() {
 
         {/* Results count */}
         <div className="mb-4 text-xs text-gray-500">
-          Showing {filteredProducts.length} of {menProducts.length} products
+          Showing {filteredProducts.length} of {womenProducts.length} products
         </div>
 
         {/* Products grid */}
@@ -289,7 +289,7 @@ export default function MenProduct() {
                 key={product.id}
                 product={product}
                 linkTo={`/products/${product.id}`}
-                showAddToCart={false} // browsing only
+                showAddToCart={false}
                 badge={null}
               />
             ))}

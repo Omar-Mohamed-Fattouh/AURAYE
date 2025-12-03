@@ -103,6 +103,12 @@ export default function AppRouter() {
                   <MenPage />
               }
               />
+              <Route
+                path="/products/women"
+                element={
+                  <WomenPage />
+                }
+              />
               <Route 
               path="/contact"
               element={
