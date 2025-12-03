@@ -124,8 +124,8 @@ export default function ProductDetails() {
     if (!product || !product.oldPrice) return 0;
     const oldp = Number(product.oldPrice);
     const p = Number(product.price);
-    if (!oldp || oldp <= p) return 0; // discount only if old > current
-    return ((oldp - p) / oldp) * 100;
+    if (!oldp || oldp >= p) return 0; // discount only if old > current
+    return ((p - oldp) / p) * 100;
   }, [product]);
 
   function toggleAccordion(key) {
@@ -317,15 +317,15 @@ export default function ProductDetails() {
                 <div className="flex items-baseline gap-3">
                   {/* ✅ current price */}
                   <div className="text-2xl font-extrabold text-red-600">
-                    {formatEGP(product.price)}
+                    {formatEGP(product.oldPrice)}
                   </div>
 
                   {/* ✅ old price + discount */}
                   {product.oldPrice &&
-                    Number(product.oldPrice) > Number(product.price) && (
+                    Number(product.oldPrice) < Number(product.price) && (
                       <>
                         <div className="text-sm text-gray-400 line-through">
-                          {formatEGP(product.oldPrice)}
+                          {formatEGP(product.price)}
                         </div>
 
                         {discountPercent > 0 && (
