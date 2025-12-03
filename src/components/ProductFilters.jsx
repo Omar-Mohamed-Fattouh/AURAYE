@@ -94,7 +94,7 @@ function SortDropdown({ sortBy, onSortChange }) {
           px-4 py-2 rounded-full
           bg-black text-white text-xs md:text-sm
           hover:bg-black/90 
-          transition
+          transition z-10
         "
       >
         <span>Sort by: {label}</span>
@@ -106,7 +106,7 @@ function SortDropdown({ sortBy, onSortChange }) {
           bg-[#111] text-white rounded-md p-2 
           shadow-xl min-w-[180px] 
           border border-white/10 
-          flex flex-col gap-1
+          flex flex-col gap-1 z-10
         "
         sideOffset={8}
       >
@@ -146,7 +146,7 @@ function SortItem({ children, active, onClick }) {
       className={`
         px-3 py-2 rounded-md text-xs md:text-sm cursor-pointer
         ${active ? "bg-white/15" : "hover:bg-white/10"}
-        transition
+        transition z-20
       `}
     >
       {children}
@@ -165,7 +165,7 @@ function FilterDropdown({ label, value, onChange, options }) {
           px-4 py-2 rounded-full
           bg-black text-white text-xs md:text-sm
           hover:bg-black/90 
-          transition
+          transition z-50
         "
       >
         <span>{label}:</span>

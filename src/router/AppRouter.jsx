@@ -37,7 +37,8 @@ import ColorsPage from "../pages/ColorPages.jsx";
 import FramesPage from "../pages/FramesPage.jsx";
 import ShapesPage from "../pages/ShapesPage.jsx";
 import AllProductPage from "../pages/AllProductPage.jsx";
-import WishlistPage from "../components/Wishlist.jsx";
+import WishlistPage from "../pages/WishlistPage.jsx";
+import ScrollToTop from "../components/ScrollToTop.jsx";
 
 const queryClient = new QueryClient();
 const stripePromise = loadStripe(
@@ -60,6 +61,8 @@ export default function AppRouter() {
       <CartProvider>
         <Toaster />
         <BrowserRouter>
+              <ScrollToTop />
+
           <Routes>
             {/* Auth routes (no layout) */}
             <Route element={<Layout user={user} setUser={setUser} />}>
@@ -144,6 +147,7 @@ export default function AppRouter() {
               <Route path="*" element={<NotFoundPage />} />
             </Route>
           </Routes>
+                
         </BrowserRouter>
       </CartProvider>
     </QueryClientProvider>
