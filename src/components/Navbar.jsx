@@ -100,6 +100,9 @@ export default function Navbar({ user, setUser }) {
         <div className="flex items-center gap-4 min-w-0">
           {/* DESKTOP: Wishlist + Cart + Profile */}
           <div className="hidden md:flex items-center gap-2">
+            {user && (
+              <>
+            
             {/* Wishlist بنفس ستايل وسلوك ProfileMenu */}
             <WishlistMenu />
 
@@ -107,6 +110,8 @@ export default function Navbar({ user, setUser }) {
               <ShoppingCart size={20} />{" "}
               <span className="ml-1 text-lg">Cart</span>
             </NavItem>
+              </>
+            )}
 
             {user && (
               <div className="hidden md:flex">
@@ -136,6 +141,8 @@ export default function Navbar({ user, setUser }) {
           {/* MOBILE ICONS */}
           <div className="flex lg:hidden items-center">
             {/* Wishlist mobile */}
+            {user && (
+              <>
             <div className="md:hidden">
               <NavItem to="/wishlist">
                 <Heart size={20} />
@@ -148,7 +155,8 @@ export default function Navbar({ user, setUser }) {
                 <ShoppingCart size={20} />
               </NavItem>
             </div>
-
+            </>
+            )}
             <button
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
               onClick={() => setMobileOpen(!mobileOpen)}
@@ -399,17 +407,13 @@ function WishlistMenu() {
       <DropdownMenu.Trigger
         className="flex items-center gap-2 hover:text-gray-300 truncate text-lg"
         aria-label="Open wishlist menu"
+        asChild
       >
-        <Heart size={20} />
-        <span className="truncate">Wishlist</span>
+        <Link to="/wishlist" className="flex items-center gap-2 hover:text-gray-300 truncate text-lg">
+          <Heart size={20} />
+          <span className="truncate">Wishlist</span>
+        </Link>
       </DropdownMenu.Trigger>
-
-      <DropdownMenu.Content
-        className="bg-[#111] text-white rounded-md p-4 shadow-xl min-w-[160px] border border-white/10 flex flex-col gap-2"
-        sideOffset={8}
-      >
-        <DropItem to="/wishlist">View Wishlist</DropItem>
-      </DropdownMenu.Content>
     </DropdownMenu.Root>
   );
 }

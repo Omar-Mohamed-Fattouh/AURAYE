@@ -37,7 +37,7 @@ import ColorsPage from "../pages/ColorPages.jsx";
 import FramesPage from "../pages/FramesPage.jsx";
 import ShapesPage from "../pages/ShapesPage.jsx";
 import AllProductPage from "../pages/AllProductPage.jsx";
-import WishlistPage from "../pages/WishlistPage.jsx";
+import WishlistPage from "../components/Wishlist.jsx";
 
 const queryClient = new QueryClient();
 const stripePromise = loadStripe(
@@ -63,119 +63,57 @@ export default function AppRouter() {
           <Routes>
             {/* Auth routes (no layout) */}
             <Route element={<Layout user={user} setUser={setUser} />}>
-            <Route
-              path="/register"
-              element={
-                !user ? (
-                  <Register setUser={setUser} />
-                ) : (
-                  <Navigate to="/dashboard" replace />
-                )
-              }
-            />
-            <Route
-              path="/login"
-              element={
-                !user ? (
-                  <Login setUser={setUser} />
-                ) : (
-                  <Navigate to="/" replace />
-                )
-              }
-            />
-            <Route path="/forget-password" element={<ForgetPassword />} />
-            <Route path="/reset-password/:token" element={<ResetPassword />} />
-
-            {/* Routes with Layout */}
               <Route
-                path="/"
+                path="/register"
                 element={
-                    <Home />
+                  !user ? (
+                    <Register setUser={setUser} />
+                  ) : (
+                    <Navigate to="/dashboard" replace />
+                  )
                 }
               />
+              <Route
+                path="/login"
+                element={
+                  !user ? (
+                    <Login setUser={setUser} />
+                  ) : (
+                    <Navigate to="/" replace />
+                  )
+                }
+              />
+              <Route path="/forget-password" element={<ForgetPassword />} />
+              <Route
+                path="/reset-password/:token"
+                element={<ResetPassword />}
+              />
+
+              {/* Routes with Layout */}
+              <Route path="/" element={<Home />} />
               <Route
                 path="/dashboard"
-                element={
-                    <Dashboard user={user} setUser={setUser} />
-                }
+                element={<Dashboard user={user} setUser={setUser} />}
               />
+              <Route path="/products" element={<AllProductPage />} />
+              <Route path="products/men" element={<MenPage />} />
+              <Route path="/products/women" element={<WomenPage />} />
+              <Route path="/products/sunglasses" element={<SunGlassesPage />} />
+              <Route path="/products/eyeglasses" element={<EyeGlassesPage />} />
+              <Route path="/products/shapes" element={<ShapesPage />} />
+              <Route path="/products/frames" element={<FramesPage />} />
+              <Route path="/products/colors" element={<ColorsPage />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="shipping" element={<ShippingInfo />} />
+              <Route path="/products/:id" element={<ProductID />} />
+              <Route path="/cart" element={<Cart />} />
               <Route
-                path="/products"
+                path="/wishlist"
                 element={
-                    <AllProductPage />
+                  <ProtectedRoute user={user}>
+                    <WishlistPage />
+                  </ProtectedRoute>
                 }
-              />
-              <Route 
-              path='products/men'
-              element={
-                  <MenPage />
-              }
-              />
-              <Route
-                path="/products/women"
-                element={
-                  <WomenPage />
-                }
-              />
-              <Route 
-              path="/products/sunglasses"
-              element={
-                  <SunGlassesPage />
-              }
-              />
-              <Route 
-              path="/products/eyeglasses"
-              element={
-                  <EyeGlassesPage />
-              }
-              />
-              <Route 
-              path="/products/shapes"
-              element={
-                  <ShapesPage />
-              }
-              />
-              <Route 
-              path="/products/frames"
-              element={
-                  <FramesPage />
-              }
-              />
-              <Route 
-              path="/products/colors"
-              element={
-                  <ColorsPage />
-              }
-              />
-              <Route 
-              path="/contact"
-              element={
-                  <Contact />
-              }
-              />
-              <Route 
-              path="shipping"
-              element={<ShippingInfo />}
-              />
-              <Route
-                path="/products/:id"
-                element={
-                    <ProductID />
-                }
-              />
-              <Route
-                path="/cart"
-                element={
-                    <Cart />
-                }
-              />
-                            <Route 
-              path="/wishlist"
-              element={
-                <ProtectedRoute user={user}>
-                  <WishlistPage />
-                </ProtectedRoute>
-              }
               />
               <Route
                 path="/checkout"
