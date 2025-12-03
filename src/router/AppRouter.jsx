@@ -36,6 +36,7 @@ import SunGlassesPage from "../pages/SunGlassesPage.jsx";
 import ColorsPage from "../pages/ColorPages.jsx";
 import FramesPage from "../pages/FramesPage.jsx";
 import ShapesPage from "../pages/ShapesPage.jsx";
+import AllProductPage from "../pages/AllProductPage.jsx";
 
 const queryClient = new QueryClient();
 const stripePromise = loadStripe(
@@ -100,7 +101,7 @@ export default function AppRouter() {
               <Route
                 path="/products"
                 element={
-                    <Products />
+                    <AllProductPage />
                 }
               />
               <Route 

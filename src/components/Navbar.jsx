@@ -75,8 +75,9 @@ export default function Navbar({ user, setUser }) {
               <DropItem to="/products/women">Women</DropItem>
               <DropItem to="/products/sunglasses">Sunglasses</DropItem>
               <DropItem to="/products/eyeglasses">Eyeglasses</DropItem>
-              <DropItem to="/products/new">New Arrivals</DropItem>
-              <DropItem to="/products/best">Best Sellers</DropItem>
+              <DropItem to="/products/frames">Frames</DropItem>
+              <DropItem to="/products/shapes">Shapes</DropItem>
+              <DropItem to="/products/colors">Colors</DropItem>
             </Dropdown>
 
             <Dropdown label="AR Try-On">
@@ -101,7 +102,7 @@ export default function Navbar({ user, setUser }) {
           {/* CART */}
           <div className="hidden md:flex">
             <NavItem to="/cart">
-              <ShoppingCart size={18} /> <span className="ml-1">Cart</span>
+              <ShoppingCart size={20} /> <span className="ml-1 text-lg">Cart</span>
             </NavItem>
             {user && (
               <div className="hidden md:flex">
@@ -345,7 +346,7 @@ function NavItem({ to, children }) {
   return (
     <Link
       to={to}
-      className="transition text-sm uppercase tracking-wide px-4 py-2 gap-3 rounded-md hover:bg-white/10 flex items-center whitespace-nowrap"
+      className="transition text-sm uppercase tracking-wide px-3 py-2 gap-3 rounded-md hover:bg-white/10 flex items-center whitespace-nowrap"
     >
       {children}
     </Link>
@@ -360,7 +361,7 @@ function ProfileMenu({ user, logout }) {
         className="flex items-center gap-2 hover:text-gray-300 truncate max-w-[180px] text-lg"
         aria-label="Open profile menu"
       >
-        <User size={22} />{" "}
+        <User size={20} />{" "}
         <span className="truncate">{user.fullName}'s Profile</span>
       </DropdownMenu.Trigger>
 
