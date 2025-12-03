@@ -4,10 +4,21 @@ import axiosClient from "./axiosClient";
 // data = { productId, color, quantity }
 export const addToCart = (data) => axiosClient.post("/Cart/add", data);
 
+
+/* -------------------------- REMOVE FROM WISHLIST -------------------------- */
+export const removeFromWishlist = (productId) =>
+  axiosClient.delete(`/Wishlist/remove/${productId}`);
+
 /* -------------------------- ADD TO WISHLIST -------------------------- */
 
 export const addToWishlist = (productId) =>
   axiosClient.post(`/Wishlist/add?productId=${productId}`);
+
+
+/* -------------------------- CHECK IF PRODUCT IN WISHLIST -------------------------- */
+export const isProductInWishlist = (productId) =>
+  axiosClient.get(`/Wishlist/isExist?productId=${productId}`);
+
 
 /* -------------------------- GET CART -------------------------- */
 export const getCart = async () => {
@@ -37,7 +48,7 @@ export const getProducts = async () => {
       sizes: product.sizes || [],
       stockQuantity: product.stockQuantity,
       images,
-      oldPrice: product.oldPrice || '100',
+      oldPrice: product.oldPrice || null,
       category: product.category?.name || "Other",
       gender: product.gender || "Unisex",
       shape: product.shape || "Standard",

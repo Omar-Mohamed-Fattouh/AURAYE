@@ -29,6 +29,13 @@ export const resetPassword = async ({ token, newPassword, confirmNewPassword }) 
   });
 };
 
+
+/* ------------------------- LOGOUT ------------------------- */
+
+export const logoutUser = async () => {
+  return axiosClient.post("/auth/logout");
+};
+
 /* ---------------------- GET CURRENT USER ------------------ */
 // Requires: Authorization Header (token already handled by axiosClient)
 export const getCurrentUser = async () => {

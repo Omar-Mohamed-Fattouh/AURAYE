@@ -2,17 +2,29 @@ import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { Menu, ChevronDown, ShoppingCart, User, X } from "lucide-react";
+import { logoutUser } from "../api/authApi.js";
 
 export default function Navbar({ user, setUser }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem("user");
-    sessionStorage.removeItem("user");
-    setMobileOpen(false);
+  const logout = async () => {
+    try {
+      // استدعاء الـ API لو حابب تستخدمه في السيرفر
+      await logoutUser();
+    } catch (err) {
+      console.error("Logout error:", err);
+    } finally {
+      // مسح الداتا من الـ frontend دايمًا
+      setUser(null);
+      localStorage.removeItem("user");
+      localStorage.removeItem("token"); // مهم عشان يمنع Add to Cart بعد اللوج آوت
+      sessionStorage.removeItem("user");
+      setMobileOpen(false);
+    }
   };
+
   const mobileMenuRef = useRef(null);
+
   useEffect(() => {
     function handleClickOutside(event) {
       if (
@@ -33,6 +45,7 @@ export default function Navbar({ user, setUser }) {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [mobileOpen]);
+
   return (
     <nav className="w-full bg-black text-white shadow-xl backdrop-blur-md sticky top-0 z-50 border-b border-white/10 font-semibold">
       <div className="container mx-auto px-6 py-4 flex items-center justify-between">
@@ -92,6 +105,7 @@ export default function Navbar({ user, setUser }) {
             </NavItem>
             {user && (
               <div className="hidden md:flex">
+                {/* استخدمنا logout اللي فوق بدل logoutUser مباشرة */}
                 <ProfileMenu user={user} logout={logout} />
               </div>
             )}
@@ -300,7 +314,7 @@ export default function Navbar({ user, setUser }) {
                 <Link
                   to="/login"
                   onClick={() => setMobileOpen(false)}
-                  className="block px-4 py-2 hover:bg-white/10 rounded-md"
+                  className="block px-4 py-2 hover:bg:white/10 rounded-md"
                 >
                   Login
                 </Link>
@@ -348,7 +362,6 @@ function ProfileMenu({ user, logout }) {
         className="bg-[#111] text-white rounded-md p-4 shadow-xl min-w-[180px] border border-white/10 flex flex-col gap-2"
         sideOffset={8}
       >
-        {/* explicitly label items so they show */}
         <DropItem to="/profile">My Profile</DropItem>
         <DropItem to="/orders">Orders</DropItem>
         <button
@@ -378,6 +391,7 @@ function Dropdown({ label, children }) {
     </DropdownMenu.Root>
   );
 }
+
 const UserIcon = () => <User size={22} className="" />;
 
 /* DROPDOWN ITEM DESKTOP */
@@ -412,7 +426,6 @@ function DropdownMobile({ label, children, closeMenu, icon: Icon }) {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Close menu if clicked outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
