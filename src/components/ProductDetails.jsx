@@ -434,7 +434,7 @@ export default function ProductDetails() {
                     onClick={() => onSelectColor(color)}
                     className={`relative w-8 h-8 rounded-full border flex items-center justify-center ${
                       selectedColor === color
-                        ? "border-black ring-2 ring-black"
+                        ? "border-2 border-gray-900"
                         : "border-gray-300"
                     }`}
                     style={{ backgroundColor: getColorValue(color) }}

@@ -16,10 +16,10 @@ export default function BestSellerSection() {
   useEffect(() => {
     const loadBestSellers = async () => {
       try {
-        const data = await getBestSellerProducts();
-        setProducts(data);
+        const best = await getBestSellerProducts();
+        setProducts(best);
       } catch (err) {
-        console.error("Failed to load best seller products:", err);
+        console.error("Failed to load best sellers:", err);
       }
     };
 
@@ -29,18 +29,19 @@ export default function BestSellerSection() {
   if (!products || products.length === 0) return null;
 
   return (
-    <section className="py-14 bg-white">
+    <section className="py-5 bg-white">
       <div className="container mx-auto px-6">
+        
         {/* Title */}
         <h2 className="text-2xl md:text-4xl text-center font-bold text-gray-900 mb-2">
           Best Sellers
         </h2>
 
         <p className="text-gray-600 text-center text-sm md:text-base mb-6">
-          Our most popular frames chosen by our customers.
+          Our most popular frames chosen by thousands of customers.
         </p>
 
-        {/* Navigation buttons for this slider only */}
+        {/* NAV BUTTONS */}
         <div className="flex justify-end gap-4 mb-4">
           <button className="bestseller-prev p-2 border rounded-full hover:bg-gray-100">
             <ChevronLeft size={22} />
@@ -73,8 +74,8 @@ export default function BestSellerSection() {
               <ProductCard
                 product={p}
                 linkTo={`/products/${p.id}`}
-                showAddToCart={true}
-                badge="Best Seller"  // 👈 العلامة اللي إنتِ طلبتيها
+                showAddToCart={false}   // <-- مفيش add to cart في best sellers
+                badge="Best Seller"     // <-- optional badge
               />
             </SwiperSlide>
           ))}

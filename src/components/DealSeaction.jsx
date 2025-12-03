@@ -1,15 +1,13 @@
 // DealsSection.jsx
 import { useEffect, useState } from "react";
-// import { addRandomDiscounts } from "../utils/addRandomDiscounts";
-import { getProducts } from "../api/productsApi";
 import { ChevronRight, ChevronLeft } from "lucide-react";
-
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 
 import "swiper/css";
 import "swiper/css/navigation";
 
+import { getProducts } from "../api/productsApi";
 import ProductCard from "./ProductCard";
 
 export default function DealsSection() {
@@ -17,19 +15,32 @@ export default function DealsSection() {
 
   useEffect(() => {
     const loadDeals = async () => {
-      const products = await getProducts();
-      // const discounted = addRandomDiscounts(products);
+      try {
+        const products = await getProducts();
 
-      const dealsOnly = products.filter((p) => p.oldPrice !== null);
-      setDeals(dealsOnly);
+        // أي منتج عنده oldPrice > price يبقى عليه خصم = deal
+        const dealsOnly = products.filter(
+          (p) =>
+            p.oldPrice !== null &&
+            p.oldPrice !== undefined &&
+            Number(p.oldPrice) > Number(p.price)
+        );
+
+        setDeals(dealsOnly);
+      } catch (err) {
+        console.error("Failed to load deals:", err);
+      }
     };
 
     loadDeals();
   }, []);
 
+  if (!deals || deals.length === 0) return null;
+
   return (
     <section className="py-14 bg-white">
       <div className="container mx-auto px-6">
+        {/* Title */}
         <h2 className="text-2xl md:text-4xl text-center font-bold text-gray-900 mb-2">
           Exclusive Eyewear Offers
         </h2>
@@ -72,7 +83,9 @@ export default function DealsSection() {
               <ProductCard
                 product={p}
                 linkTo={`/products/${p.id}`}
-                showAddToCart={true}   // Deals فيها Add to Cart
+                showAddToCart={false}  // 👈 مفيش add to cart هنا
+                // تقدر تحطي badge لو حابة
+                badge="Deal"
               />
             </SwiperSlide>
           ))}
