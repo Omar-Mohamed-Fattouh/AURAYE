@@ -157,13 +157,11 @@ export default function ProductCard({
     >
       {/* Wishlist button */}
       <button
-        className={`absolute top-3 right-3 bg-white p-2 rounded-full shadow-sm z-10 border ${
-          isWishlisted ? "border-red-500" : "border-transparent"
-        }`}
+        className="absolute top-3 right-3  hover:bg-gray-200 transition duration-500 p-2 rounded-full  z-10"
         onClick={handleToggleWishlist}
       >
         <Heart
-          size={18}
+          size={22}
           className={isWishlisted ? "text-red-500" : "text-gray-700"}
           fill={isWishlisted ? "red" : "none"}
         />
