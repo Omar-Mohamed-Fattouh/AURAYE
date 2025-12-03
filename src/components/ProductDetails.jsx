@@ -1,4 +1,3 @@
-// ProductDetails.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getProducts, addToCart, addToWishlist } from "../api/productsApi";
@@ -23,6 +22,7 @@ export default function ProductDetails() {
   const [selectedSize, setSelectedSize] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isInCart, setIsInCart] = useState(false);
   const [openAccordions, setOpenAccordions] = useState({
     description: true,
     details: false,
@@ -56,6 +56,8 @@ export default function ProductDetails() {
         setAvailableColors(colors);
         setSelectedColor((prev) => prev || colors[0] || "Default");
         setMainImageIndex(0);
+        setIsInCart(false);
+        setIsWishlisted(false);
       } catch (err) {
         console.error(err);
         toast.error("Failed to load product data.");
@@ -120,12 +122,12 @@ export default function ProductDetails() {
     }
   }
 
-  // ✅ correct discount percentage
+  // correct discount percentage
   const discountPercent = useMemo(() => {
     if (!product || !product.oldPrice) return 0;
     const oldp = Number(product.oldPrice);
     const p = Number(product.price);
-    if (!oldp || oldp >= p) return 0; // discount only if old > current
+    if (!oldp || !p || oldp >= p) return 0;
     return ((p - oldp) / p) * 100;
   }, [product]);
 
@@ -145,31 +147,34 @@ export default function ProductDetails() {
       return;
     }
     setQuantity(next);
+    setIsInCart(false); // تغيير الكمية = configuration جديد
   }
 
   function onSelectColor(color) {
     setSelectedColor(color);
     setMainImageIndex(0);
+    setIsInCart(false); // تغيير اللون = configuration جديد
   }
 
-  // Small helper to map color names to hex (fallback to a neutral color)
-  function getColorHex(colorName) {
-    if (!colorName) return "#e5e7eb";
-    const key = colorName.toLowerCase();
-    const map = {
-      black: "#000000",
-      gold: "#d4af37",
-      "pale gold": "#e7d3a3",
-      silver: "#c0c0c0",
-      "rose gold": "#e8c1b5",
-      brown: "#5b4636",
-      tortoise: "#5a3b2e",
-    };
-    return map[key] || "#e5e7eb";
+  // colors directly from backend
+  function getColorValue(colorValue) {
+    if (!colorValue) return "#e5e7eb";
+    return colorValue; // backend value (CSS name or hex)
   }
 
   async function handleAddToCart() {
     if (!product) return;
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("You need to log in to add items to the cart.");
+      return;
+    }
+
+    if (isInCart) {
+      toast.info("This configuration is already in your cart.");
+      return;
+    }
 
     if (!selectedColor) {
       toast.error("Please select a color.");
@@ -195,11 +200,19 @@ export default function ProductDetails() {
 
     try {
       await addToCart(payload);
+      setIsInCart(true);
       toast.success("Product added to cart.");
     } catch (err) {
       console.error(err);
       if (err.response?.status === 401) {
         toast.error("You need to log in to add items to the cart.");
+      } else if (
+        err.response?.status === 400 &&
+        typeof err.response?.data === "string" &&
+        err.response.data.toLowerCase().includes("already")
+      ) {
+        setIsInCart(true);
+        toast.info("This product is already in your cart.");
       } else {
         toast.error("Failed to add product to cart.");
       }
@@ -215,12 +228,28 @@ export default function ProductDetails() {
       return;
     }
 
+    if (isWishlisted) {
+      toast.info("Product is already in your wishlist.");
+      return;
+    }
+
     try {
-      await addToWishlist(Number(product.id)); // ✅ بنبعت رقم بس
-      setIsWishlisted(true); // ✅ خليه أحمر بعد ما ينجح
+      await addToWishlist(Number(product.id));
+      setIsWishlisted(true);
       toast.success("Product added to wishlist.");
     } catch (err) {
       console.error(err);
+      const msg = err.response?.data;
+      if (
+        err.response?.status === 400 &&
+        typeof msg === "string" &&
+        msg.toLowerCase().includes("already exists in wishlist")
+      ) {
+        setIsWishlisted(true);
+        toast.info("Product is already in your wishlist.");
+        return;
+      }
+
       if (err.response?.status === 401) {
         toast.error("You need to log in to use the wishlist.");
       } else {
@@ -315,12 +344,12 @@ export default function ProductDetails() {
             <div className="flex items-center gap-4">
               <div>
                 <div className="flex items-baseline gap-3">
-                  {/* ✅ current price */}
+                  {/* current price */}
                   <div className="text-2xl font-extrabold text-red-600">
                     {formatEGP(product.oldPrice)}
                   </div>
 
-                  {/* ✅ old price + discount */}
+                  {/* old price + discount */}
                   {product.oldPrice &&
                     Number(product.oldPrice) < Number(product.price) && (
                       <>
@@ -362,7 +391,7 @@ export default function ProductDetails() {
                         ? "border-black ring-2 ring-black"
                         : "border-gray-300"
                     }`}
-                    style={{ backgroundColor: getColorHex(color) }}
+                    style={{ backgroundColor: getColorValue(color) }}
                     aria-label={color}
                   >
                     <span className="sr-only">{color}</span>
@@ -381,7 +410,10 @@ export default function ProductDetails() {
                   {product.sizes.map((s) => (
                     <button
                       key={s}
-                      onClick={() => setSelectedSize(s)}
+                      onClick={() => {
+                        setSelectedSize(s);
+                        setIsInCart(false);
+                      }}
                       className={`px-3 py-2 border rounded-md text-sm ${
                         selectedSize === s
                           ? "border-black font-semibold"
@@ -418,18 +450,27 @@ export default function ProductDetails() {
               <div className="flex-1 flex gap-2">
                 <button
                   onClick={handleAddToCart}
-                  className="flex-1 bg-black text-white py-2 px-4 rounded-md flex items-center justify-center gap-2 hover:opacity-95"
+                  disabled={isInCart || product.stockQuantity <= 0}
+                  className={`flex-1 py-2 px-4 rounded-md flex items-center justify-center gap-2 ${
+                    isInCart || product.stockQuantity <= 0
+                      ? "bg-gray-400 cursor-not-allowed text-white"
+                      : "bg-black text-white hover:opacity-95"
+                  }`}
                 >
                   <ShoppingCart size={18} />
-                  Add to Cart
+                  {isInCart ? "In Cart" : "Add to Cart"}
                 </button>
                 <button
                   onClick={handleAddToWishlist}
-                  className="bg-white p-2 mb-1 rounded-full shadow-md border border-gray-200 flex items-center justify-center"
+                  disabled={isWishlisted}
+                  className={`bg-white p-2 mb-1 rounded-full shadow-md border flex items-center justify-center ${
+                    isWishlisted ? "border-red-500" : "border-gray-200"
+                  }`}
                 >
                   <Heart
                     size={20}
                     className={isWishlisted ? "text-red-500" : "text-gray-700"}
+                    fill={isWishlisted ? "red" : "none"}
                   />
                 </button>
               </div>
