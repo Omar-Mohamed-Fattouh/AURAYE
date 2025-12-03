@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { getProducts } from "../api/productsApi.js";
-import { ProductCard } from "../components/ProductCard.jsx";
+import { ProductCard } from "../components/ProductCardd.jsx";
 import { Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 

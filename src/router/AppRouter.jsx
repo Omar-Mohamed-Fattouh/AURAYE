@@ -24,9 +24,10 @@ import Home from "../pages/Home.jsx";
 // Layout
 import Layout from "../components/Layout.jsx";
 import NotFoundPage from "../pages/NotFoundPage.jsx";
-import ProductDetails from "../components/ProductDetails.jsx";
+// import ProductDetails from "../components/ProductDetails.jsx";
 import Contact from "../pages/Contact.jsx";
 import ShippingInfo from "../pages/ShippingInfo.jsx";
+import ProductID from "../pages/ProductID.jsx";
 
 const queryClient = new QueryClient();
 const stripePromise = loadStripe(
@@ -107,7 +108,7 @@ export default function AppRouter() {
               <Route
                 path="/products/:id"
                 element={
-                    <ProductDetails />
+                    <ProductID />
                 }
               />
               <Route

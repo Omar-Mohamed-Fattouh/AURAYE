@@ -1,8 +1,8 @@
+// DealsSection.jsx
 import { useEffect, useState } from "react";
 import { addRandomDiscounts } from "../utils/addRandomDiscounts";
-import { getProducts, addToCart } from "../api/productsApi";
-import { Heart, ChevronRight, ChevronLeft, ShoppingCart } from "lucide-react";
-import { Link } from "react-router-dom";
+import { getProducts } from "../api/productsApi";
+import { ChevronRight, ChevronLeft } from "lucide-react";
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
@@ -10,20 +10,10 @@ import { Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 
+import ProductCard from "./ProductCard";
+
 export default function DealsSection() {
   const [deals, setDeals] = useState([]);
-
-  const handleAddToCart = async (productId) => {
-    try {
-      await addToCart({
-        productId: productId,
-        quantity: 1,
-      });
-      console.log("Added to cart!");
-    } catch (err) {
-      console.error("Cart error:", err);
-    }
-  };
 
   useEffect(() => {
     const loadDeals = async () => {
@@ -40,7 +30,6 @@ export default function DealsSection() {
   return (
     <section className="py-14 bg-white">
       <div className="container mx-auto px-6">
-        {/* Improved Text */}
         <h2 className="text-2xl md:text-4xl text-center font-bold text-gray-900 mb-2">
           Exclusive Eyewear Offers
         </h2>
@@ -68,7 +57,7 @@ export default function DealsSection() {
           }}
           spaceBetween={20}
           slidesPerView={5}
-          loop={true}
+          loop={deals.length > 5}
           breakpoints={{
             320: { slidesPerView: 1, spaceBetween: 10 },
             480: { slidesPerView: 2, spaceBetween: 15 },
@@ -80,72 +69,11 @@ export default function DealsSection() {
         >
           {deals.map((p) => (
             <SwiperSlide key={p.id}>
-              <Link
-                to={`/products/${p.id}`}
-                className="
-      bg-white transition p-4 relative 
-      flex flex-col 
-      h-[360px] 
-      rounded-xl  
-    "
-              >
-                {/* Heart Button */}
-                <button
-                  className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-sm z-10"
-                  onClick={(e) => e.preventDefault()}
-                >
-                  <Heart size={18} className="text-gray-700" />
-                </button>
-
-                {/* Image */}
-                <img
-                  src={p.images?.[0]?.url}
-                  alt={p.name}
-                  className="w-full h-36 object-contain mb-4"
-                />
-
-                {/* Product Title */}
-                <h3 className="font-bold text-gray-900 text-sm uppercase h-[38px] overflow-hidden">
-                  {p.name}
-                </h3>
-
-                {/* Description */}
-                <p className="text-gray-600 text-xs h-[36px] overflow-hidden">
-                  {p.description || "High-quality eyeglasses for everyday use."}
-                </p>
-
-                {/* Prices */}
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="line-through text-gray-400 text-sm">
-                    EGP {Number(p.oldPrice).toLocaleString()}
-                  </span>
-
-                  <span className="text-red-600 font-bold text-base">
-                    EGP {Number(p.price).toLocaleString()}
-                  </span>
-
-                  <span className="text-red-600 text-sm font-semibold">
-                    -{p.discountPercent}%
-                  </span>
-                </div>
-
-                {/* Colors */}
-                <div className="flex items-center gap-1 mt-1">
-                  {p.colors?.slice(0, 3).map((c, i) => (
-                    <span
-                      key={i}
-                      className="w-3 h-3 rounded-full border"
-                      style={{ backgroundColor: c }}
-                    ></span>
-                  ))}
-
-                  {p.colors?.length > 3 && (
-                    <span className="text-gray-500 text-xs ml-1">
-                      +{p.colors.length - 3}
-                    </span>
-                  )}
-                </div>
-              </Link>
+              <ProductCard
+                product={p}
+                linkTo={`/products/${p.id}`}
+                showAddToCart={true}   // Deals فيها Add to Cart
+              />
             </SwiperSlide>
           ))}
         </Swiper>

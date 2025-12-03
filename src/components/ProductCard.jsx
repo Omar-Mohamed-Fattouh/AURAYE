@@ -1,115 +1,237 @@
-import { ShoppingCart } from "lucide-react";
+// ProductCard.jsx
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { Heart, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
-import { useState } from "react";
-import { addToCart } from "../api/productsApi";
 
-export const ProductCard = ({ product }) => {
-  const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] || null);
-  const [selectedColor, setSelectedColor] = useState(
-    product.colors?.[0] || null
-  );
+import {
+  addToCart,
+  addToWishlist,
+  removeFromWishlist,
+  isProductInWishlist,
+} from "../api/productsApi";
 
+export default function ProductCard({
+  product,
+  linkTo,
+  showAddToCart = false,   // Deals: true | Related: false
+}) {
+  const [isWishlisted, setIsWishlisted] = useState(false);
 
-
-  const handleAddToCart = async () => {
-    if (!selectedSize) {
-      toast.error("Please select a size");
+  // ✅ Sync wishlist state on mount / refresh
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!product?.id || !token) {
+      setIsWishlisted(false);
       return;
     }
 
-    if (!selectedColor) {
-      toast.error("This product has no available colors");
+    async function checkWishlist() {
+      try {
+        const res = await isProductInWishlist(product.id);
+        const data = res.data;
+
+        if (
+          data === true ||
+          data === "true" ||
+          (typeof data === "object" && data?.exists === true)
+        ) {
+          setIsWishlisted(true);
+        } else {
+          setIsWishlisted(false);
+        }
+      } catch (err) {
+        console.error("Wishlist check failed:", err);
+      }
+    }
+
+    checkWishlist();
+  }, [product?.id]);
+
+  const handleToggleWishlist = async (e) => {
+    e.preventDefault(); // عشان ما يفتحش اللينك لما تدوسي على القلب
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("You need to log in to use the wishlist.");
+      return;
+    }
+
+    try {
+      if (isWishlisted) {
+        await removeFromWishlist(product.id);
+        setIsWishlisted(false);
+        toast.success("Product removed from wishlist.");
+      } else {
+        await addToWishlist(product.id);
+        setIsWishlisted(true);
+        toast.success("Product added to wishlist.");
+      }
+    } catch (err) {
+      console.error(err);
+      const msg = err.response?.data;
+
+      if (
+        !isWishlisted &&
+        err.response?.status === 400 &&
+        typeof msg === "string" &&
+        msg.toLowerCase().includes("already exists in wishlist")
+      ) {
+        setIsWishlisted(true);
+        toast.info("Product is already in your wishlist.");
+        return;
+      }
+
+      if (err.response?.status === 401) {
+        toast.error("You need to log in to use the wishlist.");
+      } else {
+        toast.error("Failed to update wishlist.");
+      }
+    }
+  };
+
+  const handleAddToCart = async (e) => {
+    e.preventDefault();
+
+    if (!showAddToCart) return;
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("You need to log in to add items to the cart.");
       return;
     }
 
     try {
       await addToCart({
         productId: product.id,
-        color: selectedColor,
-        size: selectedSize,
         quantity: 1,
       });
-
-      toast.success(`${product.name} added to cart!`);
+      toast.success("Product added to cart.");
     } catch (err) {
-      console.error("Add to cart error:", err.response?.data || err.message);
-      toast.error("Failed to add to cart");
+      console.error("Cart error:", err);
+      const msg = err.response?.data;
+
+      if (
+        err.response?.status === 400 &&
+        typeof msg === "string" &&
+        msg.toLowerCase().includes("already")
+      ) {
+        toast.info("This product is already in your cart.");
+      } else if (err.response?.status === 401) {
+        toast.error("You need to log in to add items to the cart.");
+      } else {
+        toast.error("Failed to add product to cart.");
+      }
     }
   };
 
+  // ألوان من الصور
+  const colors = Array.from(
+    new Set(
+      (product.images || [])
+        .map((img) => img.color)
+        .filter(Boolean)
+    )
+  );
+
+  const hasDiscount =
+    product.oldPrice && Number(product.oldPrice) > Number(product.price);
+
+  const discountPercent = hasDiscount
+    ? Math.round(
+        ((Number(product.oldPrice) - Number(product.price)) /
+          Number(product.oldPrice)) *
+          100
+      )
+    : 0;
+
   return (
-    <div className="group rounded-2xl bg-white border shadow-sm hover:shadow-xl transition-all duration-300 p-4 hover:-translate-y-1">
-      {/* Image */}
-      <div className="relative overflow-hidden rounded-xl aspect-[4/3] bg-gray-50">
-        <img
-          src={product.images?.[0]?.url}
-          alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500"
+    <Link
+      to={linkTo}
+      className="
+        bg-white transition p-4 relative 
+        flex flex-col 
+        h-[360px] 
+        rounded-xl  
+      "
+    >
+      {/* Wishlist button */}
+      <button
+        className={`absolute top-3 right-3 bg-white p-2 rounded-full shadow-sm z-10 border ${
+          isWishlisted ? "border-red-500" : "border-transparent"
+        }`}
+        onClick={handleToggleWishlist}
+      >
+        <Heart
+          size={18}
+          className={isWishlisted ? "text-red-500" : "text-gray-700"}
+          fill={isWishlisted ? "red" : "none"}
         />
+      </button>
+
+      {/* Image */}
+      <img
+        src={product.images?.[0]?.url}
+        alt={product.name}
+        className="w-full h-36 object-contain mb-4"
+      />
+
+      {/* Product Title */}
+      <h3 className="font-bold text-gray-900 text-sm uppercase h-[38px] overflow-hidden">
+        {product.name}
+      </h3>
+
+      {/* Description */}
+      <p className="text-gray-600 text-xs h-[36px] overflow-hidden">
+        {product.description || "High-quality eyeglasses for everyday use."}
+      </p>
+
+      {/* Prices */}
+      <div className="flex items-center gap-2 mt-2">
+        {hasDiscount && (
+          <span className="line-through text-gray-400 text-sm">
+            EGP {Number(product.oldPrice).toLocaleString()}
+          </span>
+        )}
+
+        <span className="text-red-600 font-bold text-base">
+          EGP {Number(product.price).toLocaleString()}
+        </span>
+
+        {hasDiscount && (
+          <span className="text-red-600 text-sm font-semibold">
+            -{discountPercent}%
+          </span>
+        )}
       </div>
 
-      {/* Info */}
-      <div className="pt-5">
-        <h3 className="text-xl font-semibold text-gray-900">{product.name}</h3>
+      {/* Colors */}
+      <div className="flex items-center gap-1 mt-1">
+        {colors.slice(0, 3).map((c, i) => (
+          <span
+            key={i}
+            className="w-3 h-3 rounded-full border"
+            style={{ backgroundColor: c }}
+          ></span>
+        ))}
 
-        <p className="mt-1 text-sm text-gray-500 line-clamp-2">
-          {product.description}
-        </p>
-
-        <p className="mt-3 text-2xl font-bold text-primary">
-          ${Number(product.price || 0).toFixed(2)}
-        </p>
-
-        {/* Size Selector */}
-        {product.sizes?.length > 0 && (
-          <div className="mt-3 flex gap-2">
-            {product.sizes.map((size) => (
-              <button
-                key={size}
-                onClick={() => setSelectedSize(size)}
-                className={`px-3 py-1 rounded-lg border text-sm transition-all
-                  ${
-                    selectedSize === size
-                      ? "bg-primary text-black font-semibold"
-                      : "bg-gray-100 text-gray-700"
-                  }
-                `}
-              >
-                {size}
-              </button>
-            ))}
-          </div>
+        {colors.length > 3 && (
+          <span className="text-gray-500 text-xs ml-1">
+            +{colors.length - 3}
+          </span>
         )}
+      </div>
 
-        {/* Color Selector */}
-        {product.colors?.length > 0 && (
-          <div className="mt-3 flex gap-2">
-            {product.colors.map((color) => (
-              <button
-                key={color}
-                onClick={() => setSelectedColor(color)}
-                className={`w-6 h-6 rounded-full border-2 transition-all
-                  ${
-                    selectedColor === color
-                      ? "border-primary scale-110"
-                      : "border-gray-300"
-                  }
-                `}
-                style={{ backgroundColor: color }}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Add to cart */}
+      {/* Add to Cart (اختياري) */}
+      {showAddToCart && (
         <button
           onClick={handleAddToCart}
-          className="mt-4 w-full bg-primary text-black py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-primary/90 active:scale-[0.96] transition-all disabled:opacity-50"
+          className="mt-3 flex items-center justify-center gap-2 text-sm bg-black text-white py-2 px-3 rounded-md hover:opacity-90"
         >
-          <ShoppingCart className="h-5 w-5" />
+          <ShoppingCart size={16} />
           Add to Cart
         </button>
-      </div>
-    </div>
+      )}
+    </Link>
   );
-};
+}
