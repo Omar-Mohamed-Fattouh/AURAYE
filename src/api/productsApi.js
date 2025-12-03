@@ -1,4 +1,3 @@
-import { size } from "zod";
 import axiosClient from "./axiosClient";
 
 /* -------------------------- ADD TO CART -------------------------- */

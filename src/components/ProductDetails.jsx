@@ -69,12 +69,6 @@ export default function ProductDetails() {
     };
   }, [id]);
 
-  // All images
-  const allImages = useMemo(() => {
-    if (!product || !product.images) return [];
-    return product.images;
-  }, [product]);
-
   // Images filtered by selected color
   const galleryImages = useMemo(() => {
     if (!product || !product.images) return [];
@@ -125,12 +119,13 @@ export default function ProductDetails() {
     }
   }
 
+  // ✅ correct discount percentage
   const discountPercent = useMemo(() => {
     if (!product || !product.oldPrice) return 0;
     const oldp = Number(product.oldPrice);
     const p = Number(product.price);
-    if (!oldp || oldp >= p) return 0;
-    return ((p - oldp) / p) * 100;
+    if (!oldp || oldp <= p) return 0; // discount only if old > current
+    return ((oldp - p) / oldp) * 100;
   }, [product]);
 
   function toggleAccordion(key) {
@@ -197,25 +192,40 @@ export default function ProductDetails() {
       size: selectedSize || "",
     };
 
-    console.log(localStorage.getItem("token"));
-    console.log("PAYLOAD:", payload);
     try {
       await addToCart(payload);
       toast.success("Product added to cart.");
     } catch (err) {
       console.error(err);
-      toast.error("Failed to add product to cart.");
+      if (err.response?.status === 401) {
+        toast.error("You need to log in to add items to the cart.");
+      } else {
+        toast.error("Failed to add product to cart.");
+      }
     }
   }
 
   async function handleAddToWishlist() {
     if (!product) return;
+
+    // Optional: check token before calling
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("You need to log in to use the wishlist.");
+      return;
+    }
+
     try {
-      await addToWishlist(product.productId);
+      // ✅ use product.id (that’s what you mapped in getProducts)
+      await addToWishlist({ productId: Number(product.id) });
       toast.success("Product added to wishlist.");
     } catch (err) {
       console.error(err);
-      toast.error("Failed to add product to wishlist.");
+      if (err.response?.status === 401) {
+        toast.error("You need to log in to use the wishlist.");
+      } else {
+        toast.error("Failed to add product to wishlist.");
+      }
     }
   }
 
@@ -305,22 +315,24 @@ export default function ProductDetails() {
             <div className="flex items-center gap-4">
               <div>
                 <div className="flex items-baseline gap-3">
-                  {/* Current price */}
+                  {/* ✅ current price */}
                   <div className="text-2xl font-extrabold text-red-600">
-                    {formatEGP(product.oldPrice)}
+                    {formatEGP(product.price)}
                   </div>
 
-                  {/* Old price + discount */}
+                  {/* ✅ old price + discount */}
                   {product.oldPrice &&
-                    Number(product.oldPrice) < Number(product.price) && (
+                    Number(product.oldPrice) > Number(product.price) && (
                       <>
                         <div className="text-sm text-gray-400 line-through">
-                          {formatEGP(product.price)}
+                          {formatEGP(product.oldPrice)}
                         </div>
 
-                        <div className="text-sm text-green-600 font-medium">
-                          {discountPercent.toFixed(0)}%
-                        </div>
+                        {discountPercent > 0 && (
+                          <div className="text-sm text-green-600 font-medium">
+                            -{discountPercent.toFixed(0)}%
+                          </div>
+                        )}
                       </>
                     )}
                 </div>
@@ -415,10 +427,7 @@ export default function ProductDetails() {
                   onClick={handleAddToWishlist}
                   className="bg-white p-2 mb-1 rounded-full shadow-md border border-gray-200 flex items-center justify-center"
                 >
-                  <Heart
-                    size={20}
-                  className={product.productId ? "text-red-500" : "text-gray-700"}
-                  />
+                  <Heart size={20} className="text-gray-700" />
                 </button>
               </div>
             </div>
