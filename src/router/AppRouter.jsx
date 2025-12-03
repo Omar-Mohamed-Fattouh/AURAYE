@@ -148,12 +148,6 @@ export default function AppRouter() {
               }
               />
               <Route 
-              path="/wishlist"
-              element={
-                  <WishlistPage />
-              }
-              />
-              <Route 
               path="/contact"
               element={
                   <Contact />
@@ -174,6 +168,14 @@ export default function AppRouter() {
                 element={
                     <Cart />
                 }
+              />
+                            <Route 
+              path="/wishlist"
+              element={
+                <ProtectedRoute user={user}>
+                  <WishlistPage />
+                </ProtectedRoute>
+              }
               />
               <Route
                 path="/checkout"

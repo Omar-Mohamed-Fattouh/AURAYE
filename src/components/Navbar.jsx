@@ -9,15 +9,13 @@ export default function Navbar({ user, setUser }) {
 
   const logout = async () => {
     try {
-      // استدعاء الـ API لو حابب تستخدمه في السيرفر
       await logoutUser();
     } catch (err) {
       console.error("Logout error:", err);
     } finally {
-      // مسح الداتا من الـ frontend دايمًا
       setUser(null);
       localStorage.removeItem("user");
-      localStorage.removeItem("token"); // مهم عشان يمنع Add to Cart بعد اللوج آوت
+      localStorage.removeItem("token");
       sessionStorage.removeItem("user");
       setMobileOpen(false);
     }
@@ -49,6 +47,7 @@ export default function Navbar({ user, setUser }) {
   return (
     <nav className="w-full bg-black text-white shadow-xl backdrop-blur-md sticky top-0 z-50 border-b border-white/10 font-semibold">
       <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+        {/* LEFT SIDE: Logo + main links */}
         <div className="flex items-center gap-4 min-w-0">
           <Link
             to="/"
@@ -97,13 +96,12 @@ export default function Navbar({ user, setUser }) {
           </div>
         </div>
 
-        {/* RIGHT SIDE */}
+        {/* RIGHT SIDE: Wishlist + Cart + Profile */}
         <div className="flex items-center gap-4 min-w-0">
-          {/* CART + WISHLIST DESKTOP */}
+          {/* DESKTOP: Wishlist + Cart + Profile */}
           <div className="hidden md:flex items-center gap-2">
-            <NavItem to="/wishlist">
-              <Heart size={20} /> <span className="ml-1 text-lg">Wishlist</span>
-            </NavItem>
+            {/* Wishlist بنفس ستايل وسلوك ProfileMenu */}
+            <WishlistMenu />
 
             <NavItem to="/cart">
               <ShoppingCart size={20} />{" "}
@@ -117,6 +115,7 @@ export default function Navbar({ user, setUser }) {
             )}
           </div>
 
+          {/* LOGIN / REGISTER (desktop) */}
           {!user && (
             <div className="hidden md:flex gap-2">
               <Link
@@ -134,19 +133,19 @@ export default function Navbar({ user, setUser }) {
             </div>
           )}
 
-          {/* MOBILE ICON - show on small screens only */}
-          <div className="flex lg:hidden items-center gap-2">
+          {/* MOBILE ICONS */}
+          <div className="flex lg:hidden items-center">
             {/* Wishlist mobile */}
             <div className="md:hidden">
               <NavItem to="/wishlist">
-                <Heart size={22} /> <span className="text-lg">Wishlist</span>
+                <Heart size={20} />
               </NavItem>
             </div>
 
             {/* Cart mobile */}
             <div className="md:hidden">
               <NavItem to="/cart">
-                <ShoppingCart size={22} /> <span className="text-lg">Cart</span>
+                <ShoppingCart size={20} />
               </NavItem>
             </div>
 
@@ -328,25 +327,23 @@ export default function Navbar({ user, setUser }) {
           )}
 
           {!user && (
-            <>
-              <div className="md:hidden">
-                <div className="border-t border-white/50"></div>
-                <Link
-                  to="/login"
-                  onClick={() => setMobileOpen(false)}
-                  className="block px-4 py-2 hover:bg:white/10 rounded-md"
-                >
-                  Login
-                </Link>
-                <Link
-                  to="/register"
-                  onClick={() => setMobileOpen(false)}
-                  className="block px-4 py-2 bg-white text-black rounded-md hover:bg-white/90"
-                >
-                  Register
-                </Link>
-              </div>
-            </>
+            <div className="md:hidden">
+              <div className="border-t border-white/50"></div>
+              <Link
+                to="/login"
+                onClick={() => setMobileOpen(false)}
+                className="block px-4 py-2 hover:bg:white/10 rounded-md"
+              >
+                Login
+              </Link>
+              <Link
+                to="/register"
+                onClick={() => setMobileOpen(false)}
+                className="block px-4 py-2 bg-white text-black rounded-md hover:bg-white/90"
+              >
+                Register
+              </Link>
+            </div>
           )}
         </div>
       )}
@@ -395,7 +392,29 @@ function ProfileMenu({ user, logout }) {
   );
 }
 
-/* DROPDOWN DESKTOP */
+/* WISHLIST MENU DESKTOP (نفس ستايل ProfileMenu) */
+function WishlistMenu() {
+  return (
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger
+        className="flex items-center gap-2 hover:text-gray-300 truncate text-lg"
+        aria-label="Open wishlist menu"
+      >
+        <Heart size={20} />
+        <span className="truncate">Wishlist</span>
+      </DropdownMenu.Trigger>
+
+      <DropdownMenu.Content
+        className="bg-[#111] text-white rounded-md p-4 shadow-xl min-w-[160px] border border-white/10 flex flex-col gap-2"
+        sideOffset={8}
+      >
+        <DropItem to="/wishlist">View Wishlist</DropItem>
+      </DropdownMenu.Content>
+    </DropdownMenu.Root>
+  );
+}
+
+/* DROPDOWN DESKTOP (generic) */
 function Dropdown({ label, children }) {
   return (
     <DropdownMenu.Root modal={false}>
@@ -462,7 +481,7 @@ function DropdownMobile({ label, children, closeMenu, icon: Icon }) {
     <div ref={dropdownRef} className="flex flex-col">
       <button
         onClick={() => setOpen(!open)}
-        className="flex justify-between items-center w-full px-4 py-2 text-left rounded-md hover:bg-white/10 transition"
+        className="flex justify-between items-center w-full px-4 py-2 text-left rounded-md hover:bg:white/10 transition"
         aria-expanded={open}
       >
         <span className="flex items-center gap-2">
