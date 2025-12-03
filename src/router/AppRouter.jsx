@@ -28,6 +28,7 @@ import NotFoundPage from "../pages/NotFoundPage.jsx";
 import Contact from "../pages/Contact.jsx";
 import ShippingInfo from "../pages/ShippingInfo.jsx";
 import ProductID from "../pages/ProductID.jsx";
+import MenProduct from "../components/MenProduct.jsx";
 
 const queryClient = new QueryClient();
 const stripePromise = loadStripe(
@@ -94,6 +95,12 @@ export default function AppRouter() {
                 element={
                     <Products />
                 }
+              />
+              <Route 
+              path='products/men'
+              element={
+                  <MenProduct />
+              }
               />
               <Route 
               path="/contact"
