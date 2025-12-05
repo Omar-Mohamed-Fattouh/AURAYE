@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
 
 const categories = [
-  { name: "SUN", route: "/products/sun", image: "/Sunglasses.jpg" },
-  { name: "OPTICAL", route: "/products/optical", image: "/Eyeglasses.jpg" },
+  { name: "SUN", route: "/products/sunglasses", image: "/Sunglasses.jpg" },
+  { name: "OPTICAL", route: "/products/eyeglasses", image: "/Eyeglasses.jpg" },
 ];
 
 export default function CategoriesSection() {

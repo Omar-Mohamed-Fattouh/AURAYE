@@ -13,6 +13,10 @@ import ProductCard from "./ProductCard";
 export default function BestSellerSection() {
   const [products, setProducts] = useState([]);
 
+console.log([
+  products
+]);
+
   useEffect(() => {
     const loadBestSellers = async () => {
       try {
@@ -66,7 +70,7 @@ export default function BestSellerSection() {
             480: { slidesPerView: 2, spaceBetween: 15 },
             768: { slidesPerView: 2, spaceBetween: 20 },
             1024: { slidesPerView: 4, spaceBetween: 20 },
-            1280: { slidesPerView: 5, spaceBetween: 20 },
+            1280: { slidesPerView: 4, spaceBetween: 20 },
           }}
           className="pb-10"
         >

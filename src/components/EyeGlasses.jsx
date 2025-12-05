@@ -304,7 +304,7 @@ function FilterChip({ label, active, onClick }) {
         transition-all duration-200 ease-out
         ${
           active
-            ? "bg-black text:white border-black shadow-sm"
+            ? "bg-black text-white border-black shadow-sm"
             : "bg-white text-gray-700 border-gray-300 hover:border-black hover:bg-gray-50"
         }
       `}

@@ -75,7 +75,7 @@ export default function DealsSection() {
             480: { slidesPerView: 2, spaceBetween: 15 },
             768: { slidesPerView: 2, spaceBetween: 20 },
             1024: { slidesPerView: 4, spaceBetween: 20 },
-            1280: { slidesPerView: 5, spaceBetween: 20 },
+            1280: { slidesPerView: 4, spaceBetween: 20 },
           }}
           className="pb-10"
         >

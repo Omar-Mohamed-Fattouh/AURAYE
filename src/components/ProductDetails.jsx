@@ -342,7 +342,7 @@ export default function ProductDetails() {
 
             {/* Main image */}
             <div className="flex-1 flex items-center justify-center">
-              <div className="w-full h-full flex items-center justify-center p-4 border border-gray-300 rounded-lg bg-white">
+              <div className="w-full h-full flex items-center justify-center p-4 border border-gray-200  bg-white">
                 <img
                   src={mainImageUrl}
                   alt={product.name}

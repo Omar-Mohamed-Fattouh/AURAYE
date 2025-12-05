@@ -452,7 +452,7 @@ function CategoryCarousel({
           480: { slidesPerView: 2, spaceBetween: 15 },
           768: { slidesPerView: 3, spaceBetween: 18 },
           1024: { slidesPerView: 4, spaceBetween: 20 },
-          1280: { slidesPerView: 5, spaceBetween: 20 },
+          1280: { slidesPerView: 4, spaceBetween: 20 },
         }}
         className="pb-4"
       >

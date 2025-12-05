@@ -3,9 +3,22 @@ import { Link } from "react-router-dom";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { Menu, ChevronDown, ShoppingCart, User, X, Heart } from "lucide-react";
 import { logoutUser } from "../api/authApi.js";
-
+import { getCart } from "../api/productsApi.js";
 export default function Navbar({ user, setUser }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [items, setItems] = useState([]);
+
+  useEffect(() => {
+    async function fetchCart() {
+      try {
+        const cartData = await getCart();
+        setItems(cartData.items || []);
+      } catch (error) {
+        console.error("Error fetching cart data:", error);
+      }
+    }
+    fetchCart();
+  }, []);
 
   const logout = async () => {
     try {
@@ -102,14 +115,33 @@ export default function Navbar({ user, setUser }) {
           <div className="hidden md:flex items-center gap-2">
             {user && (
               <>
-            
-            {/* Wishlist بنفس ستايل وسلوك ProfileMenu */}
-            <WishlistMenu />
+                <WishlistMenu />
 
-            <NavItem to="/cart">
-              <ShoppingCart size={20} />{" "}
-              <span className="ml-1 text-lg">Cart</span>
-            </NavItem>
+                <NavItem
+                  to="/cart"
+                  className="flex items-center gap-2 relative"
+                >
+                  <div className="relative">
+                    <ShoppingCart size={22} />
+
+                    {items.length > 0 && (
+                      <span
+                        className="
+              absolute -top-1 -right-2
+              bg-white text-black 
+              text-[10px] md:text-xs 
+              w-4 h-4 md:w-4 md:h-4
+              flex items-center justify-center 
+              rounded-full
+            "
+                      >
+                        {items.length}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* <span className="text-lg">Cart</span> */}
+                </NavItem>
               </>
             )}
 
@@ -143,19 +175,36 @@ export default function Navbar({ user, setUser }) {
             {/* Wishlist mobile */}
             {user && (
               <>
-            <div className="md:hidden">
-              <NavItem to="/wishlist">
-                <Heart size={20} />
-              </NavItem>
-            </div>
+                <div className="md:hidden">
+                  <NavItem to="/wishlist">
+                    <Heart size={20} />
+                  </NavItem>
+                </div>
 
-            {/* Cart mobile */}
-            <div className="md:hidden">
-              <NavItem to="/cart">
-                <ShoppingCart size={20} />
-              </NavItem>
-            </div>
-            </>
+                {/* Cart mobile */}
+                <div className="md:hidden">
+                  <NavItem to="/cart" className="relative">
+                    <div className="relative">
+                      <ShoppingCart size={20} />
+
+                      {items.length > 0 && (
+                        <span
+                          className="
+            absolute -top-1 -right-2
+            bg-white text-black
+            text-[10px]
+            w-4 h-4
+            flex items-center justify-center
+            rounded-full
+          "
+                        >
+                          {items.length}
+                        </span>
+                      )}
+                    </div>
+                  </NavItem>
+                </div>
+              </>
             )}
             <button
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
@@ -409,9 +458,12 @@ function WishlistMenu() {
         aria-label="Open wishlist menu"
         asChild
       >
-        <Link to="/wishlist" className="flex items-center gap-2 hover:text-gray-300 truncate text-lg">
-          <Heart size={20} />
-          <span className="truncate">Wishlist</span>
+        <Link
+          to="/wishlist"
+          className="flex items-center gap-2 hover:text-gray-300 truncate text-lg"
+        >
+          <Heart size={22} />
+          {/* <span className="truncate">Wishlist</span> */}
         </Link>
       </DropdownMenu.Trigger>
     </DropdownMenu.Root>
