@@ -7,7 +7,7 @@ import "swiper/css";
 import "swiper/css/autoplay";
 import { Autoplay } from "swiper/modules";
 
-export default function HomeHero() {
+export default function AboutHero() {
   const leftCards = [
     {
       icon: <Eye className="w-8 h-8 text-black" />,
@@ -65,7 +65,7 @@ export default function HomeHero() {
     <section className="w-full  bg-gray-50 py-10">
       {/* Top Text */}
       <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center mb-6">
-        <h1 className="text-3xl md:text-6xl font-extrabold tracking-tight mb-4 text-gray-900">
+        <h1 className="text-3xl md:text-6xl font-extrabold tracking-tight mb-4 text-black">
           Elevate Your Vision with Smart AR Try-On
         </h1>
         <p className="text-gray-500 uppercase tracking-wide text-sm md:text-base">

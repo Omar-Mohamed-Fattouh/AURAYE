@@ -20,12 +20,16 @@ import Checkout from "../pages/Checkout.jsx";
 import Success from "../pages/Success.jsx";
 import StripePage from "../pages/StripePage.jsx";
 import Home from "../pages/Home.jsx";
+import About from "../pages/About.jsx";
+
 
 // Layout
 import Layout from "../components/Layout.jsx";
 import NotFoundPage from "../pages/NotFoundPage.jsx";
 import ProductDetails from "../components/ProductDetails.jsx";
 import Contact from "../pages/Contact.jsx";
+import Misssion from "../components/Misssion.jsx";
+import WhyUs from "../components/WhyUs.jsx";
 
 const queryClient = new QueryClient();
 const stripePromise = loadStripe(
@@ -97,6 +101,24 @@ export default function AppRouter() {
               path="/contact"
               element={
                   <Contact />
+              }
+              />
+              <Route 
+              path="/about"
+              element={
+                  <About/>
+              }
+              />
+              <Route 
+              path="/mission"
+              element={
+                  <Misssion/>
+              }
+              />
+              <Route 
+              path="/why-us"
+              element={
+                  <WhyUs/>
               }
               />
               <Route
