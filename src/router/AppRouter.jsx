@@ -20,14 +20,25 @@ import Checkout from "../pages/Checkout.jsx";
 import Success from "../pages/Success.jsx";
 import StripePage from "../pages/StripePage.jsx";
 import Home from "../pages/Home.jsx";
-import About from "../pages/About.jsx";
-
 
 // Layout
 import Layout from "../components/Layout.jsx";
 import NotFoundPage from "../pages/NotFoundPage.jsx";
 // import ProductDetails from "../components/ProductDetails.jsx";
 import Contact from "../pages/Contact.jsx";
+import ShippingInfo from "../pages/ShippingInfo.jsx";
+import ProductID from "../pages/ProductID.jsx";
+// import MenProduct from "../components/MenProduct.jsx";
+import MenPage from "../pages/MenPage.jsx";
+import WomenPage from "../pages/WomenPage.jsx";
+import EyeGlassesPage from "../pages/EyeGlassesPage.jsx";
+import SunGlassesPage from "../pages/SunGlassesPage.jsx";
+import ColorsPage from "../pages/ColorPages.jsx";
+import FramesPage from "../pages/FramesPage.jsx";
+import ShapesPage from "../pages/ShapesPage.jsx";
+import AllProductPage from "../pages/AllProductPage.jsx";
+import WishlistPage from "../pages/WishlistPage.jsx";
+import ScrollToTop from "../components/ScrollToTop.jsx";
 
 const queryClient = new QueryClient();
 const stripePromise = loadStripe(
@@ -102,25 +113,9 @@ export default function AppRouter() {
               <Route
                 path="/wishlist"
                 element={
-                    <Products />
-                }
-              />
-              <Route 
-              path="/contact"
-              element={
-                  <Contact />
-              }
-              />
-              <Route
-                path="/products/:id"
-                element={
-                    <ProductDetails />
-                }
-              />
-              <Route
-                path="/cart"
-                element={
-                    <Cart />
+                  <ProtectedRoute user={user}>
+                    <WishlistPage />
+                  </ProtectedRoute>
                 }
               />
               <Route
