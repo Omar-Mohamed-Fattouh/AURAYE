@@ -1,3 +1,4 @@
+// src/pages/Cart.jsx
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { ShoppingBag } from "lucide-react";
@@ -269,16 +270,15 @@ export default function Cart() {
   };
 
   // ------------- RENDER STATES -------------
-
   if (loading) {
     return (
       <div className="min-h-screen bg-[#f7f7f8]">
-        <main className="w-full max-w-7xl mx-auto px-6 py-16">
+        <main className="w-full max-w-7xl mx-auto px-4 md:px-6 py-16">
           <div className="animate-pulse space-y-6">
             <div className="h-7 w-56 bg-gray-200 rounded" />
-            <div className="grid md:grid-cols-[minmax(0,2.2fr)_minmax(320px,1fr)] gap-8">
-              <div className="h-80 bg-white rounded-2xl shadow-sm" />
-              <div className="h-80 bg-white rounded-2xl shadow-sm" />
+            <div className="grid md:grid-cols-[minmax(0,2.1fr)_minmax(320px,1fr)] gap-6 md:gap-8">
+              <div className="h-80 bg-white rounded-2xl" />
+              <div className="h-80 bg-white rounded-2xl" />
             </div>
           </div>
         </main>
@@ -289,11 +289,13 @@ export default function Cart() {
   if (!items.length) {
     return (
       <div className="min-h-screen bg-[#f7f7f8]">
-        <main className="w-full max-w-5xl mx-auto px-6 py-20">
-          <div className="border border-gray-200 rounded-2xl p-12 bg-white text-center shadow-sm">
+        <main className="w-full max-w-4xl mx-auto px-4 md:px-6 py-20">
+          <div className="border border-gray-200 rounded-2xl p-10 md:p-12 bg-white text-center">
             <ShoppingBag className="h-14 w-14 mx-auto mb-4 text-gray-400" />
-            <h1 className="text-2xl font-bold mb-2">Your cart is empty</h1>
-            <p className="text-gray-500 mb-6">
+            <h1 className="text-2xl md:text-3xl font-bold mb-2">
+              Your cart is empty
+            </h1>
+            <p className="text-gray-500 mb-6 text-sm md:text-base">
               Start adding your favorite frames and sunglasses.
             </p>
             <Link
@@ -310,16 +312,17 @@ export default function Cart() {
 
   return (
     <div className="min-h-screen bg-[#f7f7f8] pb-16">
-      <main className="w-full max-w-fit mx-auto px-6 pt-10">
+      <main className="w-full max-w-6xl mx-auto px-4 md:px-6 pt-10">
         {/* HEADER */}
-        <header className="mb-8 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <header className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
-            <ShoppingBag className="w-7 h-7 text-gray-900" />
+
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+              <h1 className="flex justify-center items-center gap-2 text-2xl md:text-4xl font-bold tracking-tight">
+              <ShoppingBag className="w-8 h-8" />
                 Shopping Cart
               </h1>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-base font-semibold text-black mt-3 border- px-3 py-1 inline-block">
                 {items.length} item{items.length > 1 ? "s" : ""} ·{" "}
                 {formatEGP(subtotal)}
               </p>
@@ -329,7 +332,7 @@ export default function Cart() {
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={handleAskClearCart}
-              className="text-sm text-white bg-black px-4 py-2 rounded-full border  hover:bg-black/60 transition"
+              className="text-sm text-white bg-black px-4 py-2 rounded-full hover:bg-black/70 transition"
             >
               Clear cart
             </button>
@@ -343,11 +346,11 @@ export default function Cart() {
         </header>
 
         {/* LAYOUT */}
-        <div className="grid md:grid-cols-[minmax(0,2.3fr)_minmax(320px,1fr)] gap-8 items-start">
+        <div className="grid md:grid-cols-[minmax(0,2.1fr)_minmax(320px,1fr)] gap-6 md:gap-8 items-start">
           {/* LEFT: ITEMS TABLE */}
-          <section className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 md:p-6">
+          <section className="bg-white p-4 md:p-6">
             {/* TABLE HEADER (DESKTOP) */}
-            <div className="hidden md:grid md:grid-cols-[minmax(0,2.4fr)_0.9fr_1fr] text-[11px] font-semibold text-gray-500 uppercase tracking-[0.16em] pb-3 border-b border-gray-100 mb-1">
+            <div className="hidden md:grid md:grid-cols-[minmax(0,2.4fr)_0.8fr_1.1fr] text-[11px] font-semibold text-gray-500 uppercase tracking-[0.16em] pb-3 border-b border-gray-100 mb-1">
               <div>Item</div>
               <div className="text-center">Quantity</div>
               <div className="text-right">Total</div>
@@ -370,9 +373,9 @@ export default function Cart() {
             </div>
 
             {/* SUBTOTAL ROW */}
-            <div className="pt-4 mt-4 border-t border-gray-100 flex justify-between items-center text-sm text-gray-700">
+            <div className="pt-4 mt-4 border-t border-gray-300 flex justify-between items-center text-sm text-black">
               <span>
-                {items.length} item{items.length > 1 ? "s" : ""}
+                {items.length} item{items.length > 1 ? "s" : ""} in your cart
               </span>
               <span className="font-semibold">
                 Subtotal: {formatEGP(subtotal)}

@@ -2,7 +2,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
-// import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { loginSchema } from "../forms/loginSchema";
 import { loginUser } from "../api/authApi";
@@ -28,7 +27,7 @@ export default function Login({ setUser }) {
   });
 
   const inputClass =
-    "w-full border border-gray-300 rounded-xl p-3 pl-11 pr-11 transition focus:border-blue-600 focus:ring-4 focus:ring-blue-100 outline-none";
+    "w-full bg-slate-900/60 border border-slate-700 rounded-xl text-sm text-slate-50 placeholder-slate-500 p-3 pl-11 pr-11 transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/20 outline-none";
 
   const onSubmit = async (data) => {
     setLoading(true);
@@ -45,20 +44,16 @@ export default function Login({ setUser }) {
         token: response.data.token,
       };
 
-      // Toast message
-      toast.success(`Login successful, ${userSafe.fullName}!`);
-      console.log("LOGIN RESPONSE:", response.data);
+      toast.success(`Welcome back, ${userSafe.fullName}!`);
 
       const token = response.data.token;
 
-      // خزن الـ user
       if (data.rememberMe) {
         localStorage.setItem("user", JSON.stringify(userSafe));
       } else {
         sessionStorage.setItem("user", JSON.stringify(userSafe));
       }
 
-      // خزن الـ token دايمًا في localStorage
       localStorage.setItem("token", token);
 
       setUser(userSafe);
@@ -82,111 +77,164 @@ export default function Login({ setUser }) {
   };
 
   return (
-    <>
-      {/* <ToastContainer position="top-center" /> */}
-
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-        <div className="bg-white shadow-xl rounded-3xl p-10 w-full max-w-md">
-          <h2 className="text-2xl font-semibold mb-6 text-gray-700">
-            Login to Your Account
-          </h2>
-
-          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-            {/* EMAIL */}
-            <div>
-              <label className="text-gray-600 text-sm">Email</label>
-              <div className="relative mt-1">
-                <Mail
-                  size={20}
-                  className="absolute left-3 top-3 text-gray-400"
-                />
-                <input
-                  type="email"
-                  {...register("email")}
-                  className={inputClass}
-                  placeholder="Enter email"
-                />
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4 py-8">
+      <div className="w-full max-w-5xl bg-slate-900/95 border border-slate-800 rounded-3xl shadow-[0_24px_80px_rgba(15,23,42,0.8)] overflow-hidden">
+        <div className="grid md:grid-cols-2">
+          {/* LEFT PANEL (copy / testimonial) */}
+          <div className="hidden md:flex flex-col justify-between p-8 lg:p-10 bg-gradient-to-br from-slate-900 via-emerald-900 to-emerald-700">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-xl bg-white/10 flex items-center justify-center text-xs font-bold tracking-widest text-white">
+                  AR
+                </div>
+                <span className="text-white font-semibold tracking-[0.2em] text-xs uppercase">
+                  AURAYE
+                </span>
               </div>
-              {errors.email && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
-
-            {/* PASSWORD */}
-            <div>
-              <div className="flex justify-between items-center">
-                <label className="text-gray-600 text-sm">Password</label>
-                <Link
-                  to="/forget-password"
-                  className="text-blue-600 text-sm hover:underline"
-                >
-                  Forgot Password?
-                </Link>
-              </div>
-              <div className="relative mt-1">
-                <Lock
-                  size={20}
-                  className="absolute left-3 top-3 text-gray-400"
-                />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  {...register("password")}
-                  className={inputClass}
-                  placeholder="Enter password"
-                />
-                <button
-                  type="button"
-                  className="absolute right-3 top-3 text-gray-500"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
-              </div>
-              {errors.password && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.password.message}
-                </p>
-              )}
-            </div>
-
-            {/* REMEMBER ME */}
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                {...register("rememberMe")}
-                id="rememberMe"
-              />
-              <label htmlFor="rememberMe" className="text-gray-700 text-sm">
-                Remember me
-              </label>
-            </div>
-
-            {/* SUBMIT BUTTON */}
-            <button
-              type="submit"
-              disabled={loading}
-              className={`w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl transition font-semibold ${
-                loading && "opacity-60 cursor-not-allowed"
-              }`}
-            >
-              {loading ? "Logging in..." : "Login"}
-            </button>
-
-            {/* SIGN UP LINK */}
-            <p className="text-sm text-gray-600 mt-4 text-center">
-              Don't have an account?{" "}
               <Link
-                to="/register"
-                className="text-blue-600 font-semibold hover:underline"
+                to="/"
+                className="inline-flex items-center gap-1.5 rounded-full bg-white/10 hover:bg-white/20 text-[11px] text-slate-50 px-3 py-1 transition"
               >
-                Sign Up
+                Back to website
               </Link>
-            </p>
-          </form>
+            </div>
+
+            <div className="mt-10 space-y-4">
+              <p className="text-xs text-emerald-100/80 uppercase tracking-[0.2em]">
+                Smart Frames • AR Try-On
+              </p>
+              <h1 className="text-3xl lg:text-4xl font-semibold text-white leading-snug">
+                Log in and pick
+                <br />
+                <span className="font-bold">your next favourite frame.</span>
+              </h1>
+              <p className="text-sm text-emerald-50/90 max-w-xs">
+                Access your saved try-ons, wishlist, and orders all in one
+                place.
+              </p>
+            </div>
+
+            <div className="mt-10 text-[11px] text-emerald-100/80">
+              Trusted by eyewear lovers across Egypt.
+            </div>
+          </div>
+
+          {/* RIGHT FORM */}
+          <div className="px-6 py-8 sm:px-8 md:px-10 md:py-10 bg-slate-900">
+            <div className="mb-6">
+              <h2 className="text-2xl md:text-3xl font-semibold text-slate-50">
+                Welcome back
+              </h2>
+              <p className="text-sm text-slate-400 mt-2">
+                Sign in to continue exploring AURAYE.
+              </p>
+            </div>
+
+            <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+              {/* EMAIL */}
+              <div>
+                <label className="text-slate-300 text-xs font-medium uppercase tracking-[0.16em]">
+                  Email
+                </label>
+                <div className="relative mt-1.5">
+                  <Mail
+                    size={18}
+                    className="absolute left-3 top-3 text-slate-500"
+                  />
+                  <input
+                    type="email"
+                    {...register("email")}
+                    className={inputClass}
+                    placeholder="you@example.com"
+                  />
+                </div>
+                {errors.email && (
+                  <p className="text-red-400 text-xs mt-1">
+                    {errors.email.message}
+                  </p>
+                )}
+              </div>
+
+              {/* PASSWORD */}
+              <div>
+                <div className="flex justify-between items-center">
+                  <label className="text-slate-300 text-xs font-medium uppercase tracking-[0.16em]">
+                    Password
+                  </label>
+                  <Link
+                    to="/forget-password"
+                    className="text-indigo-400 text-xs hover:text-indigo-300"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+                <div className="relative mt-1.5">
+                  <Lock
+                    size={18}
+                    className="absolute left-3 top-3 text-slate-500"
+                  />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    {...register("password")}
+                    className={inputClass}
+                    placeholder="••••••••••"
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-3 text-slate-400 hover:text-slate-200 transition"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
+                  </button>
+                </div>
+                {errors.password && (
+                  <p className="text-red-400 text-xs mt-1">
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
+
+              {/* REMEMBER ME */}
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  {...register("rememberMe")}
+                  id="rememberMe"
+                  className="h-4 w-4 rounded border-slate-600 bg-slate-900 text-indigo-500 focus:ring-indigo-500/50"
+                />
+                <label
+                  htmlFor="rememberMe"
+                  className="text-[13px] text-slate-300"
+                >
+                  Remember me on this device
+                </label>
+              </div>
+
+              {/* BUTTON */}
+              <button
+                type="submit"
+                disabled={loading}
+                className={`w-full mt-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 py-3 rounded-xl text-sm font-semibold tracking-wide shadow-lg shadow-emerald-500/30 transition ${
+                  loading && "opacity-60 cursor-not-allowed"
+                }`}
+              >
+                {loading ? "Logging in..." : "Sign in"}
+              </button>
+
+              {/* SIGN UP LINK */}
+              <p className="text-sm text-slate-400 mt-4 text-center">
+                Don&apos;t have an account?{" "}
+                <Link
+                  to="/register"
+                  className="text-indigo-400 font-semibold hover:text-indigo-300"
+                >
+                  Create one
+                </Link>
+              </p>
+            </form>
+          </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

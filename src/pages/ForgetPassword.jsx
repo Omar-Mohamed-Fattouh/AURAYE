@@ -3,12 +3,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { forgotPassword } from "../api/authApi";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { forgotSchema } from "../forms/forgotSchema";
 import { useState } from "react";
+import { Mail } from "lucide-react";
 
 export default function ForgetPassword() {
-  // const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
   const {
@@ -23,8 +23,9 @@ export default function ForgetPassword() {
     setLoading(true);
     try {
       await forgotPassword(data.email);
-
-      toast.info("If the email exists, a password reset link has been sent.");
+      toast.info(
+        "If the email exists, a password reset link has been sent to your inbox."
+      );
     } catch (err) {
       console.error("Forget password error:", err);
       const msg =
@@ -39,51 +40,73 @@ export default function ForgetPassword() {
     <>
       <ToastContainer position="top-center" />
 
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-        <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
-          <h1 className="text-2xl font-bold mb-6 text-gray-700">
-            Forgot Your Password?
-          </h1>
-          <p className="text-gray-500 mb-6">
-            Enter your email to receive instructions to reset your password.
-          </p>
+      <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4 py-8">
+        <div className="bg-slate-900/95 border border-slate-800 rounded-3xl shadow-[0_24px_80px_rgba(15,23,42,0.8)] w-full max-w-lg px-7 py-8 sm:px-9 sm:py-9">
+          <div className="mb-6 text-center">
+            <p className="text-xs tracking-[0.22em] uppercase text-indigo-400 mb-2">
+              Password reset
+            </p>
+            <h1 className="text-2xl sm:text-3xl font-semibold text-slate-50">
+              Forgot your password?
+            </h1>
+            <p className="text-sm text-slate-400 mt-3 max-w-md mx-auto">
+              Enter the email address associated with your AURAYE account and
+              we&apos;ll send you a link to create a new password.
+            </p>
+          </div>
 
-          <form onSubmit={handleSubmit(handleForget)} className="space-y-5">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              {...register("email")}
-              className="w-full border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-200 outline-none"
-            />
-            {errors.email && (
-              <p className="text-red-500 text-sm">{errors.email.message}</p>
-            )}
+          <form
+            onSubmit={handleSubmit(handleForget)}
+            className="space-y-5 mt-4"
+          >
+            <div>
+              <label className="text-slate-300 text-xs font-medium uppercase tracking-[0.16em]">
+                Email
+              </label>
+              <div className="relative mt-1.5">
+                <Mail
+                  size={18}
+                  className="absolute left-3 top-3 text-slate-500"
+                />
+                <input
+                  type="email"
+                  placeholder="you@example.com"
+                  {...register("email")}
+                  className="w-full bg-slate-900/60 border border-slate-700 rounded-xl text-sm text-slate-50 placeholder-slate-500 p-3 pl-11 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/20 outline-none"
+                />
+              </div>
+              {errors.email && (
+                <p className="text-red-400 text-xs mt-1">
+                  {errors.email.message}
+                </p>
+              )}
+            </div>
 
             <button
               type="submit"
               disabled={loading}
-              className={`w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold transition ${
+              className={`w-full bg-indigo-500 hover:bg-indigo-400 text-slate-50 py-3 rounded-xl text-sm font-semibold tracking-wide shadow-lg shadow-indigo-500/30 transition ${
                 loading && "opacity-60 cursor-not-allowed"
               }`}
             >
-              {loading ? "Processing..." : "Send Reset Link"}
+              {loading ? "Sending link..." : "Send reset link"}
             </button>
           </form>
 
-          <p className="text-sm text-gray-600 mt-6 text-center">
+          <p className="text-sm text-slate-400 mt-6 text-center">
             Remember your password?{" "}
             <Link
               to="/login"
-              className="text-blue-600 font-semibold hover:underline"
+              className="text-indigo-400 font-semibold hover:text-indigo-300"
             >
-              Login
+              Log in
             </Link>{" "}
             or{" "}
             <Link
               to="/register"
-              className="text-blue-600 font-semibold hover:underline"
+              className="text-indigo-400 font-semibold hover:text-indigo-300"
             >
-              Register
+              Create account
             </Link>
           </p>
         </div>

@@ -21,13 +21,13 @@ function calculatePasswordStrength(password) {
 const strengthText = ["Weak", "Medium", "Strong", "Very Strong"];
 const strengthColor = [
   "bg-red-500",
-  "bg-orange-500",
-  "bg-yellow-500",
-  "bg-green-500",
+  "bg-orange-400",
+  "bg-yellow-400",
+  "bg-emerald-500",
 ];
 
 export default function ResetPassword() {
-  const { token } = useParams(); // استخدمنا token بدل id
+  const { token } = useParams();
   const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState(false);
@@ -69,68 +69,70 @@ export default function ResetPassword() {
     <>
       <ToastContainer position="top-center" />
 
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-        <div className="bg-white p-8 rounded-3xl shadow-xl w-full max-w-lg border border-gray-200">
-          {/* ---------- Title + Intro Text ---------- */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-extrabold text-gray-800">
-              Reset Your Password
+      <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4 py-8">
+        <div className="bg-slate-900/95 border border-slate-800 rounded-3xl shadow-[0_24px_80px_rgba(15,23,42,0.8)] w-full max-w-lg px-7 py-8 sm:px-9 sm:py-9">
+          {/* Title + Intro */}
+          <div className="text-center mb-7">
+            <p className="text-xs tracking-[0.22em] uppercase text-indigo-400 mb-2">
+              Secure update
+            </p>
+            <h1 className="text-2xl sm:text-3xl font-semibold text-slate-50">
+              Reset your password
             </h1>
-
-            <p className="text-gray-500 mt-3 text-sm leading-relaxed max-w-sm mx-auto">
-              Create a strong and secure password to protect your account. Make
-              sure your new password is unique.
+            <p className="text-sm text-slate-400 mt-3 max-w-md mx-auto">
+              Choose a strong password to protect your AURAYE account. Avoid
+              using the same password on other websites.
             </p>
           </div>
 
-          {/* ---------- FORM ---------- */}
+          {/* FORM */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* PASSWORD */}
             <div>
-              <label className="text-gray-700 font-medium text-sm">
-                New Password
+              <label className="text-slate-300 text-xs font-medium uppercase tracking-[0.16em]">
+                New password
               </label>
 
-              <div className="relative mt-1">
+              <div className="relative mt-1.5">
                 <Lock
-                  className="absolute left-3 top-3 text-gray-400"
-                  size={20}
+                  className="absolute left-3 top-3 text-slate-500"
+                  size={18}
                 />
                 <input
                   type={showPassword ? "text" : "password"}
                   {...register("password")}
-                  placeholder="Enter your new password"
-                  className="w-full border border-gray-300 rounded-xl p-3 pl-11 pr-11 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition"
+                  placeholder="••••••••••"
+                  className="w-full bg-slate-900/60 border border-slate-700 rounded-xl text-sm text-slate-50 placeholder-slate-500 p-3 pl-11 pr-11 focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-400 transition"
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-3 text-gray-500"
+                  className="absolute right-3 top-3 text-slate-400 hover:text-slate-200 transition"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showPassword ? <EyeOff /> : <Eye />}
+                  {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
                 </button>
               </div>
 
               {/* Strength Bar */}
               {passwordValue.length > 0 && (
                 <div className="mt-2">
-                  <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                  <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
                     <div
                       className={`h-full ${
-                        strengthColor[strength - 1]
+                        strength > 0 ? strengthColor[strength - 1] : ""
                       } transition-all`}
                       style={{ width: `${(strength / 4) * 100}%` }}
                     />
                   </div>
 
-                  <p className="text-sm text-gray-600 mt-1 font-medium">
-                    {strengthText[strength - 1]}
+                  <p className="text-[11px] text-slate-300 mt-1 font-medium">
+                    {strength > 0 && strengthText[strength - 1]}
                   </p>
                 </div>
               )}
 
               {errors.password && (
-                <p className="text-red-500 text-sm mt-1">
+                <p className="text-red-400 text-xs mt-1">
                   {errors.password.message}
                 </p>
               )}
@@ -138,25 +140,25 @@ export default function ResetPassword() {
 
             {/* CONFIRM PASSWORD */}
             <div>
-              <label className="text-gray-700 font-medium text-sm">
-                Confirm Password
+              <label className="text-slate-300 text-xs font-medium uppercase tracking-[0.16em]">
+                Confirm password
               </label>
 
-              <div className="relative mt-1">
+              <div className="relative mt-1.5">
                 <Lock
-                  className="absolute left-3 top-3 text-gray-400"
-                  size={20}
+                  className="absolute left-3 top-3 text-slate-500"
+                  size={18}
                 />
                 <input
                   type={showPassword ? "text" : "password"}
                   {...register("confirmPassword")}
-                  placeholder="Confirm your password"
-                  className="w-full border border-gray-300 rounded-xl p-3 pl-11 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition"
+                  placeholder="Repeat your password"
+                  className="w-full bg-slate-900/60 border border-slate-700 rounded-xl text-sm text-slate-50 placeholder-slate-500 p-3 pl-11 focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-400 transition"
                 />
               </div>
 
               {errors.confirmPassword && (
-                <p className="text-red-500 text-sm mt-1">
+                <p className="text-red-400 text-xs mt-1">
                   {errors.confirmPassword.message}
                 </p>
               )}
@@ -166,22 +168,22 @@ export default function ResetPassword() {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full bg-green-600 text-white py-3 rounded-xl font-bold shadow-md transition hover:bg-green-700 ${
+              className={`w-full bg-emerald-500 text-slate-950 py-3 rounded-xl font-semibold text-sm shadow-lg shadow-emerald-500/30 hover:bg-emerald-400 transition ${
                 loading && "opacity-60 cursor-not-allowed"
               }`}
             >
-              {loading ? "Updating..." : "Change Password"}
+              {loading ? "Updating..." : "Change password"}
             </button>
           </form>
 
           {/* Back to Login */}
-          <p className="text-center text-sm text-gray-600 mt-6">
+          <p className="text-center text-sm text-slate-400 mt-6">
             Remembered your password?{" "}
             <Link
               to="/login"
-              className="text-blue-600 font-semibold hover:underline"
+              className="text-indigo-400 font-semibold hover:text-indigo-300"
             >
-              Login
+              Log in
             </Link>
           </p>
         </div>

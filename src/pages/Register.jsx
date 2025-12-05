@@ -21,9 +21,9 @@ function calculatePasswordStrength(password) {
 const strengthText = ["Weak", "Medium", "Strong", "Very Strong"];
 const strengthColor = [
   "bg-red-500",
-  "bg-orange-500",
-  "bg-yellow-500",
-  "bg-green-500",
+  "bg-orange-400",
+  "bg-yellow-400",
+  "bg-emerald-500",
 ];
 
 export default function Register({ setUser }) {
@@ -52,13 +52,12 @@ export default function Register({ setUser }) {
   const strength = calculatePasswordStrength(passwordValue);
 
   const inputClass =
-    "w-full border border-gray-300 rounded-xl p-3 pl-11 pr-11 transition focus:border-blue-600 focus:ring-4 focus:ring-blue-100 outline-none";
+    "w-full bg-slate-900/60 border border-slate-700 rounded-xl text-sm text-slate-50 placeholder-slate-500 p-3 pl-11 pr-11 transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/20 outline-none";
 
   /* ----------------------- SUBMIT FUNCTION ----------------------- */
   const onSubmit = async (data) => {
     setLoading(true);
     try {
-      // إرسال البيانات للـ backend
       const payload = {
         fullName: data.fullName,
         email: data.email,
@@ -107,171 +106,231 @@ export default function Register({ setUser }) {
     <>
       <ToastContainer position="top-center" />
 
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-        <div className="bg-white shadow-xl rounded-3xl flex flex-col md:flex-row max-w-4xl w-full">
-          {/* ---------------- LEFT BLUE SIDE ---------------- */}
-          <div className="w-full md:w-1/2 bg-blue-600 text-white p-10 rounded-l-3xl flex flex-col justify-center">
-            <h1 className="text-3xl font-bold leading-snug">
-              Simplify management With Our dashboard.
-            </h1>
-            <p className="opacity-90 mt-3 text-sm">
-              Create your account and start managing your system easily.
-            </p>
-          </div>
-
-          {/* ---------------- RIGHT FORM SIDE ---------------- */}
-          <div className="w-full md:w-1/2 p-10">
-            <h2 className="text-2xl font-semibold mb-6 text-gray-700">
-              Create Your Account
-            </h2>
-
-            <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-              {/* ---------------- FULL NAME ---------------- */}
-              <div>
-                <label className="text-gray-600 text-sm">Full Name</label>
-                <div className="relative mt-1">
-                  <User
-                    size={20}
-                    className="absolute left-3 top-3 text-gray-400"
-                  />
-                  <input
-                    type="text"
-                    {...register("fullName")}
-                    className={inputClass}
-                    placeholder="Enter full name"
-                  />
-                </div>
-                {errors.fullName && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.fullName.message}
-                  </p>
-                )}
-              </div>
-
-              {/* ---------------- EMAIL ---------------- */}
-              <div>
-                <label className="text-gray-600 text-sm">Email</label>
-                <div className="relative mt-1">
-                  <Mail
-                    size={20}
-                    className="absolute left-3 top-3 text-gray-400"
-                  />
-                  <input
-                    type="email"
-                    {...register("email")}
-                    className={inputClass}
-                    placeholder="Enter email"
-                  />
-                </div>
-                {errors.email && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.email.message}
-                  </p>
-                )}
-              </div>
-
-              {/* ---------------- PASSWORD ---------------- */}
-              <div>
-                <label className="text-gray-600 text-sm">Password</label>
-                <div className="relative mt-1">
-                  <Lock
-                    size={20}
-                    className="absolute left-3 top-3 text-gray-400"
-                  />
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    {...register("password")}
-                    className={inputClass}
-                    placeholder="Enter a strong password"
-                  />
-                  <button
-                    type="button"
-                    className="absolute right-3 top-3 text-gray-500"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                </div>
-                {passwordValue.length > 0 && (
-                  <div className="mt-2">
-                    <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full ${
-                          strengthColor[strength - 1]
-                        } transition-all`}
-                        style={{ width: `${(strength / 4) * 100}%` }}
-                      ></div>
-                    </div>
-                    <p className="text-sm mt-1 font-medium text-gray-600">
-                      {strengthText[strength - 1]}
-                    </p>
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4 py-8">
+        <div className="w-full max-w-5xl bg-slate-900/95 border border-slate-800 rounded-3xl shadow-[0_24px_80px_rgba(15,23,42,0.8)] overflow-hidden">
+          <div className="grid md:grid-cols-2">
+            {/* ---------------- LEFT HERO ---------------- */}
+            <div className="relative hidden md:flex flex-col justify-between p-8 lg:p-10 bg-gradient-to-br from-indigo-600 via-violet-600 to-slate-900">
+              {/* Top bar */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 rounded-xl bg-white/10 flex items-center justify-center text-xs font-bold tracking-widest text-white">
+                    AR
                   </div>
-                )}
-                {errors.password && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.password.message}
-                  </p>
-                )}
-              </div>
-
-              {/* ---------------- CONFIRM PASSWORD ---------------- */}
-              <div>
-                <label className="text-gray-600 text-sm">
-                  Confirm Password
-                </label>
-                <div className="relative mt-1">
-                  <Lock
-                    size={20}
-                    className="absolute left-3 top-3 text-gray-400"
-                  />
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    {...register("confirmPassword")}
-                    className={inputClass}
-                    placeholder="Re-enter password"
-                  />
+                  <span className="text-white font-semibold tracking-[0.2em] text-xs uppercase">
+                    AURAYE
+                  </span>
                 </div>
-                {errors.confirmPassword && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.confirmPassword.message}
-                  </p>
-                )}
-              </div>
 
-              {/* ---------------- REMEMBER ME ---------------- */}
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  {...register("rememberMe")}
-                  id="rememberMe"
-                />
-                <label htmlFor="rememberMe" className="text-gray-700 text-sm">
-                  Remember me
-                </label>
-              </div>
-
-              {/* ---------------- LINK TO LOGIN ---------------- */}
-              <p className="text-sm text-gray-600">
-                Already have an account?{" "}
                 <Link
-                  to="/login"
-                  className="text-blue-600 font-semibold hover:underline"
+                  to="/"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-white/10 hover:bg-white/20 text-[11px] text-slate-50 px-3 py-1 transition"
                 >
-                  Login here
+                  <span>Back to website</span>
                 </Link>
-              </p>
+              </div>
 
-              {/* ---------------- SUBMIT BUTTON ---------------- */}
-              <button
-                type="submit"
-                disabled={loading}
-                className={`w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl transition font-semibold ${
-                  loading && "opacity-60 cursor-not-allowed"
-                }`}
-              >
-                {loading ? "Creating Account..." : "Register"}
-              </button>
-            </form>
+              {/* Middle content */}
+              <div className="mt-10 space-y-4">
+                <h1 className="text-3xl lg:text-4xl font-semibold text-white leading-snug">
+                  See the world through
+                  <br />
+                  <span className="font-bold">Augmented Vision.</span>
+                </h1>
+                <p className="text-sm text-indigo-100/90 max-w-xs">
+                  Create your AURAYE account to try frames in AR, save your
+                  favourites, and checkout in seconds.
+                </p>
+              </div>
+
+              {/* Bottom dots / caption */}
+              <div className="flex items-center justify-between mt-10">
+                <p className="text-xs text-indigo-100/80">
+                  Capturing looks, creating moments.
+                </p>
+                <div className="flex items-center gap-1.5">
+                  <span className="h-1.5 w-5 rounded-full bg-white" />
+                  <span className="h-1.5 w-2 rounded-full bg-white/40" />
+                  <span className="h-1.5 w-2 rounded-full bg-white/30" />
+                </div>
+              </div>
+            </div>
+
+            {/* ---------------- RIGHT FORM ---------------- */}
+            <div className="px-6 py-8 sm:px-8 md:px-10 md:py-10 bg-slate-900">
+              <div className="mb-6">
+                <h2 className="text-2xl md:text-3xl font-semibold text-slate-50">
+                  Create an account
+                </h2>
+                <p className="text-sm text-slate-400 mt-2">
+                  Already have an account?{" "}
+                  <Link
+                    to="/login"
+                    className="text-indigo-400 hover:text-indigo-300 font-medium"
+                  >
+                    Log in
+                  </Link>
+                </p>
+              </div>
+
+              <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+                {/* FULL NAME */}
+                <div>
+                  <label className="text-slate-300 text-xs font-medium uppercase tracking-[0.16em]">
+                    Full name
+                  </label>
+                  <div className="relative mt-1.5">
+                    <User
+                      size={18}
+                      className="absolute left-3 top-3 text-slate-500"
+                    />
+                    <input
+                      type="text"
+                      {...register("fullName")}
+                      className={inputClass}
+                      placeholder="Omar Fattouh"
+                    />
+                  </div>
+                  {errors.fullName && (
+                    <p className="text-red-400 text-xs mt-1">
+                      {errors.fullName.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* EMAIL */}
+                <div>
+                  <label className="text-slate-300 text-xs font-medium uppercase tracking-[0.16em]">
+                    Email
+                  </label>
+                  <div className="relative mt-1.5">
+                    <Mail
+                      size={18}
+                      className="absolute left-3 top-3 text-slate-500"
+                    />
+                    <input
+                      type="email"
+                      {...register("email")}
+                      className={inputClass}
+                      placeholder="you@example.com"
+                    />
+                  </div>
+                  {errors.email && (
+                    <p className="text-red-400 text-xs mt-1">
+                      {errors.email.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* PASSWORD */}
+                <div>
+                  <label className="text-slate-300 text-xs font-medium uppercase tracking-[0.16em]">
+                    Password
+                  </label>
+                  <div className="relative mt-1.5">
+                    <Lock
+                      size={18}
+                      className="absolute left-3 top-3 text-slate-500"
+                    />
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      {...register("password")}
+                      className={inputClass}
+                      placeholder="••••••••••"
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-3 text-slate-400 hover:text-slate-200 transition"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
+                    </button>
+                  </div>
+
+                  {passwordValue.length > 0 && (
+                    <div className="mt-2">
+                      <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full ${
+                            strength > 0 ? strengthColor[strength - 1] : ""
+                          } transition-all`}
+                          style={{ width: `${(strength / 4) * 100}%` }}
+                        />
+                      </div>
+                      <p className="text-[11px] mt-1 font-medium text-slate-300">
+                        {strength > 0 && strengthText[strength - 1]}
+                      </p>
+                    </div>
+                  )}
+
+                  {errors.password && (
+                    <p className="text-red-400 text-xs mt-1">
+                      {errors.password.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* CONFIRM PASSWORD */}
+                <div>
+                  <label className="text-slate-300 text-xs font-medium uppercase tracking-[0.16em]">
+                    Confirm password
+                  </label>
+                  <div className="relative mt-1.5">
+                    <Lock
+                      size={18}
+                      className="absolute left-3 top-3 text-slate-500"
+                    />
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      {...register("confirmPassword")}
+                      className={inputClass}
+                      placeholder="Repeat your password"
+                    />
+                  </div>
+                  {errors.confirmPassword && (
+                    <p className="text-red-400 text-xs mt-1">
+                      {errors.confirmPassword.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* REMEMBER ME */}
+                <div className="flex items-center gap-2 pt-1">
+                  <input
+                    type="checkbox"
+                    {...register("rememberMe")}
+                    id="rememberMe"
+                    className="h-4 w-4 rounded border-slate-600 bg-slate-900 text-indigo-500 focus:ring-indigo-500/50"
+                  />
+                  <label
+                    htmlFor="rememberMe"
+                    className="text-[13px] text-slate-300"
+                  >
+                    Keep me signed in on this device
+                  </label>
+                </div>
+
+                {/* BUTTON */}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className={`w-full mt-2 bg-indigo-500 hover:bg-indigo-400 text-slate-50 py-3 rounded-xl text-sm font-semibold tracking-wide shadow-lg shadow-indigo-500/30 transition ${
+                    loading && "opacity-60 cursor-not-allowed"
+                  }`}
+                >
+                  {loading ? "Creating account..." : "Create account"}
+                </button>
+
+                {/* SMALL FOOTER */}
+                <p className="text-[11px] text-slate-500 text-center pt-2">
+                  By creating an account, you agree to AURAYE’s{" "}
+                  <span className="text-slate-300 underline underline-offset-2 cursor-default">
+                    Terms &amp; Privacy
+                  </span>
+                  .
+                </p>
+              </form>
+            </div>
           </div>
         </div>
       </div>
