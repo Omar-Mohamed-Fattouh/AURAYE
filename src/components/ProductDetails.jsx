@@ -21,7 +21,15 @@ import {
 export default function ProductDetails() {
   const { id } = useParams(); // product id from route
   const navigate = useNavigate();
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
+  useEffect(() => {
+    const handleStorage = () => {
+      setIsLoggedIn(!!localStorage.getItem("token"));
+    };
 
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
   const [loading, setLoading] = useState(true);
   const [product, setProduct] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
@@ -229,48 +237,48 @@ export default function ProductDetails() {
   }
 
   async function handleToggleWishlist() {
-  if (!product) return;
+    if (!product) return;
 
-  const token = localStorage.getItem("token");
-  if (!token) {
-    toast.error("You need to log in to use the wishlist.");
-    return;
-  }
-
-  try {
-    if (isWishlisted) {
-      // remove from wishlist
-      await removeFromWishlist(Number(product.id));
-      setIsWishlisted(false);
-      toast.success("Product removed from wishlist.");
-    } else {
-      // add to wishlist
-      await addToWishlist(Number(product.id));
-      setIsWishlisted(true);
-      toast.success("Product added to wishlist.");
-    }
-  } catch (err) {
-    console.error(err);
-    const msg = err.response?.data;
-
-    if (
-      !isWishlisted &&
-      err.response?.status === 400 &&
-      typeof msg === "string" &&
-      msg.toLowerCase().includes("already exists in wishlist")
-    ) {
-      setIsWishlisted(true);
-      toast.info("Product is already in your wishlist.");
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("You need to log in to use the wishlist.");
       return;
     }
 
-    if (err.response?.status === 401) {
-      toast.error("You need to log in to use the wishlist.");
-    } else {
-      toast.error("Failed to update wishlist.");
+    try {
+      if (isWishlisted) {
+        // remove from wishlist
+        await removeFromWishlist(Number(product.id));
+        setIsWishlisted(false);
+        toast.success("Product removed from wishlist.");
+      } else {
+        // add to wishlist
+        await addToWishlist(Number(product.id));
+        setIsWishlisted(true);
+        toast.success("Product added to wishlist.");
+      }
+    } catch (err) {
+      console.error(err);
+      const msg = err.response?.data;
+
+      if (
+        !isWishlisted &&
+        err.response?.status === 400 &&
+        typeof msg === "string" &&
+        msg.toLowerCase().includes("already exists in wishlist")
+      ) {
+        setIsWishlisted(true);
+        toast.info("Product is already in your wishlist.");
+        return;
+      }
+
+      if (err.response?.status === 401) {
+        toast.error("You need to log in to use the wishlist.");
+      } else {
+        toast.error("Failed to update wishlist.");
+      }
     }
   }
-}
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -311,7 +319,7 @@ export default function ProductDetails() {
     );
   }
 
-  const isLoggedIn = !!localStorage.getItem("token");
+  // const isLoggedIn = !!localStorage.getItem("token");
 
   return (
     <div className="max-w-[1400px] mx-auto px-4 lg:px-8 py-14">

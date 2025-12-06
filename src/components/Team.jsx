@@ -2,7 +2,6 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Linkedin, Mail, Sparkles } from "lucide-react";
-
 const members = [
   {
     name: "Lena Carter",
@@ -75,10 +74,10 @@ const cardVariant = {
 export default function Team() {
   return (
     <section className="relative overflow-hidden bg-black text-white py-16 sm:py-20 px-4">
-      {/* subtle background glow */}
+      {/* subtle background glow (converted to grayscale) */}
       <div className="pointer-events-none absolute inset-0 opacity-60">
-        <div className="absolute -top-40 -left-32 h-72 w-72 rounded-full bg-white/20 blur-[90px]" />
-        <div className="absolute -bottom-40 -right-20 h-80 w-80 rounded-full bg-sky-500/20 blur-[90px]" />
+        <div className="absolute -top-40 -left-32 h-72 w-72 rounded-full bg-white/10 blur-[90px]" />
+        <div className="absolute -bottom-40 -right-20 h-80 w-80 rounded-full bg-white/10 blur-[90px]" />
       </div>
 
       <motion.div
@@ -92,28 +91,25 @@ export default function Team() {
         <header className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-10 sm:mb-12">
           <div>
             <p className="inline-flex items-center gap-2 text-xs font-semibold tracking-[0.2em] uppercase text-zinc-400 mb-3">
-              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/10">
-                <Sparkles className="h-3 w-3 text-emerald-400" />
+              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/10">
+                <Sparkles className="h-3 w-3 text-white" />
               </span>
               The people behind Auraye
             </p>
             <h2 className="text-[32px] sm:text-[38px] md:text-[42px] font-semibold leading-tight tracking-[-0.04em]">
               A small, senior team
-              <br />
-              obsessed with the details.
+              <br /> obsessed with the details.
             </h2>
             <p className="mt-3 max-w-2xl text-sm sm:text-base text-zinc-400">
-              Every interaction, frame, and pixel you see is crafted by this
-              group of engineers, designers, and product minds working closely
-              together.
+              Every interaction, frame, and pixel you see is crafted by this group.
             </p>
           </div>
 
           <div className="flex flex-col items-start md:items-end gap-2">
-            <div className="rounded-full border border-zinc-800 bg-zinc-900/60 px-4 py-2 text-xs text-zinc-300 flex items-center gap-2 backdrop-blur">
+            <div className="rounded-full border border-zinc-700 bg-zinc-900/60 px-4 py-2 text-xs text-zinc-300 flex items-center gap-2 backdrop-blur">
               <span className="relative flex h-5 w-5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500/40 opacity-60" />
-                <span className="relative inline-flex rounded-full h-5 w-5 bg-emerald-500/80" />
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white/30 opacity-60" />
+                <span className="relative inline-flex rounded-full h-5 w-5 bg-white/70" />
               </span>
               Working across Cairo, Dubai & Berlin
             </div>
@@ -128,20 +124,20 @@ export default function Team() {
           variants={container}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7"
         >
-          {members.map((member, idx) => (
+          {members.map((member) => (
             <motion.article
               key={member.name}
               variants={cardVariant}
-              className="group relative rounded-3xl border border-zinc-800/80 bg-zinc-950/70 px-5 py-6 sm:px-6 sm:py-7 backdrop-blur-md shadow-[0_18px_40px_rgba(0,0,0,0.45)] overflow-hidden"
+              className="group relative rounded-3xl border border-zinc-800 bg-zinc-950/70 px-5 py-6 sm:px-6 sm:py-7 backdrop-blur-md shadow-[0_18px_40px_rgba(0,0,0,0.45)] overflow-hidden"
             >
-              {/* gradient border on hover */}
+              {/* gradient border hover → now grayscale */}
               <div className="pointer-events-none absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <div className="absolute inset-px rounded-[22px] bg-gradient-to-br from-emerald-500/15 via-zinc-800/0 to-sky-500/20" />
+                <div className="absolute inset-px rounded-[22px] bg-gradient-to-br from-white/10 via-transparent to-white/20" />
               </div>
 
               <div className="relative flex items-center gap-4 mb-4">
                 <div className="relative">
-                  <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl overflow-hidden border border-zinc-700/70 bg-zinc-900/80">
+                  <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl overflow-hidden border border-zinc-700 bg-zinc-900">
                     <img
                       src={member.avatar}
                       alt={member.name}
@@ -149,7 +145,7 @@ export default function Team() {
                       loading="lazy"
                     />
                   </div>
-                  <span className="absolute -bottom-1 -right-1 rounded-full bg-emerald-500 text-[10px] font-semibold text-black px-2 py-0.5 shadow-lg">
+                  <span className="absolute -bottom-1 -right-1 rounded-full bg-white text-[10px] font-semibold text-black px-2 py-0.5 shadow-lg">
                     Core
                   </span>
                 </div>
@@ -168,12 +164,12 @@ export default function Team() {
                 {member.focus}
               </p>
 
-              {/* footer */}
+              {/* Footer */}
               <div className="relative flex items-center justify-between text-[11px] sm:text-xs text-zinc-400">
                 <div className="inline-flex items-center gap-2">
                   <div className="flex -space-x-2">
-                    <span className="h-6 w-6 rounded-full bg-white/90 border border-emerald-400/40" />
-                    <span className="h-6 w-6 rounded-full bg-sky-500/20 border border-sky-400/40" />
+                    <span className="h-6 w-6 rounded-full bg-white/20 border border-white/40" />
+                    <span className="h-6 w-6 rounded-full bg-white/10 border border-white/30" />
                   </div>
                   <span>Available for quick product reviews</span>
                 </div>
@@ -181,13 +177,13 @@ export default function Team() {
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900/80 hover:bg-white hover:text-black transition-colors"
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900 hover:bg-white hover:text-black transition-colors"
                   >
                     <Linkedin className="h-3.5 w-3.5" />
                   </button>
                   <button
                     type="button"
-                    className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900/80 hover:bg-white hover:text-black transition-colors"
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900 hover:bg-white hover:text-black transition-colors"
                   >
                     <Mail className="h-3.5 w-3.5" />
                   </button>
