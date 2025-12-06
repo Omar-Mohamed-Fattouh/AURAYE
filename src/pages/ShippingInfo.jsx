@@ -10,6 +10,7 @@ import {
   CreditCard,
 } from "lucide-react";
 import { formatEGP } from "../components/formatCurrency";
+import SubscribeSection from "../components/SubscribeSection";
 
 export default function ShippingInfo() {
   const [orders, setOrders] = useState([]);
@@ -322,6 +323,7 @@ export default function ShippingInfo() {
           )}
         </section>
       </main>
+        <SubscribeSection />
     </div>
   );
 }

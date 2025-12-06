@@ -41,6 +41,10 @@ import WishlistPage from "../pages/WishlistPage.jsx";
 import ScrollToTop from "../components/ScrollToTop.jsx";
 import Profile from "../pages/Profile.jsx";
 import FAQ from "../pages/FAQ.jsx";
+import About from "../pages/About.jsx";
+import Mission from "../pages/Mission.jsx";
+import WhyUS from "../pages/WhyUS.jsx";
+import TeamPgae from "../pages/TeamPgae.jsx";
 
 const queryClient = new QueryClient();
 const stripePromise = loadStripe(
@@ -113,6 +117,10 @@ export default function AppRouter() {
               <Route path="/products/:id" element={<ProductID />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/faq" element={<FAQ />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/mission" element={<Mission />} />
+              <Route path="/why-us" element={<WhyUS />} />
+              <Route path="/team" element={<TeamPgae />} />
               <Route path="/profile"
                 element={
                   <ProtectedRoute user={user}>

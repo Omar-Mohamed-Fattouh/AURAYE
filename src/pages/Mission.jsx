@@ -1,14 +1,16 @@
 import React from 'react'
-import AboutHero from '../components/AboutHero'
-import SubscribeSection from '../components/SubscribeSection'
+import AboutVision from '../components/AboutVision'
 import AchievementsSection from '../components/AchievementsSection'
+import SubscribeSection from '../components/SubscribeSection'
 
-export default function About() {
+const Mission = () => {
   return (
     <div>
-        <AboutHero/>
+        <AboutVision />
         <AchievementsSection/>
         <SubscribeSection />
     </div>
   )
 }
+
+export default Mission

@@ -1,14 +1,16 @@
 import React from 'react'
+import Team from '../components/Team'
 import AboutHero from '../components/AboutHero'
 import SubscribeSection from '../components/SubscribeSection'
-import AchievementsSection from '../components/AchievementsSection'
 
-export default function About() {
+const TeamPgae = () => {
   return (
     <div>
-        <AboutHero/>
-        <AchievementsSection/>
+        <AboutHero />
+        <Team />
         <SubscribeSection />
     </div>
   )
 }
+
+export default TeamPgae
