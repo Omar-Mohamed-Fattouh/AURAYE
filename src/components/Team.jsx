@@ -77,7 +77,7 @@ export default function Team() {
     <section className="relative overflow-hidden bg-black text-white py-16 sm:py-20 px-4">
       {/* subtle background glow */}
       <div className="pointer-events-none absolute inset-0 opacity-60">
-        <div className="absolute -top-40 -left-32 h-72 w-72 rounded-full bg-emerald-500/20 blur-[90px]" />
+        <div className="absolute -top-40 -left-32 h-72 w-72 rounded-full bg-white/20 blur-[90px]" />
         <div className="absolute -bottom-40 -right-20 h-80 w-80 rounded-full bg-sky-500/20 blur-[90px]" />
       </div>
 
@@ -172,7 +172,7 @@ export default function Team() {
               <div className="relative flex items-center justify-between text-[11px] sm:text-xs text-zinc-400">
                 <div className="inline-flex items-center gap-2">
                   <div className="flex -space-x-2">
-                    <span className="h-6 w-6 rounded-full bg-emerald-500/20 border border-emerald-400/40" />
+                    <span className="h-6 w-6 rounded-full bg-white/90 border border-emerald-400/40" />
                     <span className="h-6 w-6 rounded-full bg-sky-500/20 border border-sky-400/40" />
                   </div>
                   <span>Available for quick product reviews</span>
