@@ -2,6 +2,7 @@ import React from "react";
 import SunGlasses from "../components/SunGlasses";
 import DealsSection from "../components/DealSeaction";
 import BestSellerSection from "../components/BestSellerSection";
+import SubscribeSection from "../components/SubscribeSection";
 
 const SunGlassesPage = () => {
   return (
@@ -9,6 +10,7 @@ const SunGlassesPage = () => {
       <SunGlasses />
       <DealsSection />
       <BestSellerSection />
+      <SubscribeSection />
     </div>
   );
 };

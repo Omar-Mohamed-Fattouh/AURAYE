@@ -348,7 +348,7 @@ export default function Profile() {
                   <img
                     src={previewImage}
                     alt="Avatar"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover "
                   />
                 ) : (
                   initials

@@ -2,6 +2,7 @@ import React from 'react'
 import EyeGlasses from '../components/EyeGlasses'
 import DealsSection from '../components/DealSeaction'
 import BestSellerSection from '../components/BestSellerSection'
+import SubscribeSection from '../components/SubscribeSection'
 
 const EyeGlassesPage = () => {
   return (
@@ -9,6 +10,7 @@ const EyeGlassesPage = () => {
       <EyeGlasses />
       <DealsSection />
       <BestSellerSection />
+      <SubscribeSection />
     </div>
   )
 }

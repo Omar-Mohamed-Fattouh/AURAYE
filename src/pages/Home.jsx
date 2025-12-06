@@ -6,6 +6,7 @@ import DealsSection from "../components/DealSeaction";
 import CategoriesSection from "../components/CategoriesSection";
 import BestSellerSection from "../components/BestSellerSection";
 import AurayeSpinner, { AurayePulse } from "../components/AurayeLoader";
+import SubscribeSection from "../components/SubscribeSection";
 
 const Home = () => {
   const [loading, setLoading] = useState(true);
@@ -34,6 +35,7 @@ const Home = () => {
       <CategoriesSection />
       <AchievementsSection />
       <ARVideoSection />
+      <SubscribeSection />
     </div>
   );
 };

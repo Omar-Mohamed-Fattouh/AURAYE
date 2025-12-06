@@ -368,7 +368,7 @@ export default function Navbar({ user, setUser }) {
                   My Profile
                 </DropItemMobile>
                 <DropItemMobile
-                  to="/orders"
+                  to="/shipping"
                   closeMenu={() => setMobileOpen(false)}
                 >
                   My Orders
@@ -437,7 +437,7 @@ function ProfileMenu({ user, logout }) {
         sideOffset={8}
       >
         <DropItem to="/profile">My Profile</DropItem>
-        <DropItem to="/orders">Orders</DropItem>
+        <DropItem to="/shipping">Orders</DropItem>
         <button
           onClick={logout}
           className="w-full text-left px-3 py-2 rounded-md hover:bg-white/10 transition text-sm"
@@ -517,7 +517,7 @@ function NavItemMobile({ to, children, onClick }) {
 }
 
 /* MOBILE DROPDOWN */
-function DropdownMobile({ label, children, closeMenu, icon: Icon }) {
+function DropdownMobile({ label, children, icon: Icon }) {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
 

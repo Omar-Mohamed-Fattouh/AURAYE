@@ -39,6 +39,8 @@ import ShapesPage from "../pages/ShapesPage.jsx";
 import AllProductPage from "../pages/AllProductPage.jsx";
 import WishlistPage from "../pages/WishlistPage.jsx";
 import ScrollToTop from "../components/ScrollToTop.jsx";
+import Profile from "../pages/Profile.jsx";
+import FAQ from "../pages/FAQ.jsx";
 
 const queryClient = new QueryClient();
 const stripePromise = loadStripe(
@@ -110,6 +112,14 @@ export default function AppRouter() {
               <Route path="shipping" element={<ShippingInfo />} />
               <Route path="/products/:id" element={<ProductID />} />
               <Route path="/cart" element={<Cart />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/profile"
+                element={
+                  <ProtectedRoute user={user}>
+                    <Profile user={user} setUser={setUser} />
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/wishlist"
                 element={

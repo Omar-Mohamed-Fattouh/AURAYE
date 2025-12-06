@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+// src/components/CheckoutContainer.jsx
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { getCart } from "../api/productsApi";
@@ -16,6 +17,7 @@ export default function CheckoutContainer() {
     const fetchCart = async () => {
       try {
         const data = await getCart();
+
         if (!data.items || data.items.length === 0) {
           toast.error("Your cart is empty. Please add items before checkout.");
           navigate("/cart");
@@ -23,8 +25,9 @@ export default function CheckoutContainer() {
         }
 
         setCartItems(data.items);
-        setCartTotal(data.total);
+        setCartTotal(data.total ?? 0);
       } catch (error) {
+        console.error(error);
         toast.error("Failed to fetch cart data.");
         navigate("/cart");
       } finally {
@@ -34,6 +37,17 @@ export default function CheckoutContainer() {
 
     fetchCart();
   }, [navigate]);
+
+  // احتساب subtotal من الـ items لو حابب تستخدمه في الـ UI
+  const subtotal = useMemo(
+    () =>
+      cartItems.reduce(
+        (sum, item) =>
+          sum + Number(item.unitPrice ?? item.price ?? 0) * Number(item.quantity ?? 1),
+        0
+      ),
+    [cartItems]
+  );
 
   const handleCheckout = async (formData) => {
     if (cartItems.length === 0) return;
@@ -57,7 +71,7 @@ export default function CheckoutContainer() {
           quantity: item.quantity,
           color: item.color,
         })),
-        totalAmount: cartTotal,
+        totalAmount: cartTotal || subtotal,
       };
 
       const orderResponse = await createOrder(orderData);
@@ -75,11 +89,12 @@ export default function CheckoutContainer() {
           state: {
             clientSecret: paymentIntent.clientSecret,
             formData,
-            total: cartTotal,
+            total: orderResponse.totalAmount,
           },
         });
       }
     } catch (error) {
+      console.error(error);
       toast.error("Failed to process order.");
     } finally {
       setIsProcessing(false);
@@ -88,8 +103,19 @@ export default function CheckoutContainer() {
 
   if (loadingCart) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Loading cart data...</p>
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
+        <div className="w-full max-w-5xl bg-white rounded-3xl shadow-md border border-slate-100 p-8 animate-pulse space-y-6">
+          <div className="h-7 w-40 bg-slate-200 rounded" />
+          <div className="grid md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] gap-6">
+            <div className="space-y-4">
+              <div className="h-11 bg-slate-100 rounded-xl" />
+              <div className="h-11 bg-slate-100 rounded-xl" />
+              <div className="h-11 bg-slate-100 rounded-xl" />
+              <div className="h-11 bg-slate-100 rounded-xl" />
+            </div>
+            <div className="h-64 bg-slate-100 rounded-2xl" />
+          </div>
+        </div>
       </div>
     );
   }
@@ -98,6 +124,9 @@ export default function CheckoutContainer() {
     <CheckoutForm
       onSubmit={handleCheckout}
       isProcessing={isProcessing}
+      cartItems={cartItems}
+      subtotal={subtotal}
+      total={cartTotal || subtotal}
     />
   );
 }
