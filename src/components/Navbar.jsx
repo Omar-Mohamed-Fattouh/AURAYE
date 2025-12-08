@@ -157,7 +157,7 @@ const navBaseClasses = "w-full text-white font-semibold z-50";
                 <DropItem to="/products/women">Women</DropItem>
                 <DropItem to="/products/sunglasses">Sunglasses</DropItem>
                 <DropItem to="/products/eyeglasses">Eyeglasses</DropItem>
-                <DropItem to="/products/frames">Frames</DropItem>
+                <DropItem to="/products/frames">Frames Material</DropItem>
                 <DropItem to="/products/shapes">Shapes</DropItem>
                 <DropItem to="/products/colors">Colors</DropItem>
               </Dropdown>
@@ -366,7 +366,7 @@ const navBaseClasses = "w-full text-white font-semibold z-50";
                 to="/products/frames"
                 closeMenu={() => setMobileOpen(false)}
               >
-                Frames
+                Frames Material
               </DropItemMobile>
               <DropItemMobile
                 to="/products/colors"

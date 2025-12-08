@@ -10,20 +10,23 @@ import {
   removeFromWishlist,
   isProductInWishlist,
 } from "../api/productsApi";
+
 import { CartContext } from "../store/cartContext";
+import { AuthContext } from "../features/auth/AuthContext";
 
 export default function ProductCard({
   product,
   linkTo,
-  showAddToCart = false, // Deals: true | Related: false
+  showAddToCart = false,
 }) {
   const [isWishlisted, setIsWishlisted] = useState(false);
-  const { refreshCounts } = useContext(CartContext);
 
-  // ✅ Sync wishlist state on mount / refresh
+  const { refreshCounts } = useContext(CartContext);
+  const { isLoggedIn } = useContext(AuthContext);
+
+  // ✅ Check wishlist only if logged in
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!product?.id || !token) {
+    if (!product?.id || !isLoggedIn) {
       setIsWishlisted(false);
       return;
     }
@@ -44,17 +47,18 @@ export default function ProductCard({
         }
       } catch (err) {
         console.error("Wishlist check failed:", err);
+        setIsWishlisted(false);
       }
     }
 
     checkWishlist();
-  }, [product?.id]);
+  }, [product?.id, isLoggedIn]);
 
+  // ✅ Toggle Wishlist
   const handleToggleWishlist = async (e) => {
-    e.preventDefault(); // عشان ما يفتحش اللينك لما تدوسي على القلب
+    e.preventDefault();
 
-    const token = localStorage.getItem("token");
-    if (!token) {
+    if (!isLoggedIn) {
       toast.error("You need to log in to use the wishlist.");
       return;
     }
@@ -70,40 +74,28 @@ export default function ProductCard({
         toast.success("Product added to wishlist.");
       }
 
-      // ✅ حدّث عدادات الـ Navbar (wishlist + cart لو backend بيأثر عليهم)
+      // ✅ تحديث العداد في الـ Navbar فورًا
       if (typeof refreshCounts === "function") {
         await refreshCounts();
       }
     } catch (err) {
       console.error(err);
-      const msg = err.response?.data;
-
-      if (
-        !isWishlisted &&
-        err.response?.status === 400 &&
-        typeof msg === "string" &&
-        msg.toLowerCase().includes("already exists in wishlist")
-      ) {
-        setIsWishlisted(true);
-        toast.info("Product is already in your wishlist.");
-        return;
-      }
 
       if (err.response?.status === 401) {
-        toast.error("You need to log in to use the wishlist.");
+        toast.error("Session expired. Please log in again.");
       } else {
         toast.error("Failed to update wishlist.");
       }
     }
   };
 
+  // ✅ Add To Cart
   const handleAddToCart = async (e) => {
     e.preventDefault();
 
     if (!showAddToCart) return;
 
-    const token = localStorage.getItem("token");
-    if (!token) {
+    if (!isLoggedIn) {
       toast.error("You need to log in to add items to the cart.");
       return;
     }
@@ -113,37 +105,27 @@ export default function ProductCard({
         productId: product.id,
         quantity: 1,
       });
+
       toast.success("Product added to cart.");
 
-      // ✅ نحدّث عداد الكارت في الـ Navbar فورًا
+      // ✅ تحديث عداد الكارت فورًا
       if (typeof refreshCounts === "function") {
         await refreshCounts();
       }
     } catch (err) {
       console.error("Cart error:", err);
-      const msg = err.response?.data;
 
-      if (
-        err.response?.status === 400 &&
-        typeof msg === "string" &&
-        msg.toLowerCase().includes("already")
-      ) {
-        toast.info("This product is already in your cart.");
-      } else if (err.response?.status === 401) {
-        toast.error("You need to log in to add items to the cart.");
+      if (err.response?.status === 401) {
+        toast.error("Session expired. Please log in again.");
       } else {
         toast.error("Failed to add product to cart.");
       }
     }
   };
 
-  // ألوان من الصور
+  // ✅ Colors
   const colors = Array.from(
-    new Set(
-      (product.images || [])
-        .map((img) => img.color)
-        .filter(Boolean)
-    )
+    new Set((product.images || []).map((img) => img.color).filter(Boolean))
   );
 
   const hasDiscount =
@@ -167,9 +149,9 @@ export default function ProductCard({
         rounded-xl  
       "
     >
-      {/* Wishlist button */}
+      {/* ✅ Wishlist Button */}
       <button
-        className="absolute top-3 right-3 hover:bg-gray-200 transition duration-500 p-2 rounded-full z-10"
+        className="absolute top-3 right-3 hover:bg-gray-200 transition p-2 rounded-full z-10"
         onClick={handleToggleWishlist}
       >
         <Heart
@@ -179,24 +161,24 @@ export default function ProductCard({
         />
       </button>
 
-      {/* Image */}
+      {/* ✅ Image */}
       <img
         src={product.images?.[0]?.url}
         alt={product.name}
         className="w-full h-36 object-contain mb-4"
       />
 
-      {/* Product Title */}
+      {/* ✅ Product Name */}
       <h3 className="font-bold text-gray-900 text-sm uppercase h-[38px] overflow-hidden">
         {product.name}
       </h3>
 
-      {/* Description */}
+      {/* ✅ Description */}
       <p className="text-gray-600 text-xs h-[36px] overflow-hidden">
         {product.description || "High-quality eyeglasses for everyday use."}
       </p>
 
-      {/* Prices */}
+      {/* ✅ Price */}
       <div className="flex items-center gap-2 mt-2">
         {hasDiscount && (
           <span className="line-through text-gray-400 text-sm">
@@ -215,7 +197,7 @@ export default function ProductCard({
         )}
       </div>
 
-      {/* Colors */}
+      {/* ✅ Colors */}
       <div className="flex items-center gap-1 mt-1">
         {colors.slice(0, 3).map((c, i) => (
           <span
@@ -232,7 +214,7 @@ export default function ProductCard({
         )}
       </div>
 
-      {/* Add to Cart (اختياري) */}
+      {/* ✅ Add To Cart */}
       {showAddToCart && (
         <button
           onClick={handleAddToCart}
