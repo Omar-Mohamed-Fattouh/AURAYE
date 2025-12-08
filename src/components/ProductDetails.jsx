@@ -536,7 +536,7 @@ export default function ProductDetails() {
             {/* Try On AR */}
             <div className="flex items-center gap-3">
               <button
-                onClick={() => toast("Try On AR - placeholder UI")}
+              onClick={() => navigate(`/tryon/${product.id}`)}
                 className="flex items-center gap-2 border border-gray-200 px-3 py-2 rounded-md"
               >
                 <Eye size={16} />

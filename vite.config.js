@@ -4,6 +4,9 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
   plugins: [react({ jsxRuntime: "automatic" }), tailwindcss()],
+  optimizeDeps: {
+  include: ["mind-ar-js"],
+},
  server: {
     proxy: {
       '/api': {

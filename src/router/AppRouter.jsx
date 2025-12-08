@@ -46,6 +46,9 @@ import Mission from "../pages/Mission.jsx";
 import WhyUS from "../pages/WhyUS.jsx";
 import TeamPgae from "../pages/TeamPgae.jsx";
 
+// AR Work
+import TryOnAR from "../pages/TryOnAR.jsx";
+
 const queryClient = new QueryClient();
 const stripePromise = loadStripe(
   import.meta.env.VITE_STRIPE_KEY ||
@@ -67,7 +70,7 @@ export default function AppRouter() {
       <CartProvider>
         <Toaster />
         <BrowserRouter>
-              <ScrollToTop />
+          <ScrollToTop />
 
           <Routes>
             {/* Auth routes (no layout) */}
@@ -115,13 +118,16 @@ export default function AppRouter() {
               <Route path="/contact" element={<Contact />} />
               <Route path="shipping" element={<ShippingInfo />} />
               <Route path="/products/:id" element={<ProductID />} />
+                {/* AR Work */}
+              <Route path="/tryon/:id" element={<TryOnAR />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/faq" element={<FAQ />} />
               <Route path="/about" element={<About />} />
               <Route path="/mission" element={<Mission />} />
               <Route path="/why-us" element={<WhyUS />} />
               <Route path="/team" element={<TeamPgae />} />
-              <Route path="/profile"
+              <Route
+                path="/profile"
                 element={
                   <ProtectedRoute user={user}>
                     <Profile user={user} setUser={setUser} />
@@ -161,11 +167,12 @@ export default function AppRouter() {
                 }
               />
 
+            
+
               {/* Catch-all inside Layout */}
               <Route path="*" element={<NotFoundPage />} />
             </Route>
           </Routes>
-                
         </BrowserRouter>
       </CartProvider>
     </QueryClientProvider>
