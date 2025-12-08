@@ -192,7 +192,7 @@ export default function ProductCard({
       </h3>
 
       {/* Description */}
-      <p className="text-gray-600 text-xs h-[36px] ">
+      <p className="text-gray-600 text-xs h-[36px] overflow-hidden">
         {product.description || "High-quality eyeglasses for everyday use."}
       </p>
 
