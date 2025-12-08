@@ -156,7 +156,7 @@ export default function ProductCard({
           100
       )
     : 0;
-const description = product.description.length > 120 ? product.description.slice(0, 120) + "..." : product.description;
+
   return (
     <Link
       to={linkTo}
@@ -192,8 +192,8 @@ const description = product.description.length > 120 ? product.description.slice
       </h3>
 
       {/* Description */}
-      <p className="text-gray-600 text-xs h-[36px] overflow-hidden">
-        {description || "High-quality eyeglasses for everyday use."}
+      <p className="text-gray-600 text-xs h-[36px]">
+        {product.description || "High-quality eyeglasses for everyday use."}
       </p>
 
       {/* Prices */}
