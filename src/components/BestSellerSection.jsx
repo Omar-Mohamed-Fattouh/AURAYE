@@ -13,10 +13,6 @@ import ProductCard from "./ProductCard";
 export default function BestSellerSection() {
   const [products, setProducts] = useState([]);
 
-console.log([
-  products
-]);
-
   useEffect(() => {
     const loadBestSellers = async () => {
       try {

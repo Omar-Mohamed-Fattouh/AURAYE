@@ -1,13 +1,13 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { registerSchema } from "../forms/registerSchema";
 import { registerUser } from "../api/authApi";
 import { useNavigate, Link } from "react-router-dom";
-
+import { AuthContext } from "../features/auth/AuthContext";
 /* ----------------------- PASSWORD STRENGTH LOGIC ----------------------- */
 function calculatePasswordStrength(password) {
   let score = 0;
@@ -26,10 +26,12 @@ const strengthColor = [
   "bg-emerald-500",
 ];
 
-export default function Register({ setUser }) {
+export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const { setUser, setIsLoggedIn } = useContext(AuthContext); // ⬅️ بدل prop
 
   const {
     register,
@@ -54,7 +56,6 @@ export default function Register({ setUser }) {
   const inputClass =
     "w-full bg-slate-900/60 border border-slate-700 rounded-xl text-sm text-slate-50 placeholder-slate-500 p-3 pl-11 pr-11 transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/20 outline-none";
 
-  /* ----------------------- SUBMIT FUNCTION ----------------------- */
   const onSubmit = async (data) => {
     setLoading(true);
     try {
@@ -76,15 +77,24 @@ export default function Register({ setUser }) {
         token: response.data.token,
       };
 
+      const token = response.data.token;
+
       if (data.rememberMe) {
         localStorage.setItem("user", JSON.stringify(userSafe));
       } else {
         sessionStorage.setItem("user", JSON.stringify(userSafe));
       }
+      localStorage.setItem("token", token);
 
-      setUser(userSafe);
-      navigate("/");
+      if (typeof setUser === "function") {
+        setUser(userSafe);
+      }
+      if (typeof setIsLoggedIn === "function") {
+        setIsLoggedIn(true);
+      }
+
       reset();
+      navigate("/");
     } catch (err) {
       console.log("FULL ERROR:", err);
 
@@ -98,9 +108,11 @@ export default function Register({ setUser }) {
           ? backendErrors
           : JSON.stringify(backendErrors)
       );
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
+
 
   return (
     <>

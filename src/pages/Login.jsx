@@ -7,9 +7,12 @@ import { loginSchema } from "../forms/loginSchema";
 import { loginUser } from "../api/authApi";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
+import { useContext } from "react";
+import { AuthContext } from "../features/auth/AuthContext";
 
-export default function Login({ setUser }) {
+export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
+  const { setUser, setIsLoggedIn } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -29,52 +32,59 @@ export default function Login({ setUser }) {
   const inputClass =
     "w-full bg-slate-900/60 border border-slate-700 rounded-xl text-sm text-slate-50 placeholder-slate-500 p-3 pl-11 pr-11 transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/20 outline-none";
 
-  const onSubmit = async (data) => {
-    setLoading(true);
-    try {
-      const response = await loginUser({
-        email: data.email,
-        password: data.password,
-      });
+const onSubmit = async (data) => {
+  setLoading(true);
+  try {
+    const response = await loginUser({
+      email: data.email,
+      password: data.password,
+    });
 
-      const userSafe = {
-        id: response.data.id,
-        fullName: response.data.fullName,
-        email: response.data.email,
-        token: response.data.token,
-      };
+    const userSafe = {
+      id: response.data.id,
+      fullName: response.data.fullName,
+      email: response.data.email,
+      token: response.data.token,
+    };
 
-      toast.success(`Welcome back, ${userSafe.fullName}!`);
+    toast.success(`Welcome back, ${userSafe.fullName}!`);
 
-      const token = response.data.token;
+    const token = response.data.token;
 
-      if (data.rememberMe) {
-        localStorage.setItem("user", JSON.stringify(userSafe));
-      } else {
-        sessionStorage.setItem("user", JSON.stringify(userSafe));
-      }
-
-      localStorage.setItem("token", token);
-
-      setUser(userSafe);
-      navigate("/");
-    } catch (err) {
-      console.log("FULL ERROR:", err);
-
-      const backendMessage =
-        err?.response?.data?.message ||
-        err?.response?.data?.errors ||
-        "Login failed";
-
-      toast.error(
-        typeof backendMessage === "string"
-          ? backendMessage
-          : JSON.stringify(backendMessage)
-      );
-    } finally {
-      setLoading(false);
+    if (data.rememberMe) {
+      localStorage.setItem("user", JSON.stringify(userSafe));
+    } else {
+      sessionStorage.setItem("user", JSON.stringify(userSafe));
     }
-  };
+
+    localStorage.setItem("token", token);
+
+    if (typeof setUser === "function") {
+      setUser(userSafe);
+    }
+    if (typeof setIsLoggedIn === "function") {
+      setIsLoggedIn(true);
+    }
+
+    navigate("/");
+  } catch (err) {
+    console.log("FULL ERROR:", err);
+
+    const backendMessage =
+      err?.response?.data?.message ||
+      err?.response?.data?.errors ||
+      "Login failed";
+
+    toast.error(
+      typeof backendMessage === "string"
+        ? backendMessage
+        : JSON.stringify(backendMessage)
+    );
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4 py-8">

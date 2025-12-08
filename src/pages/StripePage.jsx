@@ -3,10 +3,12 @@ import { Elements } from "@stripe/react-stripe-js";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useMemo } from "react";
 import StripePaymentForm from "../components/StripePaymentForm";
-
+import { useContext } from "react";
+import { AuthContext } from "../features/auth/AuthContext";
 export default function StripePage({ stripePromise }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const { isLoggedIn, setIsLoggedIn } = useContext(AuthContext);
 
   // نتوقع إن الـ state جاية من /checkout → createPaymentIntent
   const { clientSecret, total, formData } = location.state || {};

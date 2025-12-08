@@ -2,6 +2,7 @@
 import { Plus, Minus, Trash2, Heart } from "lucide-react";
 import { useState, useEffect } from "react";
 import { formatEGP } from "../components/formatCurrency";
+import { useNavigate } from "react-router-dom";
 
 export default function CartItem({
   item,
@@ -16,7 +17,7 @@ export default function CartItem({
   const totalPrice = eachPrice * Number(item.quantity || 1);
   const canDecrement = Number(item.quantity) > 1;
   const [localQty, setLocalQty] = useState(item.quantity || 1);
-
+  const navigate = useNavigate();
   useEffect(() => {
     setLocalQty(item.quantity || 1);
   }, [item.quantity]);
@@ -28,12 +29,17 @@ export default function CartItem({
       await onChangeQuantityDirect(item.id, qty);
     }
   };
+  // ------------- NAVIGATE TO PRODUCT -------------
+
+  const navigateToProduct = (productId) => () => {
+    navigate(`/products/${productId}`);
+  };
 
   return (
-    <article className="py-5 border-b border-gray-100 last:border-b-0">
+    <article className="py-5 border-b border-gray-100 last:border-b-0" >
       <div className="md:grid md:grid-cols-[minmax(0,2.4fr)_0.8fr_1.1fr] md:items-start md:gap-4">
         {/* COLUMN 1: IMAGE + INFO */}
-        <div className="flex gap-4">
+        <div className="flex gap-4" onClick={navigateToProduct(item.productId)}>
           <div className="w-24 h-28 md:w-32 md:h-36  overflow-hidden shrink-0">
             <img
               src={item.imageUrl}

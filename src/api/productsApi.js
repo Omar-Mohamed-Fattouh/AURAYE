@@ -7,9 +7,7 @@ export const addToCart = (data) => axiosClient.post("/Cart/add", data);
 
 /* -------------------------- MOVE CART ITEM TO WISHLIST -------------------------- */
 export const moveCartItemToWishlist = async (itemId) => {
-  const response = await axiosClient.post(
-    `/Cart/move-to-wishlist/${itemId}`
-  );
+  const response = await axiosClient.post(`/Cart/move-to-wishlist/${itemId}`);
   return response.data;
 };
 
@@ -42,9 +40,11 @@ export const changeCartItemColor = async (itemId, color) => {
 };
 
 /* -------------------------- GET CART TOTAL ITEMS -------------------------- */
+// productsApi.js
 export const getCartTotalItems = async () => {
-  const response = await axiosClient.get("/Cart/total-items");
-  return response.data;
+  const response = await axiosClient.get("/Cart"); // نفس الـ API الموجودة أصلاً
+  const items = response.data?.items || [];
+  return items.length; // هنرجع عدد العناصر بس
 };
 
 /* -------------------------- REMOVE ITEM FROM CART -------------------------- */

@@ -316,10 +316,9 @@ export default function Cart() {
         {/* HEADER */}
         <header className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
-
             <div>
               <h1 className="flex justify-center items-center gap-2 text-2xl md:text-4xl font-bold tracking-tight">
-              <ShoppingBag className="w-8 h-8" />
+                <ShoppingBag className="w-8 h-8" />
                 Shopping Cart
               </h1>
               <p className="text-base font-semibold text-black mt-3 border- px-3 py-1 inline-block">
@@ -357,7 +356,7 @@ export default function Cart() {
             </div>
 
             {/* ROWS */}
-            <div>
+            <div >
               {items.map((item) => (
                 <CartItem
                   key={item.id}

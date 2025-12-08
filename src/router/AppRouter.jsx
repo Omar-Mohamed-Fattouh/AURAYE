@@ -1,9 +1,11 @@
+// src/router/AppRouter.jsx (أو حسب المسار عندك)
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { loadStripe } from "@stripe/stripe-js";
 import { CartProvider } from "../store/cartContext.jsx";
 import { Toaster } from "sonner";
+import { AuthContext } from "../features/auth/AuthContext";
 
 // Auth Pages
 import Register from "../pages/Register";
@@ -24,11 +26,9 @@ import Home from "../pages/Home.jsx";
 // Layout
 import Layout from "../components/Layout.jsx";
 import NotFoundPage from "../pages/NotFoundPage.jsx";
-// import ProductDetails from "../components/ProductDetails.jsx";
 import Contact from "../pages/Contact.jsx";
 import ShippingInfo from "../pages/ShippingInfo.jsx";
 import ProductID from "../pages/ProductID.jsx";
-// import MenProduct from "../components/MenProduct.jsx";
 import MenPage from "../pages/MenPage.jsx";
 import WomenPage from "../pages/WomenPage.jsx";
 import EyeGlassesPage from "../pages/EyeGlassesPage.jsx";
@@ -54,44 +54,45 @@ const stripePromise = loadStripe(
 
 export default function AppRouter() {
   const [user, setUser] = useState(null);
+  const { isLoggedIn, setIsLoggedIn } = useContext(AuthContext);
 
   useEffect(() => {
     const storedUser =
       JSON.parse(localStorage.getItem("user")) ||
       JSON.parse(sessionStorage.getItem("user"));
-    if (storedUser) setUser(storedUser);
-  }, []);
+
+    if (storedUser) {
+      setUser(storedUser);
+    }
+
+    // لو حابب تخليه يعتمد على الـ token كمان:
+    const token = localStorage.getItem("token");
+    setIsLoggedIn(!!token || !!storedUser);
+  }, [setIsLoggedIn]);
 
   return (
     <QueryClientProvider client={queryClient}>
       <CartProvider>
         <Toaster />
         <BrowserRouter>
-              <ScrollToTop />
+          <ScrollToTop />
 
           <Routes>
-            {/* Auth routes (no layout) */}
+            {/* كل الـ Routes جوّه Layout واحد */}
             <Route element={<Layout user={user} setUser={setUser} />}>
+              {/* Auth routes */}
+              <Route
+                path="/login"
+                element={!isLoggedIn ? <Login /> : <Navigate to="/" replace />}
+              />
+
               <Route
                 path="/register"
                 element={
-                  !user ? (
-                    <Register setUser={setUser} />
-                  ) : (
-                    <Navigate to="/dashboard" replace />
-                  )
+                  !isLoggedIn ? <Register /> : <Navigate to="/" replace />
                 }
               />
-              <Route
-                path="/login"
-                element={
-                  !user ? (
-                    <Login setUser={setUser} />
-                  ) : (
-                    <Navigate to="/" replace />
-                  )
-                }
-              />
+
               <Route path="/forget-password" element={<ForgetPassword />} />
               <Route
                 path="/reset-password/:token"
@@ -100,12 +101,9 @@ export default function AppRouter() {
 
               {/* Routes with Layout */}
               <Route path="/" element={<Home />} />
-              <Route
-                path="/dashboard"
-                element={<Dashboard user={user} setUser={setUser} />}
-              />
+              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/products" element={<AllProductPage />} />
-              <Route path="products/men" element={<MenPage />} />
+              <Route path="/products/men" element={<MenPage />} />
               <Route path="/products/women" element={<WomenPage />} />
               <Route path="/products/sunglasses" element={<SunGlassesPage />} />
               <Route path="/products/eyeglasses" element={<EyeGlassesPage />} />
@@ -113,7 +111,7 @@ export default function AppRouter() {
               <Route path="/products/frames" element={<FramesPage />} />
               <Route path="/products/colors" element={<ColorsPage />} />
               <Route path="/contact" element={<Contact />} />
-              <Route path="shipping" element={<ShippingInfo />} />
+              <Route path="/shipping" element={<ShippingInfo />} />
               <Route path="/products/:id" element={<ProductID />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/faq" element={<FAQ />} />
@@ -121,41 +119,47 @@ export default function AppRouter() {
               <Route path="/mission" element={<Mission />} />
               <Route path="/why-us" element={<WhyUS />} />
               <Route path="/team" element={<TeamPgae />} />
-              <Route path="/profile"
+
+              <Route
+                path="/profile"
                 element={
-                  <ProtectedRoute user={user}>
-                    <Profile user={user} setUser={setUser} />
+                  <ProtectedRoute>
+                    <Profile />
                   </ProtectedRoute>
                 }
               />
+
               <Route
                 path="/wishlist"
                 element={
-                  <ProtectedRoute user={user}>
+                  <ProtectedRoute>
                     <WishlistPage />
                   </ProtectedRoute>
                 }
               />
+
               <Route
                 path="/checkout"
                 element={
-                  <ProtectedRoute user={user}>
+                  <ProtectedRoute>
                     <Checkout stripePromise={stripePromise} />
                   </ProtectedRoute>
                 }
               />
+
               <Route
                 path="/success"
                 element={
-                  <ProtectedRoute user={user}>
+                  <ProtectedRoute>
                     <Success />
                   </ProtectedRoute>
                 }
               />
+
               <Route
                 path="/stripe"
                 element={
-                  <ProtectedRoute user={user}>
+                  <ProtectedRoute>
                     <StripePage stripePromise={stripePromise} />
                   </ProtectedRoute>
                 }
@@ -165,7 +169,6 @@ export default function AppRouter() {
               <Route path="*" element={<NotFoundPage />} />
             </Route>
           </Routes>
-                
         </BrowserRouter>
       </CartProvider>
     </QueryClientProvider>

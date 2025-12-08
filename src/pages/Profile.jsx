@@ -11,7 +11,8 @@ import {
   ShoppingBag,
 } from "lucide-react";
 import { toast } from "sonner";
-
+import { useContext } from "react";
+import { AuthContext } from "../features/auth/AuthContext";
 import userApi from "../api/userApi";
 import { getOrders } from "../api/orderApi";
 import { sendContactMessage } from "../api/contactApi";
@@ -24,7 +25,7 @@ const inputClass =
 
 export default function Profile() {
   const navigate = useNavigate();
-
+  const { isLoggedIn, setIsLoggedIn } = useContext(AuthContext);
   const [activeTab, setActiveTab] = useState("profile"); // profile | password | orders | support
   const [profile, setProfile] = useState(null);
   const [profileForm, setProfileForm] = useState({

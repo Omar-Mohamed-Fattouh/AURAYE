@@ -1,9 +1,12 @@
 // ProductDetails.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useContext } from "react";
+import { AuthContext } from "../features/auth/AuthContext";
+import { CartContext } from "../store/cartContext";
+import { addToCart } from "../api/productsApi";
 import {
   getProducts,
-  addToCart,
   addToWishlist,
   removeFromWishlist,
   isProductInWishlist,
@@ -21,7 +24,9 @@ import {
 export default function ProductDetails() {
   const { id } = useParams(); // product id from route
   const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
+
+  const { isLoggedIn, setIsLoggedIn } = useContext(AuthContext);
+  const { refreshCounts } = useContext(CartContext);
   useEffect(() => {
     const handleStorage = () => {
       setIsLoggedIn(!!localStorage.getItem("token"));
@@ -29,7 +34,7 @@ export default function ProductDetails() {
 
     window.addEventListener("storage", handleStorage);
     return () => window.removeEventListener("storage", handleStorage);
-  }, []);
+  }, [setIsLoggedIn]);
   const [loading, setLoading] = useState(true);
   const [product, setProduct] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
@@ -185,10 +190,9 @@ export default function ProductDetails() {
     if (!product) return;
 
     const token = localStorage.getItem("token");
-    const isLoggedIn = !!token;
+    const loggedIn = !!token;
 
-    // ⛔ ممنوع يضيف لو مش عامل login
-    if (!isLoggedIn) {
+    if (!loggedIn) {
       toast.error("You need to log in to add items to the cart.");
       return;
     }
@@ -218,6 +222,11 @@ export default function ProductDetails() {
     try {
       await addToCart(payload);
       toast.success("Product added to cart.");
+
+      // 🟢 هنا السحر: نحدّث الكاونتر في الـ Navbar فورًا
+      if (typeof refreshCounts === "function") {
+        await refreshCounts();
+      }
     } catch (err) {
       console.error(err);
       const msg = err.response?.data;
@@ -257,6 +266,11 @@ export default function ProductDetails() {
         setIsWishlisted(true);
         toast.success("Product added to wishlist.");
       }
+
+      if (typeof refreshCounts === "function") {
+        await refreshCounts();
+      }
+
     } catch (err) {
       console.error(err);
       const msg = err.response?.data;
@@ -500,6 +514,7 @@ export default function ProductDetails() {
 
               <div className="flex-1 flex gap-2">
                 {/* Add to Cart button */}
+
                 <button
                   onClick={handleAddToCart}
                   className={`flex-1 py-2 px-4 rounded-md flex items-center justify-center gap-2 ${

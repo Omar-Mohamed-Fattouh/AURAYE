@@ -1,59 +1,71 @@
-import { useEffect, useState, createContext, useContext } from "react";
+// src/store/cartContext.jsx
+import { createContext, useState, useEffect } from "react";
+import { getCartTotalItems, getWishlist } from "../api/productsApi";
 
-const CartContext = createContext();
+export const CartContext = createContext({
+  cartCount: 0,
+  wishlistCount: 0,
+  refreshCounts: () => {},
+});
 
-export const CartProvider = ({ children }) => {
-  const [items, setItems] = useState(() => {
-    return JSON.parse(localStorage.getItem("cartItems")) || [];
-  });
+export function CartProvider({ children }) {
+  const [cartCount, setCartCount] = useState(0);
+  const [wishlistCount, setWishlistCount] = useState(0);
 
-  useEffect(() => {
-    localStorage.setItem("cartItems", JSON.stringify(items));
-  }, [items]);
-
-  const calculateTotal = (cartItems) =>
-    cartItems.reduce(
-      (sum, item) => sum + (Number(item.price) || 0) * item.quantity,
-      0
-    );
-
-  const addToCart = (product) => {
-    setItems((prevItems) => {
-      const existing = prevItems.find((i) => i.id === product.id);
-
-      if (existing) {
-        return prevItems.map((i) =>
-          i.id === product.id
-            ? { ...i, quantity: i.quantity + 1 }
-            : i
-        );
+  const refreshCounts = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setCartCount(0);
+        setWishlistCount(0);
+        return;
       }
 
-      return [...prevItems, product];
-    });
+      const [cartTotal, wishlistRes] = await Promise.all([
+        getCartTotalItems().catch(() => null),
+        getWishlist().catch(() => null),
+      ]);
+
+      // cart
+      if (cartTotal !== null) {
+        const total =
+          typeof cartTotal === "number"
+            ? cartTotal
+            : typeof cartTotal?.totalItems === "number"
+            ? cartTotal.totalItems
+            : 0;
+        setCartCount(total);
+      } else {
+        setCartCount(0);
+      }
+
+      // wishlist
+      if (wishlistRes !== null) {
+        const data = wishlistRes.data ?? wishlistRes;
+        const itemsArray = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.items)
+          ? data.items
+          : [];
+        setWishlistCount(itemsArray.length);
+      } else {
+        setWishlistCount(0);
+      }
+    } catch (err) {
+      console.error("Error refreshing counts:", err);
+    }
   };
 
-  const removeFromCart = (id) =>
-    setItems((prevItems) => prevItems.filter((item) => item.id !== id));
+  useEffect(() => {
+    // أول لود
+    refreshCounts();
+  }, []);
 
-  const updateQuantity = (id, quantity) =>
-    setItems((prevItems) =>
-      prevItems.map((item) =>
-        item.id === id ? { ...item, quantity } : item
-      )
-    );
+  const value = {
+    cartCount,
+    wishlistCount,
+    refreshCounts,
+  };
 
-  const clearCart = () => setItems([]);
-
-  const total = calculateTotal(items);
-
-  return (
-    <CartContext.Provider
-      value={{ items, total, addToCart, removeFromCart, updateQuantity, clearCart }}
-    >
-      {children}
-    </CartContext.Provider>
-  );
-};
-
-export const useCart = () => useContext(CartContext);
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+}

@@ -1,5 +1,5 @@
 // ProductCard.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import { Heart, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
@@ -10,13 +10,15 @@ import {
   removeFromWishlist,
   isProductInWishlist,
 } from "../api/productsApi";
+import { CartContext } from "../store/cartContext";
 
 export default function ProductCard({
   product,
   linkTo,
-  showAddToCart = false,   // Deals: true | Related: false
+  showAddToCart = false, // Deals: true | Related: false
 }) {
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const { refreshCounts } = useContext(CartContext);
 
   // ✅ Sync wishlist state on mount / refresh
   useEffect(() => {
@@ -67,6 +69,11 @@ export default function ProductCard({
         setIsWishlisted(true);
         toast.success("Product added to wishlist.");
       }
+
+      // ✅ حدّث عدادات الـ Navbar (wishlist + cart لو backend بيأثر عليهم)
+      if (typeof refreshCounts === "function") {
+        await refreshCounts();
+      }
     } catch (err) {
       console.error(err);
       const msg = err.response?.data;
@@ -107,6 +114,11 @@ export default function ProductCard({
         quantity: 1,
       });
       toast.success("Product added to cart.");
+
+      // ✅ نحدّث عداد الكارت في الـ Navbar فورًا
+      if (typeof refreshCounts === "function") {
+        await refreshCounts();
+      }
     } catch (err) {
       console.error("Cart error:", err);
       const msg = err.response?.data;
@@ -144,7 +156,7 @@ export default function ProductCard({
           100
       )
     : 0;
-
+const description = product.description.length > 120 ? product.description.slice(0, 120) + "..." : product.description;
   return (
     <Link
       to={linkTo}
@@ -157,7 +169,7 @@ export default function ProductCard({
     >
       {/* Wishlist button */}
       <button
-        className="absolute top-3 right-3  hover:bg-gray-200 transition duration-500 p-2 rounded-full  z-10"
+        className="absolute top-3 right-3 hover:bg-gray-200 transition duration-500 p-2 rounded-full z-10"
         onClick={handleToggleWishlist}
       >
         <Heart
@@ -181,7 +193,7 @@ export default function ProductCard({
 
       {/* Description */}
       <p className="text-gray-600 text-xs h-[36px] overflow-hidden">
-        {product.description || "High-quality eyeglasses for everyday use."}
+        {description || "High-quality eyeglasses for everyday use."}
       </p>
 
       {/* Prices */}
@@ -208,7 +220,7 @@ export default function ProductCard({
         {colors.slice(0, 3).map((c, i) => (
           <span
             key={i}
-            className="w-3 h-3 rounded-full "
+            className="w-3 h-3 rounded-full"
             style={{ backgroundColor: c }}
           ></span>
         ))}

@@ -1,41 +1,57 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { Menu, ChevronDown, ShoppingCart, User, X, Heart } from "lucide-react";
 import { logoutUser } from "../api/authApi.js";
-import { getCart } from "../api/productsApi.js";
-export default function Navbar({ user, setUser }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [items, setItems] = useState([]);
+import userApi from "../api/userApi.js";
+import { AuthContext } from "../features/auth/AuthContext";
+import { CartContext } from "../store/cartContext";
 
+export default function Navbar({ user, setUser }) {
+  const { isLoggedIn, setIsLoggedIn } = useContext(AuthContext);
+  const { cartCount, wishlistCount } = useContext(CartContext);
+
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const mobileMenuRef = useRef(null);
+
+  /* ---------------------- جلب بيانات المستخدم من الـ API ---------------------- */
   useEffect(() => {
-    async function fetchCart() {
+    async function fetchUserProfile() {
       try {
-        const cartData = await getCart();
-        setItems(cartData.items || []);
+        if (!isLoggedIn) {
+          if (setUser) setUser(null);
+          return;
+        }
+
+        const res = await userApi.getProfile(); // GET /Users/profile
+        const profile = res.data?.data || res.data || res;
+        if (setUser) setUser(profile);
+        localStorage.setItem("user", JSON.stringify(profile));
       } catch (error) {
-        console.error("Error fetching cart data:", error);
+        console.error("Error fetching user profile:", error);
       }
     }
-    fetchCart();
-  }, []);
 
+    fetchUserProfile();
+  }, [isLoggedIn, setUser]);
+
+  /* ---------------------- Logout ---------------------- */
   const logout = async () => {
     try {
       await logoutUser();
     } catch (err) {
       console.error("Logout error:", err);
     } finally {
-      setUser(null);
+      if (setUser) setUser(null);
       localStorage.removeItem("user");
       localStorage.removeItem("token");
       sessionStorage.removeItem("user");
+      setIsLoggedIn(false);
       setMobileOpen(false);
     }
   };
 
-  const mobileMenuRef = useRef(null);
-
+  /* ---------------------- إغلاق من برّه في الموبايل ---------------------- */
   useEffect(() => {
     function handleClickOutside(event) {
       if (
@@ -56,6 +72,8 @@ export default function Navbar({ user, setUser }) {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [mobileOpen]);
+
+  const isUserLoggedIn = isLoggedIn;
 
   return (
     <nav className="w-full bg-black text-white shadow-xl backdrop-blur-md sticky top-0 z-50 border-b border-white/10 font-semibold">
@@ -113,39 +131,14 @@ export default function Navbar({ user, setUser }) {
         <div className="flex items-center gap-4 min-w-0">
           {/* DESKTOP: Wishlist + Cart + Profile */}
           <div className="hidden md:flex items-center gap-2">
-            {user && (
+            {isUserLoggedIn && (
               <>
-                <WishlistMenu />
-
-                <NavItem
-                  to="/cart"
-                  className="flex items-center gap-2 relative"
-                >
-                  <div className="relative">
-                    <ShoppingCart size={22} />
-
-                    {items.length > 0 && (
-                      <span
-                        className="
-              absolute -top-1 -right-2
-              bg-white text-black 
-              text-[10px] md:text-xs 
-              w-4 h-4 md:w-4 md:h-4
-              flex items-center justify-center 
-              rounded-full
-            "
-                      >
-                        {items.length}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* <span className="text-lg">Cart</span> */}
-                </NavItem>
+                <WishlistMenu count={wishlistCount} />
+                <CartMenu count={cartCount} />
               </>
             )}
 
-            {user && (
+            {isUserLoggedIn && (
               <div className="hidden md:flex">
                 <ProfileMenu user={user} logout={logout} />
               </div>
@@ -153,7 +146,7 @@ export default function Navbar({ user, setUser }) {
           </div>
 
           {/* LOGIN / REGISTER (desktop) */}
-          {!user && (
+          {!isUserLoggedIn && (
             <div className="hidden md:flex gap-2">
               <Link
                 to="/login"
@@ -172,12 +165,28 @@ export default function Navbar({ user, setUser }) {
 
           {/* MOBILE ICONS */}
           <div className="flex lg:hidden items-center">
-            {/* Wishlist mobile */}
-            {user && (
+            {isUserLoggedIn && (
               <>
+                {/* Wishlist mobile */}
                 <div className="md:hidden">
-                  <NavItem to="/wishlist">
-                    <Heart size={20} />
+                  <NavItem to="/wishlist" className="relative">
+                    <div className="relative">
+                      <Heart size={20} />
+                      {wishlistCount > 0 && (
+                        <span
+                          className="
+                            absolute -top-1 -right-2
+                            bg-white text-black
+                            text-[10px]
+                            w-4 h-4
+                            flex items-center justify-center
+                            rounded-full
+                          "
+                        >
+                          {wishlistCount}
+                        </span>
+                      )}
+                    </div>
                   </NavItem>
                 </div>
 
@@ -186,19 +195,18 @@ export default function Navbar({ user, setUser }) {
                   <NavItem to="/cart" className="relative">
                     <div className="relative">
                       <ShoppingCart size={20} />
-
-                      {items.length > 0 && (
+                      {cartCount > 0 && (
                         <span
                           className="
-            absolute -top-1 -right-2
-            bg-white text-black
-            text-[10px]
-            w-4 h-4
-            flex items-center justify-center
-            rounded-full
-          "
+                            absolute -top-1 -right-2
+                            bg-white text-black
+                            text-[10px]
+                            w-4 h-4
+                            flex items-center justify-center
+                            rounded-full
+                          "
                         >
-                          {items.length}
+                          {cartCount}
                         </span>
                       )}
                     </div>
@@ -206,6 +214,7 @@ export default function Navbar({ user, setUser }) {
                 </div>
               </>
             )}
+
             <button
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
               onClick={() => setMobileOpen(!mobileOpen)}
@@ -350,12 +359,12 @@ export default function Navbar({ user, setUser }) {
             </DropItemMobile>
           </DropdownMobile>
 
-          {user && (
+          {isUserLoggedIn && (
             <div className="md:hidden">
               <DropdownMobile
                 label={
                   <>
-                    {user.fullName}'s Profile
+                    {(user?.fullName || "My Account")}'s Profile
                     <UserIcon />
                   </>
                 }
@@ -383,7 +392,7 @@ export default function Navbar({ user, setUser }) {
             </div>
           )}
 
-          {!user && (
+          {!isUserLoggedIn && (
             <div className="md:hidden">
               <div className="border-t border-white/50"></div>
               <Link
@@ -409,11 +418,14 @@ export default function Navbar({ user, setUser }) {
 }
 
 /* NAV ITEM DESKTOP */
-function NavItem({ to, children }) {
+function NavItem({ to, children, className = "" }) {
   return (
     <Link
       to={to}
-      className="transition text-sm uppercase tracking-wide px-3 py-2 gap-3 rounded-md hover:bg-white/10 flex items-center whitespace-nowrap"
+      className={
+        "transition text-sm uppercase tracking-wide px-3 py-2 gap-3 rounded-md hover:bg-white/10 flex items-center whitespace-nowrap " +
+        className
+      }
     >
       {children}
     </Link>
@@ -422,14 +434,15 @@ function NavItem({ to, children }) {
 
 /* PROFILE MENU DESKTOP */
 function ProfileMenu({ user, logout }) {
+  const nameNotSlice = user?.fullName || "My Account";
+const name = nameNotSlice.length > 7 ? nameNotSlice.slice(0, 7) : nameNotSlice;
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger
         className="flex items-center gap-2 hover:text-gray-300 truncate max-w-[180px] text-lg"
         aria-label="Open profile menu"
       >
-        <User size={20} />{" "}
-        <span className="truncate">{user.fullName}'s Profile</span>
+        <User size={20} /> <span className="truncate">{name}'s Profile</span>
       </DropdownMenu.Trigger>
 
       <DropdownMenu.Content
@@ -440,7 +453,7 @@ function ProfileMenu({ user, logout }) {
         <DropItem to="/shipping">Orders</DropItem>
         <button
           onClick={logout}
-          className="w-full text-left px-3 py-2 rounded-md hover:bg-white/10 transition text-sm"
+          className="w-full text-left px-3 py-2 rounded-md hover:bg:white/10 transition text-sm"
         >
           Logout
         </button>
@@ -449,24 +462,59 @@ function ProfileMenu({ user, logout }) {
   );
 }
 
-/* WISHLIST MENU DESKTOP (نفس ستايل ProfileMenu) */
-function WishlistMenu() {
+/* CART ICON + COUNTER DESKTOP */
+function CartMenu({ count }) {
   return (
-    <DropdownMenu.Root>
-      <DropdownMenu.Trigger
-        className="flex items-center gap-2 hover:text-gray-300 truncate text-lg"
-        aria-label="Open wishlist menu"
-        asChild
-      >
-        <Link
-          to="/wishlist"
-          className="flex items-center gap-2 hover:text-gray-300 truncate text-lg"
-        >
-          <Heart size={22} />
-          {/* <span className="truncate">Wishlist</span> */}
-        </Link>
-      </DropdownMenu.Trigger>
-    </DropdownMenu.Root>
+    <Link
+      to="/cart"
+      className="flex items-center gap-2 hover:text-gray-300 text-lg relative"
+    >
+      <div className="relative">
+        <ShoppingCart size={22} />
+        {count > 0 && (
+          <span
+            className="
+              absolute -top-1 -right-2
+              bg-white text-black 
+              text-[10px] md:text-xs 
+              w-4 h-4 md:w-4 md:h-4
+              flex items-center justify-center 
+              rounded-full
+            "
+          >
+            {count}
+          </span>
+        )}
+      </div>
+    </Link>
+  );
+}
+
+/* WISHLIST MENU DESKTOP */
+function WishlistMenu({ count }) {
+  return (
+    <Link
+      to="/wishlist"
+      className="flex items-center gap-2 hover:text-gray-300 text-lg relative"
+    >
+      <div className="relative">
+        <Heart size={22} />
+        {count > 0 && (
+          <span
+            className="
+              absolute -top-1 -right-2
+              bg-white text-black 
+              text-[10px] md:text-xs 
+              w-4 h-4 md:w-4 md:h-4
+              flex items-center justify-center 
+              rounded-full
+            "
+          >
+            {count}
+          </span>
+        )}
+      </div>
+    </Link>
   );
 }
 
@@ -474,7 +522,7 @@ function WishlistMenu() {
 function Dropdown({ label, children }) {
   return (
     <DropdownMenu.Root modal={false}>
-      <DropdownMenu.Trigger className="flex items-center px-4 py-2 gap-1 rounded-md hover:bg-white/10 transition">
+      <DropdownMenu.Trigger className="flex items-center px-4 py-2 gap-1 rounded-md hover:bg:white/10 transition">
         {label} <ChevronDown size={16} />
       </DropdownMenu.Trigger>
       <DropdownMenu.Content
@@ -495,7 +543,7 @@ function DropItem({ to, children }) {
     <DropdownMenu.Item asChild>
       <Link
         to={to}
-        className="px-3 py-2 rounded-md hover:bg-white/10 transition text-sm whitespace-nowrap"
+        className="px-3 py-2 rounded-md hover:bg:white/10 transition text-sm whitespace-nowrap"
       >
         {children}
       </Link>
@@ -509,7 +557,7 @@ function NavItemMobile({ to, children, onClick }) {
     <Link
       to={to}
       onClick={onClick}
-      className="block px-4 py-2 rounded-md hover:bg-white/10 transition"
+      className="block px-4 py-2 rounded-md hover:bg:white/10 transition"
     >
       {children}
     </Link>
@@ -517,7 +565,7 @@ function NavItemMobile({ to, children, onClick }) {
 }
 
 /* MOBILE DROPDOWN */
-function DropdownMobile({ label, children, icon: Icon }) {
+function DropdownMobile({ label, children, icon: Icon, closeMenu }) {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -560,7 +608,7 @@ function DropItemMobile({ to, children, closeMenu }) {
     <Link
       to={to}
       onClick={closeMenu}
-      className="block px-4 py-2 rounded-md hover:bg-white/10 transition"
+      className="block px-4 py-2 rounded-md hover:bg:white/10 transition"
     >
       {children}
     </Link>

@@ -36,9 +36,3 @@ export const logoutUser = async () => {
   return axiosClient.post("/auth/logout");
 };
 
-/* ---------------------- GET CURRENT USER ------------------ */
-// Requires: Authorization Header (token already handled by axiosClient)
-export const getCurrentUser = async () => {
-  const res = await axiosClient.get("/auth/me");
-  return res.data;
-};
