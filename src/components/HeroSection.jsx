@@ -3,12 +3,13 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Search, Sparkles, ScanFace, ArrowRight } from "lucide-react";
+import { getProducts } from "../api/productsApi";
 
 export default function HeroSection({
   products = [],
   backgroundImage = "/HP_JUPITER_SECONDARY_BANNER_D.avif",
   placeholder = "Search for eyewear, styles, or brands...",
-  // tags لو بعتّيها هتتستخدم، لو لأ هنعتمد بالكامل على الداتا
+  // tags: if you pass custom tags we use them, otherwise we build from data
   tags,
   onSelect,
 }) {
@@ -18,25 +19,56 @@ export default function HeroSection({
   const [debounced, setDebounced] = useState("");
   const [open, setOpen] = useState(false);
 
+  // internal products source (from props OR API)
+  const [sourceProducts, setSourceProducts] = useState(products);
+  const [loadingProducts, setLoadingProducts] = useState(false);
+
   const inputRef = useRef(null);
   const resultsRef = useRef(null);
 
-  // ---------- debounce ----------
+  /* -------------------- LOAD PRODUCTS -------------------- */
+
+  // keep in sync with props if parent passes products
+  useEffect(() => {
+    if (products && products.length > 0) {
+      setSourceProducts(products);
+    }
+  }, [products]);
+
+  // if no products from props, fetch from API once
+  useEffect(() => {
+    const fetchData = async () => {
+      if (products && products.length > 0) return;
+      try {
+        setLoadingProducts(true);
+        const data = await getProducts();
+        setSourceProducts(data || []);
+      } catch (err) {
+        console.error("Hero search: failed to load products", err);
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
+    fetchData();
+  }, [products]);
+
+  /* -------------------- DEBOUNCE -------------------- */
+
   useEffect(() => {
     const t = setTimeout(() => setDebounced(searchValue.trim()), 150);
     return () => clearTimeout(t);
   }, [searchValue]);
 
-  // ---------- dynamic tags from data (category / shape / gender) ----------
+  /* -------------------- DYNAMIC TAGS -------------------- */
+
   const effectiveTags = useMemo(() => {
     if (tags && tags.length > 0) return tags;
 
     const values = [];
 
-    products.forEach((p) => {
-      // category name من الأوبجكت
+    sourceProducts.forEach((p) => {
       if (p.category) {
-        if (typeof p.category === "string" && p.category) {
+        if (typeof p.category === "string") {
           values.push(p.category);
         } else if (p.category?.name) {
           values.push(p.category.name);
@@ -46,15 +78,16 @@ export default function HeroSection({
       if (p.gender) values.push(p.gender);
     });
 
-    return [...new Set(values)].slice(0, 8); // أول ٨ قيم بس
-  }, [tags, products]);
+    return [...new Set(values)].slice(0, 8);
+  }, [tags, sourceProducts]);
 
-  // ---------- filter products ----------
+  /* -------------------- FILTER PRODUCTS -------------------- */
+
   const filtered = useMemo(() => {
     if (!debounced) return [];
     const q = debounced.toLowerCase();
 
-    return products
+    return sourceProducts
       .filter((p) => {
         const name = p.title || p.name || "";
         const desc = p.description || "";
@@ -74,9 +107,10 @@ export default function HeroSection({
         );
       })
       .slice(0, 8);
-  }, [debounced, products]);
+  }, [debounced, sourceProducts]);
 
-  // helper للصور: متوافق مع شكل الداتا اللي بعتّيه
+  /* -------------------- IMAGE HELPER -------------------- */
+
   const getThumb = (item) => {
     return (
       item.defaultImgUrl ||
@@ -89,7 +123,8 @@ export default function HeroSection({
     );
   };
 
-  // ---------- close on outside click ----------
+  /* -------------------- CLOSE ON OUTSIDE CLICK -------------------- */
+
   useEffect(() => {
     const handler = (e) => {
       if (
@@ -105,7 +140,8 @@ export default function HeroSection({
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // ---------- select product ----------
+  /* -------------------- SELECT PRODUCT -------------------- */
+
   const handleSelect = (item) => {
     setSearchValue("");
     setOpen(false);
@@ -113,7 +149,8 @@ export default function HeroSection({
 
     const id = item.productId ?? item.id;
     if (id != null) {
-      navigate(`/product/${id}`, { state: { product: item } });
+      // use /products/:id to match your AllProducts routing
+      navigate(`/products/${id}`, { state: { product: item } });
     }
   };
 
@@ -122,6 +159,8 @@ export default function HeroSection({
     if (!debounced) return;
     setOpen(true);
   };
+
+  /* -------------------- UI -------------------- */
 
   return (
     <motion.section
@@ -138,10 +177,8 @@ export default function HeroSection({
           className="w-full h-full object-cover object-[60%_center] lg:object-center"
         />
 
-        {/* dark overlay */}
         <div className="absolute inset-0 bg-gradient-to-r from-black via-black/85 to-black/20" />
 
-        {/* subtle glows */}
         <div className="pointer-events-none absolute inset-0 opacity-60">
           <div className="absolute -top-40 -left-16 h-72 w-72 rounded-full bg-white/20 blur-3xl" />
           <div className="absolute -bottom-40 -right-10 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
@@ -153,7 +190,6 @@ export default function HeroSection({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-10 lg:px-14 flex flex-col lg:flex-row items-center lg:items-start gap-10">
           {/* LEFT: text + search */}
           <div className="w-full lg:max-w-xl xl:max-w-2xl">
-            {/* overline pill */}
             <div className="inline-flex items-center gap-2 rounded-full bg-white/5 border border-white/15 px-3 sm:px-4 py-1 text-[11px] uppercase tracking-[0.25em] text-white/70 mb-4">
               <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
               <span>Next-Gen Eyewear Experience</span>
@@ -172,7 +208,6 @@ export default function HeroSection({
               Sharp, realistic, and tailored to your face in seconds.
             </p>
 
-            {/* small badges */}
             <div className="flex flex-wrap gap-3 mb-6 text-[11px] text-gray-200">
               <div className="inline-flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-3 py-1">
                 <ScanFace className="w-3.5 h-3.5 text-white" />
@@ -195,7 +230,11 @@ export default function HeroSection({
                 <input
                   ref={inputRef}
                   type="text"
-                  placeholder={placeholder}
+                  placeholder={
+                    loadingProducts
+                      ? "Loading products..."
+                      : placeholder
+                  }
                   value={searchValue}
                   onChange={(e) => {
                     setSearchValue(e.target.value);
@@ -208,6 +247,7 @@ export default function HeroSection({
                 <button
                   type="submit"
                   className="inline-flex items-center gap-1 rounded-full bg-white text-black text-xs sm:text-sm font-semibold px-3 sm:px-4 py-1.5 hover:bg-gray-100 transition-colors"
+                  disabled={loadingProducts}
                 >
                   <span>Search</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -220,7 +260,11 @@ export default function HeroSection({
                   ref={resultsRef}
                   className="absolute left-0 right-0 mt-3 rounded-2xl bg-black/95 border border-white/10 shadow-2xl backdrop-blur-2xl max-h-72 overflow-y-auto z-50"
                 >
-                  {filtered.length > 0 ? (
+                  {loadingProducts ? (
+                    <div className="px-4 py-4 text-sm text-white/60">
+                      Loading products...
+                    </div>
+                  ) : filtered.length > 0 ? (
                     <>
                       <div className="px-4 pt-3 pb-2 text-[11px] uppercase tracking-[0.2em] text-white/40 flex items-center justify-between">
                         <span>Products</span>
@@ -251,9 +295,11 @@ export default function HeroSection({
                             <p className="text-xs sm:text-sm text-white truncate">
                               {item.title || item.name}
                             </p>
-                            {(item.category?.name || item.shape) && (
+                            {(item.category || item.category?.name || item.shape) && (
                               <p className="text-[11px] text-white/45 truncate">
-                                {item.category?.name}
+                                {typeof item.category === "string"
+                                  ? item.category
+                                  : item.category?.name}
                                 {item.shape ? ` • ${item.shape}` : ""}
                               </p>
                             )}
@@ -275,7 +321,7 @@ export default function HeroSection({
               )}
             </form>
 
-            {/* TAGS – من الداتا مش static */}
+            {/* TAGS */}
             {effectiveTags.length > 0 && (
               <div className="mt-5 flex flex-wrap items-center gap-3">
                 <span className="text-xs sm:text-sm text-white/70">

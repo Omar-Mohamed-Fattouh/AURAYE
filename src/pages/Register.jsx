@@ -2,12 +2,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
 import { useContext, useState } from "react";
-import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { registerSchema } from "../forms/registerSchema";
 import { registerUser } from "../api/authApi";
 import { useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "../features/auth/AuthContext";
+import { toast } from "sonner";
 /* ----------------------- PASSWORD STRENGTH LOGIC ----------------------- */
 function calculatePasswordStrength(password) {
   let score = 0;

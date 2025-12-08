@@ -66,6 +66,17 @@ export const isProductInWishlist = (productId) =>
 
 export const getWishlist = () => axiosClient.get("/Wishlist");
 
+
+
+
+/* -------------------------- GET PRODUCT REVIEWS -------------------------- */
+export const getProductReviews = async (productId) => {
+  const response = await axiosClient.get(`/Review/${productId}`);
+  return response.data;
+};
+
+
+
 /* -------------------------- PRODUCTS -------------------------- */
 export const getProducts = async () => {
   const response = await axiosClient.get("/Products");
@@ -127,3 +138,5 @@ export const getBestSellerProducts = async () => {
     };
   });
 };
+
+

@@ -20,8 +20,8 @@ const Home = () => {
       <BestSellerSection />
       <CategoriesSection />
       <AchievementsSection />
-      <ARVideoSection />
       <SubscribeSection />
+      <ARVideoSection />
     </div>
   );
 };

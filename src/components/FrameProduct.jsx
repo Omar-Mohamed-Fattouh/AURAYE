@@ -15,7 +15,7 @@ export default function FrameProduct() {
     const load = async () => {
       try {
         const all = await getProducts();
-        setProducts(all);
+        setProducts(Array.isArray(all) ? all : []);
       } catch (err) {
         console.error("Failed to load products:", err);
       } finally {
@@ -38,9 +38,10 @@ export default function FrameProduct() {
   // Apply search + filter
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
-      const nameMatch = p.name
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase().trim());
+      const name = (p.name || p.title || "").toLowerCase();
+      const search = searchTerm.toLowerCase().trim();
+
+      const nameMatch = !search || name.includes(search);
 
       const frameMatch =
         !frameFilter ||
@@ -53,60 +54,51 @@ export default function FrameProduct() {
 
   if (loading) {
     return (
-      <section className="py-16">
-        <div className="container mx-auto px-6">
-          <p className="text-center text-gray-500">Loading frames...</p>
-        </div>
+      <section className="min-h-screen bg-white flex items-center justify-center">
+        <p className="text-sm text-gray-500 tracking-wide">
+          Loading frames…
+        </p>
       </section>
     );
   }
 
   return (
-    <section className="py-16 bg-white">
-      <div className="container mx-auto px-6">
-        {/*Title*/}
-        <div className="mb-6 space-y-3">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-            Shop by Frame Material
-          </h1>
-          <p className="text-gray-600 text-sm md:text-base max-w-xl">
-            Choose between acetate, metal, titanium, mixed materials, and more.
-            Use filters to find your perfect frame.
-          </p>
-        </div>
+    <section className="min-h-screen bg-white py-10">
+      <div className="w-full mx-auto px-4 lg:px-8">
+        {/* Header */}
+        <div className="mb-6 flex flex-col gap-3">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-semibold text-black tracking-tight">
+              Shop by Frame Material
+            </h1>
+            <p className="mt-1 text-xs md:text-sm text-gray-500 max-w-xl">
+              Choose between acetate, metal, titanium, mixed materials, and more.
+              Use search and filters to find your perfect frame.
+            </p>
+          </div>
 
-        {/* Search Bar */}
-        <div className="mb-4">
-          <div
-            className="
-              w-full md:w-2/3 
-              bg-gray-50 border border-gray-200 
-              rounded-full px-4 py-2 
-              flex items-center gap-2
-              shadow-sm
-              transition-all duration-200 ease-out
-              focus-within:border-black focus-within:bg-white focus-within:shadow-md
-            "
-          >
-            <Search size={18} className="text-gray-400 flex-shrink-0" />
-            <input
-              type="text"
-              placeholder="Search frames..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="
-                w-full bg-transparent outline-none text-sm
-                placeholder:text-gray-400
-              "
-            />
+          {/* Search block (black card) */}
+          <div className="rounded-3xl bg-black border border-gray-200 shadow-sm px-4 py-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="w-full md:max-w-lg">
+              <div className="flex items-center gap-2 rounded-2xl bg-[#212121] border border-neutral-800 px-3 py-2 focus-within:border-white focus-within:shadow-sm transition">
+                <Search className="w-4 h-4 text-neutral-300" />
+                <input
+                  type="text"
+                  placeholder="Search frames…"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="flex-1 bg-transparent outline-none text-xs md:text-sm text-white placeholder:text-neutral-500"
+                />
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Frame Material Chips */}
         {frameTypes.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-6">
+          <div className="flex flex-wrap gap-2 mb-6 text-[11px]">
             <FilterChip
-              label="All Materials"
+              label="All materials"
               active={frameFilter === ""}
               onClick={() => setFrameFilter("")}
             />
@@ -115,36 +107,45 @@ export default function FrameProduct() {
                 key={material}
                 label={material}
                 active={frameFilter === material}
-                onClick={() =>
-                  setFrameFilter((prev) =>
-                    prev === material ? "" : material
-                  )
-                }
-              />
+                onClick={() => setFrameFilter(material)}
+            />
             ))}
           </div>
         )}
 
         {/* Results count */}
         <div className="mb-4 text-xs text-gray-500">
-          Showing {filteredProducts.length} of {products.length} products
+          Showing{" "}
+          <span className="font-semibold text-black">
+            {filteredProducts.length}
+          </span>{" "}
+          of {products.length} products
         </div>
 
         {/* GRID */}
         {filteredProducts.length === 0 ? (
-          <div className="mt-8 text-gray-500 text-sm">
-            No frames found. Try another material or search term.
+          <div className="rounded-3xl bg-white border border-gray-200 shadow-sm p-10 text-center">
+            <p className="text-sm font-medium text-black">
+              No frames found.
+            </p>
+            <p className="mt-1 text-xs text-gray-500">
+              Try another material or search term.
+            </p>
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {filteredProducts.map((product) => (
-              <ProductCard
+              <div
                 key={product.id}
-                product={product}
-                linkTo={`/products/${product.id}`}
-                showAddToCart={false}
-                badge={null}
-              />
+                className="group rounded-3xl bg-white border border-gray-100 hover:-translate-y-1 hover:shadow-md transition-all duration-200"
+              >
+                <ProductCard
+                  product={product}
+                  linkTo={`/products/${product.id}`}
+                  showAddToCart={false}
+                  badge={null}
+                />
+              </div>
             ))}
           </div>
         )}
@@ -157,8 +158,9 @@ function FilterChip({ label, active, onClick }) {
   return (
     <button
       onClick={onClick}
+      type="button"
       className={`
-        px-3 py-1.5 rounded-full text-xs md:text-sm
+        px-3 py-1.5 rounded-full text-[11px] md:text-sm
         border
         transition-all duration-200 ease-out
         ${

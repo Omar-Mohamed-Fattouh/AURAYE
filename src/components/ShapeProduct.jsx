@@ -15,7 +15,7 @@ export default function ShapeProduct() {
     const load = async () => {
       try {
         const all = await getProducts();
-        setProducts(all);
+        setProducts(Array.isArray(all) ? all : []);
       } catch (err) {
         console.error("Failed to load products:", err);
       } finally {
@@ -37,9 +37,10 @@ export default function ShapeProduct() {
 
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
-      const nameMatch = p.name
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase().trim());
+      const name = (p.name || p.title || "").toLowerCase();
+      const search = searchTerm.toLowerCase().trim();
+
+      const nameMatch = !search || name.includes(search);
 
       const shapeMatch =
         !shapeFilter ||
@@ -51,58 +52,67 @@ export default function ShapeProduct() {
 
   if (loading) {
     return (
-      <section className="py-16">
-        <div className="container mx-auto px-6">
-          <p className="text-center text-gray-500">Loading products...</p>
-        </div>
+      <section className="min-h-screen bg-white flex items-center justify-center">
+        <p className="text-sm text-gray-500 tracking-wide">
+          Loading products…
+        </p>
       </section>
     );
   }
 
   return (
-    <section className="py-16 bg-white">
-      <div className="container mx-auto px-6">
+    <section className="min-h-screen bg-white py-10">
+      <div className="w-full mx-auto px-4 lg:px-8">
         {/* Header */}
-        <div className="mb-6 space-y-3">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-            Shop by Shape
-          </h1>
-          <p className="text-gray-600 text-sm md:text-base max-w-xl">
-            Explore frames by their shape. Use the search bar and shape filters
-            to quickly find what you like.
-          </p>
-        </div>
+        <div className="mb-6 flex flex-col gap-3">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-semibold text-black tracking-tight">
+                Shop by Shape
+              </h1>
+              <p className="mt-1 text-xs md:text-sm text-gray-500 max-w-xl">
+                Explore frames by their shape. Use search and filters to quickly
+                find what you like.
+              </p>
+            </div>
 
-        {/* Search */}
-        <div className="mb-4">
-          <div
-            className="
-              w-full md:w-2/3 
-              bg-gray-50 border border-gray-200 
-              rounded-full px-4 py-2 
-              flex items-center gap-2
-              shadow-sm
-              transition-all duration-200 ease-out
-              focus-within:border-black focus-within:bg-white focus-within:shadow-md
-            "
-          >
-            <Search size={18} className="text-gray-400 flex-shrink-0" />
-            <input
-              type="text"
-              placeholder="Search by product name..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="
-                w-full bg-transparent outline-none text-sm
-                placeholder:text-gray-400
-              "
-            />
+            {/* Desktop stats */}
+            <div className="hidden md:flex items-center gap-4 text-xs text-gray-600">
+              <div className="px-3 py-1 rounded-full bg-white border border-gray-200 shadow-sm">
+                Total products:{" "}
+                <span className="font-medium text-black">
+                  {products.length}
+                </span>
+              </div>
+              <div className="px-3 py-1 rounded-full bg-white border border-gray-200 shadow-sm">
+                Showing:{" "}
+                <span className="font-medium text-black">
+                  {filteredProducts.length}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Search (black card like other pages) */}
+          <div className="rounded-3xl bg-black border border-gray-200 shadow-sm px-4 py-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="w-full md:max-w-lg">
+              <div className="flex items-center gap-2 rounded-2xl bg-[#212121] border border-neutral-800 px-3 py-2 focus-within:border-white focus-within:shadow-sm transition">
+                <Search className="w-4 h-4 text-neutral-300" />
+                <input
+                  type="text"
+                  placeholder="Search by product name…"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="flex-1 bg-transparent outline-none text-xs md:text-sm text-white placeholder:text-neutral-500"
+                />
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Shape chips */}
         {shapes.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-6">
+          <div className="flex flex-wrap gap-2 mb-6 text-[11px]">
             <FilterChip
               label="All shapes"
               active={shapeFilter === ""}
@@ -113,34 +123,45 @@ export default function ShapeProduct() {
                 key={s}
                 label={s}
                 active={shapeFilter === s}
-                onClick={() =>
-                  setShapeFilter((prev) => (prev === s ? "" : s))
-                }
+                onClick={() => setShapeFilter(s)}
               />
             ))}
           </div>
         )}
 
-        {/* Results count */}
+        {/* Results count (mobile + desktop) */}
         <div className="mb-4 text-xs text-gray-500">
-          Showing {filteredProducts.length} of {products.length} products
+          Showing{" "}
+          <span className="font-semibold text-black">
+            {filteredProducts.length}
+          </span>{" "}
+          of {products.length} products
         </div>
 
         {/* Grid */}
         {filteredProducts.length === 0 ? (
-          <div className="mt-8 text-gray-500 text-sm">
-            No products found. Try another shape or search term.
+          <div className="rounded-3xl bg-white border border-gray-200 shadow-sm p-10 text-center">
+            <p className="text-sm font-medium text-black">
+              No products found.
+            </p>
+            <p className="mt-1 text-xs text-gray-500">
+              Try another shape or search term.
+            </p>
           </div>
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4">
             {filteredProducts.map((product) => (
-              <ProductCard
+              <div
                 key={product.id}
-                product={product}
-                linkTo={`/products/${product.id}`}
-                showAddToCart={false}
-                badge={null}
-              />
+                className="group rounded-3xl bg-white border border-gray-100 hover:-translate-y-1 hover:shadow-md transition-all duration-200"
+              >
+                <ProductCard
+                  product={product}
+                  linkTo={`/products/${product.id}`}
+                  showAddToCart={false}
+                  badge={null}
+                />
+              </div>
             ))}
           </div>
         )}
@@ -153,16 +174,12 @@ function FilterChip({ label, active, onClick }) {
   return (
     <button
       onClick={onClick}
-      className={`
-        px-3 py-1.5 rounded-full text-xs md:text-sm
-        border
-        transition-all duration-200 ease-out
-        ${
-          active
-            ? "bg-black text-white border-black shadow-sm"
-            : "bg-white text-gray-700 border-gray-300 hover:border-black hover:bg-gray-50"
-        }
-      `}
+      type="button"
+      className={`px-3 py-1.5 rounded-full text-[11px] md:text-xs border transition-all duration-200 ${
+        active
+          ? "bg-black text-white border-black shadow-sm"
+          : "bg-white text-gray-700 border-gray-300 hover:border-black hover:bg-gray-50"
+      }`}
     >
       {label}
     </button>

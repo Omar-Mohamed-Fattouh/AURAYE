@@ -153,12 +153,12 @@ const navBaseClasses = "w-full text-white font-semibold z-50";
 
               <Dropdown label="Products">
                 <DropItem to="/products">All Products</DropItem>
-                <DropItem to="/products/men">Men</DropItem>
-                <DropItem to="/products/women">Women</DropItem>
                 <DropItem to="/products/sunglasses">Sunglasses</DropItem>
                 <DropItem to="/products/eyeglasses">Eyeglasses</DropItem>
-                <DropItem to="/products/frames">Frames Material</DropItem>
+                <DropItem to="/products/men">Men</DropItem>
+                <DropItem to="/products/women">Women</DropItem>
                 <DropItem to="/products/shapes">Shapes</DropItem>
+                <DropItem to="/products/frames">Frames Material</DropItem>
                 <DropItem to="/products/colors">Colors</DropItem>
               </Dropdown>
 
@@ -173,7 +173,6 @@ const navBaseClasses = "w-full text-white font-semibold z-50";
                 <DropItem to="/contact">Contact Us</DropItem>
                 <DropItem to="/faq">FAQs</DropItem>
                 <DropItem to="/shipping">Shipping Info</DropItem>
-                <DropItem to="/refunds">Returns & Refunds</DropItem>
                 <DropItem to="/track">Track Order</DropItem>
               </Dropdown>
             </div>
@@ -332,18 +331,7 @@ const navBaseClasses = "w-full text-white font-semibold z-50";
               >
                 All Products
               </DropItemMobile>
-              <DropItemMobile
-                to="/products/men"
-                closeMenu={() => setMobileOpen(false)}
-              >
-                Men
-              </DropItemMobile>
-              <DropItemMobile
-                to="/products/women"
-                closeMenu={() => setMobileOpen(false)}
-              >
-                Women
-              </DropItemMobile>
+
               <DropItemMobile
                 to="/products/sunglasses"
                 closeMenu={() => setMobileOpen(false)}
@@ -355,6 +343,18 @@ const navBaseClasses = "w-full text-white font-semibold z-50";
                 closeMenu={() => setMobileOpen(false)}
               >
                 Eyeglasses
+              </DropItemMobile>
+                            <DropItemMobile
+                to="/products/men"
+                closeMenu={() => setMobileOpen(false)}
+              >
+                Men
+              </DropItemMobile>
+              <DropItemMobile
+                to="/products/women"
+                closeMenu={() => setMobileOpen(false)}
+              >
+                Women
               </DropItemMobile>
               <DropItemMobile
                 to="/products/shapes"
@@ -427,12 +427,6 @@ const navBaseClasses = "w-full text-white font-semibold z-50";
                 closeMenu={() => setMobileOpen(false)}
               >
                 Shipping Info
-              </DropItemMobile>
-              <DropItemMobile
-                to="/refunds"
-                closeMenu={() => setMobileOpen(false)}
-              >
-                Returns & Refunds
               </DropItemMobile>
               <DropItemMobile
                 to="/track"
