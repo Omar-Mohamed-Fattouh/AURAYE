@@ -30,6 +30,8 @@ const userApi = {
     // data = { oldPassword, newPassword, confirmPassword }
     return axiosClient.put("/Users/change-password", data);
   },
+
+  deleteImage: () => axiosClient.delete("/Users/remove-image"),
 };
 
 export default userApi;

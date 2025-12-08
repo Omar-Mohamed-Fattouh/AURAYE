@@ -118,7 +118,7 @@ export default function Register() {
     <>
       <ToastContainer position="top-center" />
 
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4 py-8">
+      <div className="min-h-screen bg-black flex items-center justify-center px-4 py-8">
         <div className="w-full max-w-5xl bg-slate-900/95 border border-slate-800 rounded-3xl shadow-[0_24px_80px_rgba(15,23,42,0.8)] overflow-hidden">
           <div className="grid md:grid-cols-2">
             {/* ---------------- LEFT HERO ---------------- */}

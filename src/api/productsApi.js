@@ -40,12 +40,13 @@ export const changeCartItemColor = async (itemId, color) => {
 };
 
 /* -------------------------- GET CART TOTAL ITEMS -------------------------- */
-// productsApi.js
 export const getCartTotalItems = async () => {
-  const response = await axiosClient.get("/Cart"); // نفس الـ API الموجودة أصلاً
-  const items = response.data?.items || [];
-  return items.length; // هنرجع عدد العناصر بس
+  const response = await axiosClient.get("/Cart");    
+  const data = response.data;
+  const items = Array.isArray(data) ? data : data?.items || data?.cartItems || [];
+  return items.length;
 };
+
 
 /* -------------------------- REMOVE ITEM FROM CART -------------------------- */
 export const removeCartItem = async (itemId) => {

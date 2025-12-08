@@ -14,7 +14,16 @@ export function CartProvider({ children }) {
 
   const refreshCounts = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const storedUser =
+        JSON.parse(localStorage.getItem("user")) ||
+        JSON.parse(sessionStorage.getItem("user"));
+
+      const token =
+        storedUser?.token ||
+        storedUser?.jwtToken ||
+        storedUser?.accessToken ||
+        localStorage.getItem("token");
+
       if (!token) {
         setCartCount(0);
         setWishlistCount(0);
@@ -57,7 +66,6 @@ export function CartProvider({ children }) {
   };
 
   useEffect(() => {
-    // أول لود
     refreshCounts();
   }, []);
 
