@@ -78,13 +78,15 @@ export default function HeroSection({
     sourceProducts.forEach((p) => {
       if (p.category) {
         // في getProducts بنرجع category كسطر نصّي
-        values.push(p.category);
+        values.push(
+          typeof p.category === "string" ? p.category : p.category?.name
+        );
       }
       if (p.shape) values.push(p.shape);
       if (p.gender) values.push(p.gender);
     });
 
-    return [...new Set(values)].slice(0, 8);
+    return [...new Set(values.filter(Boolean))].slice(0, 8);
   }, [tags, sourceProducts]);
 
   /* -------------------- FILTER PRODUCTS -------------------- */
@@ -174,7 +176,7 @@ export default function HeroSection({
 
   return (
     <motion.section
-      className="relative w-full min-h-screen lg:h-screen flex items-center overflow-hidden pt-24 md:pt-28"
+      className="relative z-20 w-full min-h-screen lg:h-screen flex items-center pt-24 md:pt-28"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
@@ -207,9 +209,8 @@ export default function HeroSection({
 
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight mb-3">
               Find Your
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">
-                Perfect Pair
-              </span>
+              <br className="sm:hidden" />
+              <span className="sm:ml-2">Perfect Pair</span>
             </h1>
 
             <p className="text-sm sm:text-base md:text-lg text-gray-200/90 max-w-xl mb-6">
@@ -232,7 +233,7 @@ export default function HeroSection({
             {/* SEARCH */}
             <form
               onSubmit={handleSubmit}
-              className="relative w-full max-w-xl"
+              className="relative w-full max-w-xl z-30"
               autoComplete="off"
             >
               <div className="relative flex items-center rounded-full bg-white/5 border border-white/15 px-3 sm:px-4 pr-2 py-2.5 backdrop-blur-xl shadow-xl shadow-black/40">
@@ -267,10 +268,10 @@ export default function HeroSection({
                 <div
                   ref={resultsRef}
                   className="
-              absolute left-0 right-0 mt-3 rounded-2xl bg-black/95 
-              border border-white/10 shadow-2xl backdrop-blur-2xl 
-              max-h-80 overflow-y-auto z-[9999] p-1
-            "
+                    absolute left-0 right-0 mt-3 rounded-2xl bg-black/95
+                    border border-white/10 shadow-2xl backdrop-blur-2xl
+                    max-h-80 overflow-y-auto z-40 p-1
+                  "
                   style={{
                     scrollbarWidth: "thin",
                     scrollbarColor: "white transparent",
@@ -294,7 +295,7 @@ export default function HeroSection({
                           key={item.id ?? item.productId}
                           type="button"
                           onClick={() => handleSelect(item)}
-                          className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg.white/5 hover:bg-white/5 transition-colors"
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-white/5 transition-colors"
                         >
                           {getThumb(item) ? (
                             <img
@@ -312,7 +313,7 @@ export default function HeroSection({
                               {item.name || item.title}
                             </p>
                             {(item.category || item.shape) && (
-                              <p className="text-[11px] text.white/45 text-white/45 truncate">
+                              <p className="text-[11px] text-white/45 truncate">
                                 {typeof item.category === "string"
                                   ? item.category
                                   : item.category?.name}

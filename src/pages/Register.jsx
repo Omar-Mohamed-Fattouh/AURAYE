@@ -55,7 +55,7 @@ export default function Register() {
   const strength = calculatePasswordStrength(passwordValue);
 
   const inputClass =
-    "w-full bg-slate-900/60 border border-slate-700 rounded-xl text-sm text-slate-50 placeholder-slate-500 p-3 pl-11 pr-11 transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/20 outline-none";
+    "w-full bg-black/60 border border-slate-700 rounded-xl text-sm text-slate-50 placeholder-slate-300 p-3 pl-11 pr-11 transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/20 outline-none";
 
   const onSubmit = async (data) => {
     setLoading(true);
@@ -120,10 +120,10 @@ export default function Register() {
       <ToastContainer position="top-center" />
 
       <div className="min-h-screen bg-black flex items-center justify-center px-4 py-8">
-        <div className="w-full max-w-5xl bg-slate-900/95 border border-slate-800 rounded-3xl shadow-[0_24px_80px_rgba(15,23,42,0.8)] overflow-hidden">
+        <div className="w-full max-w-5xl bg-black border border-white/10 rounded-3xl shadow-[0_24px_80px_rgba(255,255,255,0.1)] overflow-hidden">
           <div className="grid md:grid-cols-2">
             {/* ---------------- LEFT HERO ---------------- */}
-            <div className="relative hidden md:flex flex-col justify-between p-8 lg:p-10 bg-gradient-to-br from-indigo-600 via-violet-600 to-slate-900">
+            <div className="relative hidden md:flex flex-col justify-between p-8 lg:p-10 bg-gradient-to-br from-indigo-600 via-violet-600 to-blakcbg-black">
               {/* Top bar */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -170,7 +170,7 @@ export default function Register() {
             </div>
 
             {/* ---------------- RIGHT FORM ---------------- */}
-            <div className="px-6 py-8 sm:px-8 md:px-10 md:py-10 bg-slate-900">
+            <div className="px-6 py-8 sm:px-8 md:px-10 md:py-10 bg-black">
               <div className="mb-6">
                 <h2 className="text-2xl md:text-3xl font-semibold text-slate-50">
                   Create an account
@@ -189,13 +189,13 @@ export default function Register() {
               <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
                 {/* FULL NAME */}
                 <div>
-                  <label className="text-slate-300 text-xs font-medium uppercase tracking-[0.16em]">
+                  <label className="text-slate-200 text-xs font-medium uppercase tracking-[0.16em]">
                     Full name
                   </label>
                   <div className="relative mt-1.5">
                     <User
                       size={18}
-                      className="absolute left-3 top-3 text-slate-500"
+                      className="absolute left-3 top-3 text-slate-300"
                     />
                     <input
                       type="text"
@@ -213,13 +213,13 @@ export default function Register() {
 
                 {/* EMAIL */}
                 <div>
-                  <label className="text-slate-300 text-xs font-medium uppercase tracking-[0.16em]">
+                  <label className="text-slate-200 text-xs font-medium uppercase tracking-[0.16em]">
                     Email
                   </label>
                   <div className="relative mt-1.5">
                     <Mail
                       size={18}
-                      className="absolute left-3 top-3 text-slate-500"
+                      className="absolute left-3 top-3 text-slate-300"
                     />
                     <input
                       type="email"
@@ -237,13 +237,13 @@ export default function Register() {
 
                 {/* PASSWORD */}
                 <div>
-                  <label className="text-slate-300 text-xs font-medium uppercase tracking-[0.16em]">
+                  <label className="text-slate-200 text-xs font-medium uppercase tracking-[0.16em]">
                     Password
                   </label>
                   <div className="relative mt-1.5">
                     <Lock
                       size={18}
-                      className="absolute left-3 top-3 text-slate-500"
+                      className="absolute left-3 top-3 text-slate-300"
                     />
                     <input
                       type={showPassword ? "text" : "password"}
@@ -270,7 +270,7 @@ export default function Register() {
                           style={{ width: `${(strength / 4) * 100}%` }}
                         />
                       </div>
-                      <p className="text-[11px] mt-1 font-medium text-slate-300">
+                      <p className="text-[11px] mt-1 font-medium text-slate-200">
                         {strength > 0 && strengthText[strength - 1]}
                       </p>
                     </div>
@@ -285,13 +285,13 @@ export default function Register() {
 
                 {/* CONFIRM PASSWORD */}
                 <div>
-                  <label className="text-slate-300 text-xs font-medium uppercase tracking-[0.16em]">
+                  <label className="text-slate-200 text-xs font-medium uppercase tracking-[0.16em]">
                     Confirm password
                   </label>
                   <div className="relative mt-1.5">
                     <Lock
                       size={18}
-                      className="absolute left-3 top-3 text-slate-500"
+                      className="absolute left-3 top-3 text-slate-300"
                     />
                     <input
                       type={showPassword ? "text" : "password"}
@@ -313,11 +313,11 @@ export default function Register() {
                     type="checkbox"
                     {...register("rememberMe")}
                     id="rememberMe"
-                    className="h-4 w-4 rounded border-slate-600 bg-slate-900 text-indigo-500 focus:ring-indigo-500/50"
+                    className="h-4 w-4 rounded border-slate-600 bg-black text-indigo-500 focus:ring-indigo-500/50"
                   />
                   <label
                     htmlFor="rememberMe"
-                    className="text-[13px] text-slate-300"
+                    className="text-[13px] text-slate-200"
                   >
                     Keep me signed in on this device
                   </label>
@@ -327,7 +327,7 @@ export default function Register() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`w-full mt-2 bg-indigo-500 hover:bg-indigo-400 text-slate-50 py-3 rounded-xl text-sm font-semibold tracking-wide shadow-lg shadow-indigo-500/30 transition ${
+                  className={`w-full mt-2 md:bg-indigo-500 md:hover:bg-indigo-400 bg-white hover:bg-white/80 md:text-slate-50 text-black py-3 rounded-xl text-sm font-semibold tracking-wide shadow-lg shadow-indigo-500/30 transition ${
                     loading && "opacity-60 cursor-not-allowed"
                   }`}
                 >
@@ -335,9 +335,9 @@ export default function Register() {
                 </button>
 
                 {/* SMALL FOOTER */}
-                <p className="text-[11px] text-slate-500 text-center pt-2">
+                <p className="text-[11px] text-slate-300 text-center pt-2">
                   By creating an account, you agree to AURAYE’s{" "}
-                  <span className="text-slate-300 underline underline-offset-2 cursor-default">
+                  <span className="text-slate-200 underline underline-offset-2 cursor-default">
                     Terms &amp; Privacy
                   </span>
                   .

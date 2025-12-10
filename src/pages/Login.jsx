@@ -88,10 +88,10 @@ const onSubmit = async (data) => {
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center px-4 py-8">
-      <div className="w-full max-w-5xl bg-slate-900/95 border border-slate-800 rounded-3xl shadow-[0_24px_80px_rgba(15,23,42,0.8)] overflow-hidden">
+      <div className="w-full max-w-5xl bg-slate-900/95 border border-white/10 rounded-3xl shadow-[0_24px_80px_rgba(255,255,255,0.1)] overflow-hidden">
         <div className="grid md:grid-cols-2">
           {/* LEFT PANEL (copy / testimonial) */}
-          <div className="hidden md:flex flex-col justify-between p-8 lg:p-10 bg-gradient-to-br from-slate-900 via-emerald-900 to-emerald-700">
+          <div className="hidden md:flex flex-col justify-between p-8 lg:p-10 bg-gradient-to-br from-black/30 via-emerald-900 to-emerald-700">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="h-8 w-8 rounded-xl bg-white/10 flex items-center justify-center text-xs font-bold tracking-widest text-white">
@@ -130,7 +130,7 @@ const onSubmit = async (data) => {
           </div>
 
           {/* RIGHT FORM */}
-          <div className="px-6 py-8 sm:px-8 md:px-10 md:py-10 bg-slate-900">
+          <div className="px-6 py-8 sm:px-8 md:px-10 md:py-10 bg-black">
             <div className="mb-6">
               <h2 className="text-2xl md:text-3xl font-semibold text-slate-50">
                 Welcome back
@@ -173,7 +173,7 @@ const onSubmit = async (data) => {
                   </label>
                   <Link
                     to="/forget-password"
-                    className="text-indigo-400 text-xs hover:text-indigo-300"
+                    className="text-white text-xs hover:text-white/80"
                   >
                     Forgot password?
                   </Link>
@@ -224,7 +224,7 @@ const onSubmit = async (data) => {
               <button
                 type="submit"
                 disabled={loading}
-                className={`w-full mt-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 py-3 rounded-xl text-sm font-semibold tracking-wide shadow-lg shadow-emerald-500/30 transition ${
+                className={`w-full mt-2 md:bg-emerald-500 md:hover:bg-emerald-400 bg-white hover:bg-white/80 text-slate-950 py-3 rounded-xl text-sm font-semibold tracking-wide shadow-lg shadow-emerald-500/30 transition ${
                   loading && "opacity-60 cursor-not-allowed"
                 }`}
               >
@@ -236,7 +236,7 @@ const onSubmit = async (data) => {
                 Don&apos;t have an account?{" "}
                 <Link
                   to="/register"
-                  className="text-indigo-400 font-semibold hover:text-indigo-300"
+                  className="text-white font-semibold hover:text-white/80"
                 >
                   Create one
                 </Link>
