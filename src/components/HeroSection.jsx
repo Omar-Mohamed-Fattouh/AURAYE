@@ -78,15 +78,13 @@ export default function HeroSection({
     sourceProducts.forEach((p) => {
       if (p.category) {
         // في getProducts بنرجع category كسطر نصّي
-        values.push(
-          typeof p.category === "string" ? p.category : p.category?.name
-        );
+        values.push(p.category);
       }
       if (p.shape) values.push(p.shape);
       if (p.gender) values.push(p.gender);
     });
 
-    return [...new Set(values.filter(Boolean))].slice(0, 8);
+    return [...new Set(values)].slice(0, 8);
   }, [tags, sourceProducts]);
 
   /* -------------------- FILTER PRODUCTS -------------------- */
@@ -176,7 +174,7 @@ export default function HeroSection({
 
   return (
     <motion.section
-      className="relative z-20 w-full min-h-screen lg:h-screen flex items-center pt-24 md:pt-28"
+      className="relative z-20 w-full min-h-screen lg:h-screen flex items-center overflow-hidden pt-24 md:pt-28"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
@@ -209,8 +207,7 @@ export default function HeroSection({
 
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight mb-3">
               Find Your
-              <br className="sm:hidden" />
-              <span className="sm:ml-2">Perfect Pair</span>
+                Perfect Pair
             </h1>
 
             <p className="text-sm sm:text-base md:text-lg text-gray-200/90 max-w-xl mb-6">
@@ -233,7 +230,7 @@ export default function HeroSection({
             {/* SEARCH */}
             <form
               onSubmit={handleSubmit}
-              className="relative w-full max-w-xl z-30"
+              className="relative w-full max-w-xl"
               autoComplete="off"
             >
               <div className="relative flex items-center rounded-full bg-white/5 border border-white/15 px-3 sm:px-4 pr-2 py-2.5 backdrop-blur-xl shadow-xl shadow-black/40">
@@ -268,9 +265,9 @@ export default function HeroSection({
                 <div
                   ref={resultsRef}
                   className="
-                    absolute left-0 right-0 mt-3 rounded-2xl bg-black/95
-                    border border-white/10 shadow-2xl backdrop-blur-2xl
-                    max-h-80 overflow-y-auto z-40 p-1
+                    absolute left-0 right-0 mt-3 rounded-2xl bg-black/95 
+                    border border-white/10 shadow-2xl backdrop-blur-2xl 
+                    max-h-80 overflow-y-auto z-[9999] p-1
                   "
                   style={{
                     scrollbarWidth: "thin",

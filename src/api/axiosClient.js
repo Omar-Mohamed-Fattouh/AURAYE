@@ -1,8 +1,7 @@
-// src/api/axiosClient.js
 import axios from "axios";
 
 const axiosClient = axios.create({
-  baseURL: "/api",
+  baseURL: "https://graduationproject11.runasp.net/api",
   headers: {
     "Content-Type": "application/json",
   },
@@ -18,9 +17,7 @@ axiosClient.interceptors.request.use((config) => {
     try {
       const user = JSON.parse(storedUser);
       token = user?.token || user?.jwtToken || user?.accessToken || null;
-    } catch {
-      // ignore parsing error
-    }
+    } catch {}
   }
 
   if (!token) {
