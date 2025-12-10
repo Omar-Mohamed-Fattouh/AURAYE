@@ -5,7 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 export default function App() {
   return (
     <>
-      <div className="font-sans">
+      <div className="font-sans hide-scrollbar"  >
       <ToastContainer 
         position="top-right" 
       />

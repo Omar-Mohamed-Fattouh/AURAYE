@@ -36,11 +36,19 @@ export default function HeroSection({
   }, [products]);
 
   // if no products from props, fetch from API once
+  // LOAD PRODUCTS ONLY ONCE
   useEffect(() => {
     const fetchData = async () => {
-      if (products && products.length > 0) return;
       try {
         setLoadingProducts(true);
+
+        // لو الـ parent بعت products جاهزة → استخدمها
+        if (products && products.length > 0) {
+          setSourceProducts(products);
+          return;
+        }
+
+        // لو مفيش products من props → fetch مرة واحدة
         const data = await getProducts();
         setSourceProducts(data || []);
       } catch (err) {
@@ -49,8 +57,9 @@ export default function HeroSection({
         setLoadingProducts(false);
       }
     };
+
     fetchData();
-  }, [products]);
+  }, []); // <<< important: dependency فاضية عشان يشتغل مرة واحدة بس
 
   /* -------------------- DEBOUNCE -------------------- */
 
@@ -89,9 +98,7 @@ export default function HeroSection({
         const name = p.name || p.title || "";
         const desc = p.description || "";
         const category =
-          typeof p.category === "string"
-            ? p.category
-            : p.category?.name || "";
+          typeof p.category === "string" ? p.category : p.category?.name || "";
         const shape = p.shape || "";
         const gender = p.gender || "";
 
@@ -259,7 +266,15 @@ export default function HeroSection({
               {open && debounced && (
                 <div
                   ref={resultsRef}
-                  className="absolute left-0 right-0 mt-3 rounded-2xl bg-black/95 border border-white/10 shadow-2xl backdrop-blur-2xl max-h-72 overflow-y-auto z-50"
+                  className="
+              absolute left-0 right-0 mt-3 rounded-2xl bg-black/95 
+              border border-white/10 shadow-2xl backdrop-blur-2xl 
+              max-h-80 overflow-y-auto z-[9999] p-1
+            "
+                  style={{
+                    scrollbarWidth: "thin",
+                    scrollbarColor: "white transparent",
+                  }}
                 >
                   {loadingProducts ? (
                     <div className="px-4 py-4 text-sm text-white/60">
@@ -345,7 +360,6 @@ export default function HeroSection({
               </div>
             )}
           </div>
-
         </div>
       </div>
     </motion.section>

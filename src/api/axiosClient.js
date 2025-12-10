@@ -2,14 +2,12 @@
 import axios from "axios";
 
 const axiosClient = axios.create({
-  // IMPORTANT: بطلنا نكلم الدومين مباشرة هنا
   baseURL: "/api",
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// interceptor عشان يبعت الـ token لو موجود
 axiosClient.interceptors.request.use((config) => {
   let token = null;
 
