@@ -9,8 +9,9 @@ export const registerUser = async (data) => {
 /* ------------------------- LOGIN -------------------------- */
 // credentials = { email, password }
 export const loginUser = async ({ email, password }) => {
-  return axiosClient.post("/auth/login", { email, password });
+  return axiosClient.post("/Auth/login", { email, password });
 };
+
 
 /* --------------------- FORGOT PASSWORD -------------------- */
 // backend returns a message OR user object
