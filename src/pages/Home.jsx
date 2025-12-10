@@ -1,6 +1,6 @@
 // import React, { useEffect, useState } from "react";
 import AchievementsSection from "../components/AchievementsSection";
-// import HeroSection from "../components/HeroSection";
+import HeroSection from "../components/HeroSection";
 import ARVideoSection from "../components/ARVideoSection.";
 import DealsSection from "../components/DealSeaction";
 import CategoriesSection from "../components/CategoriesSection";
@@ -15,7 +15,7 @@ const Home = () => {
 
   return (
     <div>
-      {/* <HeroSection /> */}
+      <HeroSection />
       <DealsSection />
       <BestSellerSection />
       <CategoriesSection />
