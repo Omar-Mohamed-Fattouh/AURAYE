@@ -8,6 +8,7 @@ import { registerUser } from "../api/authApi";
 import { useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "../features/auth/AuthContext";
 import { toast } from "sonner";
+import { ToastContainer } from "react-toastify";
 /* ----------------------- PASSWORD STRENGTH LOGIC ----------------------- */
 function calculatePasswordStrength(password) {
   let score = 0;
