@@ -1,14 +1,15 @@
+// src/api/axiosClient.js
 import axios from "axios";
 
 const axiosClient = axios.create({
-  baseURL: import.meta.env.PROD
-    ? "https://graduationproject11.runasp.net" // Production (Vercel)
-    : "/api", // Development (Localhost only)
+  // IMPORTANT: بطلنا نكلم الدومين مباشرة هنا
+  baseURL: "/api",
   headers: {
     "Content-Type": "application/json",
   },
 });
 
+// interceptor عشان يبعت الـ token لو موجود
 axiosClient.interceptors.request.use((config) => {
   let token = null;
 
@@ -19,7 +20,9 @@ axiosClient.interceptors.request.use((config) => {
     try {
       const user = JSON.parse(storedUser);
       token = user?.token || user?.jwtToken || user?.accessToken || null;
-    } catch {}
+    } catch {
+      // ignore parsing error
+    }
   }
 
   if (!token) {
