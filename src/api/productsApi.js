@@ -76,42 +76,132 @@ export const getProductReviews = async (productId) => {
 };
 
 
+export const getProductById = async (id) => {
+  const response = await axiosClient.get(`/Products/${id}`);
+  const product = response.data;
+
+  const BASE_URL = "https://graduationproject11.runasp.net";
+
+  // تجهيز الصور بنفس شكل الـ frontend
+  const images =
+    product.productImages && product.productImages.length > 0
+      ? product.productImages.map((img) => ({
+          url: BASE_URL + img.imgUrl,
+          color: img.color || "Default",
+        }))
+      : [
+          {
+            url: BASE_URL + product.defaultImgUrl,
+            color: "Default",
+          },
+        ];
+
+  return {
+    id: product.productId,
+    name: product.title,
+    description: product.description,
+    price: product.price,
+    oldPrice: product.oldPrice || null,
+    stockQuantity: product.stockQuantity,
+    isAvailable: product.isAvailable,
+
+    images, // الصور بعد التجهيز
+
+    category: product.category?.name || "Other",
+    shape: product.shape || "Standard",
+    gender: product.gender || "Unisex",
+    frameMaterial: product.frameMaterial || "Standard",
+
+    sizes: product.sizes || [],
+    models3d: product.product3dModels || [],
+    availableColors:product.availableColors || []
+  };
+};
+
+
 
 /* -------------------------- PRODUCTS -------------------------- */
 export const getProducts = async () => {
   const response = await axiosClient.get("/Products");
-  const BASE_URL = "http://graduation-project1.runasp.net";
+  const BASE_URL = "https://graduationproject11.runasp.net";
 
   return response.data.map((product) => {
-    const images =
-      product.productImages && product.productImages.length > 0
-        ? product.productImages.map((img) => ({
-            url: BASE_URL + img.imgUrl,
-            color: img.color || "Default",
-          }))
-        : [{ url: product.defaultImgUrl, color: "Default" }];
+    // كل منتج عنده صورة واحدة default + ألوان فقط
+    const images = [
+      {
+        url: BASE_URL + product.defaultImgUrl,
+        color: "Default",
+      },
+    ];
 
     return {
       id: product.productId,
       name: product.title,
       description: product.description,
       price: product.price,
-      sizes: product.sizes || [],
-      stockQuantity: product.stockQuantity,
-      images,
       oldPrice: product.oldPrice || null,
-      category: product.category?.name || "Other",
-      gender: product.gender || "Unisex",
+
+      images, // صورة واحدة فقط للـ list
+
+      category: product.categoryName || "Other",
       shape: product.shape || "Standard",
+      gender: product.gender || "Unisex",
       frameMaterial: product.frameMaterial || "Standard",
+
+      sizes: product.sizes || [],
+
+      // مهم: عشان تبقى consistent مع الـ productById
+      availableColors: product.availableColors || [],
+
+      // في الـ List مش بيرجع stockQuantity → نحط null
+      stockQuantity: product.stockQuantity || null,
     };
   });
 };
+
 
 /* -------------------------- BESTSELLER -------------------------- */
 export const getBestSellerProducts = async () => {
   const response = await axiosClient.get("/Products/bestseller");
-  const BASE_URL = "http://graduation-project1.runasp.net";
+  const BASE_URL = "https://graduationproject11.runasp.net";
+ return response.data.map((product) => {
+    // كل منتج عنده صورة واحدة default + ألوان فقط
+    const images = [
+      {
+        url: BASE_URL + product.defaultImgUrl,
+        color: "Default",
+      },
+    ];
+
+    return {
+      id: product.productId,
+      name: product.title,
+      description: product.description,
+      price: product.price,
+      oldPrice: product.oldPrice || null,
+
+      images, // صورة واحدة فقط للـ list
+
+      category: product.categoryName || "Other",
+      shape: product.shape || "Standard",
+      gender: product.gender || "Unisex",
+      frameMaterial: product.frameMaterial || "Standard",
+
+      sizes: product.sizes || [],
+
+      // مهم: عشان تبقى consistent مع الـ productById
+      availableColors: product.availableColors || [],
+
+      // في الـ List مش بيرجع stockQuantity → نحط null
+      stockQuantity: product.stockQuantity || null,
+    };
+  });
+};
+
+export const getProductsAr = async () => {
+  const response = await axiosClient.get("/Products/ar");
+
+  const BASE_URL = "https://graduationproject11.runasp.net";
 
   return response.data.map((product) => {
     const images =
@@ -120,23 +210,25 @@ export const getBestSellerProducts = async () => {
             url: BASE_URL + img.imgUrl,
             color: img.color || "Default",
           }))
-        : [{ url: product.defaultImgUrl, color: "Default" }];
+        : [{ url: BASE_URL + product.defaultImgUrl, color: "Default" }];
+
+    const models =
+      product.product3dModels && product.product3dModels.length > 0
+        ? product.product3dModels.map((m) => ({
+            url: m.modelUrl, // FULL .glb URL
+            defaultScale: m.defaultScale || 1,
+            color: m.color || "black",
+          }))
+        : [];
 
     return {
       id: product.productId,
       name: product.title,
       description: product.description,
       price: product.price,
-      sizes: product.sizes || [],
-      stockQuantity: product.stockQuantity,
-      images,
       oldPrice: product.oldPrice || null,
-      category: product.category?.name || "Other",
-      gender: product.gender || "Unisex",
-      shape: product.shape || "Standard",
-      frameMaterial: product.frameMaterial || "Standard",
+      images,
+      models,
     };
   });
 };
-
-

@@ -68,11 +68,8 @@ export default function HeroSection({
 
     sourceProducts.forEach((p) => {
       if (p.category) {
-        if (typeof p.category === "string") {
-          values.push(p.category);
-        } else if (p.category?.name) {
-          values.push(p.category.name);
-        }
+        // في getProducts بنرجع category كسطر نصّي
+        values.push(p.category);
       }
       if (p.shape) values.push(p.shape);
       if (p.gender) values.push(p.gender);
@@ -89,7 +86,7 @@ export default function HeroSection({
 
     return sourceProducts
       .filter((p) => {
-        const name = p.title || p.name || "";
+        const name = p.name || p.title || "";
         const desc = p.description || "";
         const category =
           typeof p.category === "string"
@@ -112,13 +109,17 @@ export default function HeroSection({
   /* -------------------- IMAGE HELPER -------------------- */
 
   const getThumb = (item) => {
+    // الشكل الجديد من getProducts: images = [{ url, color }]
+    if (item.images?.length) return item.images[0].url;
+
+    // fallback لو في بيانات جاية من مصدر قديم
+    if (item.productImages?.length) return item.productImages[0].imgUrl;
+
     return (
       item.defaultImgUrl ||
-      item.productImages?.[0]?.imgUrl ||
       item.image_url ||
       item.imageUrl ||
       item.thumbnail ||
-      item.images?.[0]?.url ||
       ""
     );
   };
@@ -145,11 +146,13 @@ export default function HeroSection({
   const handleSelect = (item) => {
     setSearchValue("");
     setOpen(false);
+
     if (onSelect) return onSelect(item);
 
-    const id = item.productId ?? item.id;
+    // بعد الماب في getProducts بقى عندنا id فقط
+    const id = item.id ?? item.productId;
     if (id != null) {
-      // use /products/:id to match your AllProducts routing
+      // عدّلي الباث لو عندك route مختلف
       navigate(`/products/${id}`, { state: { product: item } });
     }
   };
@@ -231,9 +234,7 @@ export default function HeroSection({
                   ref={inputRef}
                   type="text"
                   placeholder={
-                    loadingProducts
-                      ? "Loading products..."
-                      : placeholder
+                    loadingProducts ? "Loading products..." : placeholder
                   }
                   value={searchValue}
                   onChange={(e) => {
@@ -275,15 +276,15 @@ export default function HeroSection({
 
                       {filtered.map((item) => (
                         <button
-                          key={item.productId ?? item.id}
+                          key={item.id ?? item.productId}
                           type="button"
                           onClick={() => handleSelect(item)}
-                          className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-white/5 transition-colors"
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg.white/5 hover:bg-white/5 transition-colors"
                         >
                           {getThumb(item) ? (
                             <img
                               src={getThumb(item)}
-                              alt={item.title || item.name}
+                              alt={item.name || item.title}
                               className="w-10 h-10 rounded-md object-cover border border-white/10 flex-shrink-0"
                             />
                           ) : (
@@ -293,10 +294,10 @@ export default function HeroSection({
                           )}
                           <div className="flex-1 min-w-0">
                             <p className="text-xs sm:text-sm text-white truncate">
-                              {item.title || item.name}
+                              {item.name || item.title}
                             </p>
-                            {(item.category || item.category?.name || item.shape) && (
-                              <p className="text-[11px] text-white/45 truncate">
+                            {(item.category || item.shape) && (
+                              <p className="text-[11px] text.white/45 text-white/45 truncate">
                                 {typeof item.category === "string"
                                   ? item.category
                                   : item.category?.name}
@@ -345,33 +346,6 @@ export default function HeroSection({
             )}
           </div>
 
-          {/* RIGHT: AR preview card */}
-          <div className="hidden lg:flex flex-1 justify-end">
-            <div className="w-full max-w-sm rounded-3xl bg-black/40 border border-white/10 backdrop-blur-2xl p-5 shadow-2xl shadow-black/50">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <p className="text-[11px] uppercase tracking-[0.2em] text-white/50">
-                    Live AR Preview
-                  </p>
-                  <p className="text-sm text-white mt-1">
-                    Move, tilt, and see every angle in real time.
-                  </p>
-                </div>
-                <div className="h-10 w-10 rounded-2xl bg-white text-black flex items-center justify-center shadow-lg">
-                  <ScanFace className="w-5 h-5" />
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-white/0 h-40 mb-4 flex items-center justify-center text-xs text-white/60">
-                Realistic AR face-tracking preview area
-              </div>
-
-              <div className="flex items-center justify-between text-[11px] text-gray-300">
-                <span>Ultra-clear 4K tracking</span>
-                <span className="text-white/60">No filters, just reality.</span>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </motion.section>

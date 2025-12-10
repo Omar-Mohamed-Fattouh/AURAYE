@@ -28,7 +28,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { changePasswordSchema } from "../forms/changePasswordSchema";
 
-const BASE_URL = "https://graduation-project1.runasp.net";
+const BASE_URL = "https://graduationproject11.runasp.net";
 
 const inputClass =
   "w-full rounded-xl border border-neutral-700 px-3 py-2.5 text-sm bg-neutral-900 text-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-300 focus:border-neutral-300 placeholder:text-neutral-500";

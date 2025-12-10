@@ -25,14 +25,11 @@ export default function ColorProduct() {
     load();
   }, []);
 
-  // unique colors from images
   const colors = useMemo(() => {
     const set = new Set();
     products.forEach((p) => {
-      (p.images || []).forEach((img) => {
-        if (img.color && String(img.color).trim() !== "") {
-          set.add(img.color);
-        }
+      (p.availableColors || []).forEach((c) => {
+        if (c && String(c).trim() !== "") set.add(c);
       });
     });
     return Array.from(set);
@@ -47,10 +44,8 @@ export default function ColorProduct() {
       // match if any image has the chosen color
       const colorMatch =
         !colorFilter ||
-        (p.images || []).some(
-          (img) =>
-            img.color &&
-            img.color.toLowerCase() === colorFilter.toLowerCase()
+        (p.availableColors || []).some(
+          (c) => c.toLowerCase() === colorFilter.toLowerCase()
         );
 
       return nameMatch && colorMatch;
@@ -123,9 +118,7 @@ export default function ColorProduct() {
                 label={c}
                 color={c}
                 active={colorFilter === c}
-                onClick={() =>
-                  setColorFilter((prev) => (prev === c ? "" : c))
-                }
+                onClick={() => setColorFilter((prev) => (prev === c ? "" : c))}
               />
             ))}
           </div>
@@ -178,9 +171,10 @@ function ColorChip({ label, color, active, onClick }) {
       {color && (
         <span
           className="w-3 h-3 rounded-full border border-gray-300"
-          style={{ backgroundColor: color }}
+          style={{ backgroundColor: color.toLowerCase() }} // ✅ تنادي الدالة
         />
       )}
+
       <span>{label}</span>
     </button>
   );

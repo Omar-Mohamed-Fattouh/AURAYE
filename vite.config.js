@@ -4,10 +4,13 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
   plugins: [react({ jsxRuntime: "automatic" }), tailwindcss()],
+  build: {
+    outDir: "dist"
+  },
  server: {
     proxy: {
       '/api': {
-        target: 'http://graduation-project1.runasp.net',
+        target: 'https://graduationproject11.runasp.net',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '/api'),
       },

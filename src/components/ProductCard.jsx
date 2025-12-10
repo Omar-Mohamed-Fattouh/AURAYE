@@ -18,6 +18,7 @@ export default function ProductCard({
   product,
   linkTo,
   showAddToCart = false,
+  onTryOn,
 }) {
   const [isWishlisted, setIsWishlisted] = useState(false);
 
@@ -124,9 +125,8 @@ export default function ProductCard({
   };
 
   // ✅ Colors
-  const colors = Array.from(
-    new Set((product.images || []).map((img) => img.color).filter(Boolean))
-  );
+const colors = product.availableColors || [];
+
 
   const hasDiscount =
     product.oldPrice && Number(product.oldPrice) > Number(product.price);
@@ -140,15 +140,16 @@ export default function ProductCard({
     : 0;
 
   return (
+    <>
     <Link
       to={linkTo}
       className="
-        bg-white transition p-4 relative 
+      bg-white transition p-4 relative 
         flex flex-col 
         h-[360px] 
         rounded-xl  
       "
-    >
+      >
       {/* ✅ Wishlist Button */}
       <button
         className="absolute top-3 right-3 hover:bg-gray-200 transition p-2 rounded-full z-10"
@@ -225,5 +226,20 @@ export default function ProductCard({
         </button>
       )}
     </Link>
+
+      {/* ✅ Try-On Button */}
+      {onTryOn && (
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            onTryOn(product);
+          }}
+          className="mt-2 flex items-center justify-center text-sm border border-black text-black py-2 px-3 rounded-md hover:bg-black hover:text-white transition"
+        >
+          جرّبها افتراضياً
+        </button>
+      )}
+
+            </>
   );
 }

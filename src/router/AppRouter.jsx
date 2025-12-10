@@ -1,4 +1,3 @@
-// src/router/AppRouter.jsx (أو حسب المسار عندك)
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect, useContext } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -6,6 +5,8 @@ import { loadStripe } from "@stripe/stripe-js";
 import { CartProvider } from "../store/cartContext.jsx";
 import { Toaster } from "sonner";
 import { AuthContext } from "../features/auth/AuthContext";
+
+import RouteWithTitle from "./RouteWithTitle.jsx";
 
 // Auth Pages
 import Register from "../pages/Register";
@@ -45,6 +46,7 @@ import About from "../pages/About.jsx";
 import Mission from "../pages/Mission.jsx";
 import WhyUS from "../pages/WhyUS.jsx";
 import TeamPgae from "../pages/TeamPgae.jsx";
+import ArTry from "../pages/Ar-try.jsx";
 
 const queryClient = new QueryClient();
 const stripePromise = loadStripe(
@@ -65,7 +67,6 @@ export default function AppRouter() {
       setUser(storedUser);
     }
 
-    // لو حابب تخليه يعتمد على الـ token كمان:
     const token = localStorage.getItem("token");
     setIsLoggedIn(!!token || !!storedUser);
   }, [setIsLoggedIn]);
@@ -78,95 +79,291 @@ export default function AppRouter() {
           <ScrollToTop />
 
           <Routes>
-            {/* كل الـ Routes جوّه Layout واحد */}
             <Route element={<Layout user={user} setUser={setUser} />}>
-              {/* Auth routes */}
+
+              {/* Auth */}
               <Route
                 path="/login"
-                element={!isLoggedIn ? <Login /> : <Navigate to="/" replace />}
+                element={
+                  <RouteWithTitle title="Login">
+                    {!isLoggedIn ? <Login /> : <Navigate to="/" replace />}
+                  </RouteWithTitle>
+                }
               />
 
               <Route
                 path="/register"
                 element={
-                  !isLoggedIn ? <Register /> : <Navigate to="/" replace />
+                  <RouteWithTitle title="Register">
+                    {!isLoggedIn ? <Register /> : <Navigate to="/" replace />}
+                  </RouteWithTitle>
                 }
               />
 
-              <Route path="/forget-password" element={<ForgetPassword />} />
               <Route
-                path="/reset-password/:token"
-                element={<ResetPassword />}
+                path="/forget-password"
+                element={
+                  <RouteWithTitle title="Forget Password">
+                    <ForgetPassword />
+                  </RouteWithTitle>
+                }
               />
 
-              {/* Routes with Layout */}
-              <Route path="/" element={<Home />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/products" element={<AllProductPage />} />
-              <Route path="/products/men" element={<MenPage />} />
-              <Route path="/products/women" element={<WomenPage />} />
-              <Route path="/products/sunglasses" element={<SunGlassesPage />} />
-              <Route path="/products/eyeglasses" element={<EyeGlassesPage />} />
-              <Route path="/products/shapes" element={<ShapesPage />} />
-              <Route path="/products/frames" element={<FramesPage />} />
-              <Route path="/products/colors" element={<ColorsPage />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/shipping" element={<ShippingInfo />} />
-              <Route path="/products/:id" element={<ProductID />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/faq" element={<FAQ />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/mission" element={<Mission />} />
-              <Route path="/why-us" element={<WhyUS />} />
-              <Route path="/team" element={<TeamPgae />} />
+              <Route
+                path="/reset-password/:token"
+                element={
+                  <RouteWithTitle title="Reset Password">
+                    <ResetPassword />
+                  </RouteWithTitle>
+                }
+              />
 
+              {/* Main Pages */}
+              <Route
+                path="/"
+                element={
+                  <RouteWithTitle title="Home">
+                    <Home />
+                  </RouteWithTitle>
+                }
+              />
+
+              <Route
+                path="/dashboard"
+                element={
+                  <RouteWithTitle title="Dashboard">
+                    <Dashboard />
+                  </RouteWithTitle>
+                }
+              />
+
+              <Route
+                path="/products"
+                element={
+                  <RouteWithTitle title="Products">
+                    <AllProductPage />
+                  </RouteWithTitle>
+                }
+              />
+
+              <Route
+                path="/products/men"
+                element={
+                  <RouteWithTitle title="Men Products">
+                    <MenPage />
+                  </RouteWithTitle>
+                }
+              />
+
+              <Route
+                path="/products/women"
+                element={
+                  <RouteWithTitle title="Women Products">
+                    <WomenPage />
+                  </RouteWithTitle>
+                }
+              />
+
+              <Route
+                path="/products/sunglasses"
+                element={
+                  <RouteWithTitle title="Sunglasses">
+                    <SunGlassesPage />
+                  </RouteWithTitle>
+                }
+              />
+
+              <Route
+                path="/products/eyeglasses"
+                element={
+                  <RouteWithTitle title="Eyeglasses">
+                    <EyeGlassesPage />
+                  </RouteWithTitle>
+                }
+              />
+
+              <Route
+                path="/products/shapes"
+                element={
+                  <RouteWithTitle title="Shapes">
+                    <ShapesPage />
+                  </RouteWithTitle>
+                }
+              />
+
+              <Route
+                path="/products/frames"
+                element={
+                  <RouteWithTitle title="Frames">
+                    <FramesPage />
+                  </RouteWithTitle>
+                }
+              />
+
+              <Route
+                path="/products/colors"
+                element={
+                  <RouteWithTitle title="Colors">
+                    <ColorsPage />
+                  </RouteWithTitle>
+                }
+              />
+
+              <Route
+                path="/products/:id"
+                element={
+                  <RouteWithTitle title="Product Details">
+                    <ProductID />
+                  </RouteWithTitle>
+                }
+              />
+
+              <Route
+                path="/contact"
+                element={
+                  <RouteWithTitle title="Contact">
+                    <Contact />
+                  </RouteWithTitle>
+                }
+              />
+
+              <Route
+                path="/shipping"
+                element={
+                  <RouteWithTitle title="Shipping Info">
+                    <ShippingInfo />
+                  </RouteWithTitle>
+                }
+              />
+
+              <Route
+                path="/cart"
+                element={
+                  <RouteWithTitle title="Cart">
+                    <Cart />
+                  </RouteWithTitle>
+                }
+              />
+
+              <Route
+                path="/faq"
+                element={
+                  <RouteWithTitle title="FAQ">
+                    <FAQ />
+                  </RouteWithTitle>
+                }
+              />
+
+              <Route
+                path="/about"
+                element={
+                  <RouteWithTitle title="About Us">
+                    <About />
+                  </RouteWithTitle>
+                }
+              />
+
+              <Route
+                path="/mission"
+                element={
+                  <RouteWithTitle title="Mission">
+                    <Mission />
+                  </RouteWithTitle>
+                }
+              />
+
+              <Route
+                path="/why-us"
+                element={
+                  <RouteWithTitle title="Why Us">
+                    <WhyUS />
+                  </RouteWithTitle>
+                }
+              />
+
+              <Route
+                path="/team"
+                element={
+                  <RouteWithTitle title="Team">
+                    <TeamPgae />
+                  </RouteWithTitle>
+                }
+              />
+              <Route 
+              path="try"
+              element={
+                <RouteWithTitle title="AR-TryOn">
+                  <ArTry/>
+                </RouteWithTitle>
+              }
+              />
+
+              {/* Protected Routes */}
               <Route
                 path="/profile"
                 element={
-                  <ProtectedRoute>
-                    <Profile />
-                  </ProtectedRoute>
+                  <RouteWithTitle title="Profile">
+                    <ProtectedRoute>
+                      <Profile />
+                    </ProtectedRoute>
+                  </RouteWithTitle>
                 }
               />
 
               <Route
                 path="/wishlist"
                 element={
-                  <ProtectedRoute>
-                    <WishlistPage />
-                  </ProtectedRoute>
+                  <RouteWithTitle title="Wishlist">
+                    <ProtectedRoute>
+                      <WishlistPage />
+                    </ProtectedRoute>
+                  </RouteWithTitle>
                 }
               />
 
               <Route
                 path="/checkout"
                 element={
-                  <ProtectedRoute>
-                    <Checkout stripePromise={stripePromise} />
-                  </ProtectedRoute>
+                  <RouteWithTitle title="Checkout">
+                    <ProtectedRoute>
+                      <Checkout stripePromise={stripePromise} />
+                    </ProtectedRoute>
+                  </RouteWithTitle>
                 }
               />
 
               <Route
                 path="/success"
                 element={
-                  <ProtectedRoute>
-                    <Success />
-                  </ProtectedRoute>
+                  <RouteWithTitle title="Order Success">
+                    <ProtectedRoute>
+                      <Success />
+                    </ProtectedRoute>
+                  </RouteWithTitle>
                 }
               />
 
               <Route
                 path="/stripe"
                 element={
-                  <ProtectedRoute>
-                    <StripePage stripePromise={stripePromise} />
-                  </ProtectedRoute>
+                  <RouteWithTitle title="Stripe Payment">
+                    <ProtectedRoute>
+                      <StripePage stripePromise={stripePromise} />
+                    </ProtectedRoute>
+                  </RouteWithTitle>
                 }
               />
 
-              {/* Catch-all inside Layout */}
-              <Route path="*" element={<NotFoundPage />} />
+              {/* 404 */}
+              <Route
+                path="*"
+                element={
+                  <RouteWithTitle title="Not Found">
+                    <NotFoundPage />
+                  </RouteWithTitle>
+                }
+              />
+
             </Route>
           </Routes>
         </BrowserRouter>

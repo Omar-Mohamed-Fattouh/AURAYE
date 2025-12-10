@@ -6,7 +6,7 @@ import { AuthContext } from "../features/auth/AuthContext";
 import { CartContext } from "../store/cartContext";
 import { addToCart } from "../api/productsApi";
 import {
-  getProducts,
+  getProductById,
   addToWishlist,
   removeFromWishlist,
   isProductInWishlist,
@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 
 export default function ProductDetails() {
-  const { id } = useParams(); // product id from route
+  const { id } = useParams();
   const navigate = useNavigate();
 
   const { isLoggedIn, setIsLoggedIn } = useContext(AuthContext);
@@ -31,10 +31,10 @@ export default function ProductDetails() {
     const handleStorage = () => {
       setIsLoggedIn(!!localStorage.getItem("token"));
     };
-
     window.addEventListener("storage", handleStorage);
     return () => window.removeEventListener("storage", handleStorage);
   }, [setIsLoggedIn]);
+
   const [loading, setLoading] = useState(true);
   const [product, setProduct] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
@@ -57,12 +57,9 @@ export default function ProductDetails() {
     async function fetchProduct() {
       try {
         setLoading(true);
-        const products = await getProducts();
+        const found = await getProductById(id);
         if (!mounted) return;
 
-        const found = products.find((p) => Number(p.id) === Number(id));
-
-        // لو الـ id مش موجود → روح لـ NotFoundPage
         if (!found) {
           navigate("/NotFoundPage", { replace: true });
           return;
@@ -70,7 +67,6 @@ export default function ProductDetails() {
 
         setProduct(found);
 
-        // build colors list from images
         const colors = Array.from(
           new Set(
             (found.images || []).map((img) =>
@@ -84,7 +80,7 @@ export default function ProductDetails() {
         setMainImageIndex(0);
         setQuantity(1);
         setSelectedSize("");
-        setIsWishlisted(false); // بدايةً false (لو حابة نجيب من الباك بعدين نعملها)
+        setIsWishlisted(false);
       } catch (err) {
         console.error(err);
         toast.error("Failed to load product data.");
@@ -99,7 +95,6 @@ export default function ProductDetails() {
     };
   }, [id, navigate]);
 
-  // Images filtered by selected color
   const galleryImages = useMemo(() => {
     if (!product || !product.images) return [];
     if (!selectedColor) return product.images;
@@ -113,7 +108,6 @@ export default function ProductDetails() {
     return filtered.length > 0 ? filtered : product.images;
   }, [product, selectedColor]);
 
-  // Main image url with fallback
   const mainImageUrl = useMemo(() => {
     if (!product) return "";
 
@@ -180,10 +174,9 @@ export default function ProductDetails() {
     setMainImageIndex(0);
   }
 
-  // colors directly from backend
   function getColorValue(colorValue) {
     if (!colorValue) return "#e5e7eb";
-    return colorValue; // backend value (CSS name or hex)
+    return colorValue;
   }
 
   async function handleAddToCart() {
@@ -223,7 +216,6 @@ export default function ProductDetails() {
       await addToCart(payload);
       toast.success("Product added to cart.");
 
-      // 🟢 هنا السحر: نحدّث الكاونتر في الـ Navbar فورًا
       if (typeof refreshCounts === "function") {
         await refreshCounts();
       }
@@ -256,12 +248,10 @@ export default function ProductDetails() {
 
     try {
       if (isWishlisted) {
-        // remove from wishlist
         await removeFromWishlist(Number(product.id));
         setIsWishlisted(false);
         toast.success("Product removed from wishlist.");
       } else {
-        // add to wishlist
         await addToWishlist(Number(product.id));
         setIsWishlisted(true);
         toast.success("Product added to wishlist.");
@@ -270,7 +260,6 @@ export default function ProductDetails() {
       if (typeof refreshCounts === "function") {
         await refreshCounts();
       }
-
     } catch (err) {
       console.error(err);
       const msg = err.response?.data;
@@ -297,7 +286,6 @@ export default function ProductDetails() {
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    // لو مفيش product لسه أو مفيش login → skip
     if (!product || !product.id || !token) {
       setIsWishlisted(false);
       return;
@@ -306,8 +294,6 @@ export default function ProductDetails() {
     async function checkWishlist() {
       try {
         const res = await isProductInWishlist(Number(product.id));
-
-        // API احتمال يرجّع true أو object → دعمنا كل الحالات
         if (
           res.data === true ||
           res.data === "true" ||
@@ -333,15 +319,11 @@ export default function ProductDetails() {
     );
   }
 
-  // const isLoggedIn = !!localStorage.getItem("token");
-
   return (
     <div className="max-w-[1400px] mx-auto px-4 lg:px-8 py-14">
       <div className="grid gap-8 lg:grid-cols-12">
-        {/* Gallery (images) */}
         <div className="lg:col-span-7">
           <div className="flex gap-4">
-            {/* Desktop / tablet vertical thumbnails */}
             <div className="hidden md:flex flex-col gap-4 w-24">
               {galleryImages.map((img, idx) => (
                 <button
@@ -361,8 +343,6 @@ export default function ProductDetails() {
                 </button>
               ))}
             </div>
-
-            {/* Main image */}
             <div className="flex-1 flex items-center justify-center">
               <div className="w-full h-full flex items-center justify-center p-4 border border-gray-200  bg-white">
                 <img
@@ -373,8 +353,6 @@ export default function ProductDetails() {
               </div>
             </div>
           </div>
-
-          {/* Mobile thumbnails (horizontal) */}
           {galleryImages.length > 1 && (
             <div className="mt-4 flex gap-3 md:hidden overflow-x-auto pb-1">
               {galleryImages.map((img, idx) => (
@@ -398,10 +376,8 @@ export default function ProductDetails() {
           )}
         </div>
 
-        {/* Product info */}
         <div className="lg:col-span-5">
           <div className="space-y-4">
-            {/* Title */}
             <div>
               <h2 className="text-2xl font-bold">{product.name}</h2>
               <div className="text-sm text-gray-500 mt-1">
@@ -409,7 +385,6 @@ export default function ProductDetails() {
               </div>
             </div>
 
-            {/* Price block (سيبيه زي ما هو عندك لو حابة تغيريه بعدين) */}
             <div className="flex items-center gap-4">
               <div>
                 <div className="flex items-baseline gap-3">
@@ -432,11 +407,9 @@ export default function ProductDetails() {
                     </div>
                   )}
                 </div>
-
                 <div className="text-xs text-gray-400">Incl VAT</div>
               </div>
 
-              {/* stock label */}
               <div className="ml-auto text-sm">
                 {product.stockQuantity > 0 ? (
                   <span className="text-green-600">In stock</span>
@@ -446,7 +419,6 @@ export default function ProductDetails() {
               </div>
             </div>
 
-            {/* Color selector */}
             <div>
               <div className="text-sm font-medium mb-2">Color</div>
               <div className="flex gap-3 items-center flex-wrap">
@@ -468,7 +440,6 @@ export default function ProductDetails() {
               </div>
             </div>
 
-            {/* Size selector */}
             {product.sizes && product.sizes.length > 0 && (
               <div>
                 <div className="text-sm font-medium mb-2">
@@ -492,7 +463,6 @@ export default function ProductDetails() {
               </div>
             )}
 
-            {/* Quantity and actions */}
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2 border border-gray-200 rounded-md p-1">
                 <button
@@ -513,8 +483,6 @@ export default function ProductDetails() {
               </div>
 
               <div className="flex-1 flex gap-2">
-                {/* Add to Cart button */}
-
                 <button
                   onClick={handleAddToCart}
                   className={`flex-1 py-2 px-4 rounded-md flex items-center justify-center gap-2 ${
@@ -532,7 +500,6 @@ export default function ProductDetails() {
                     : "Add to Cart"}
                 </button>
 
-                {/* Wishlist toggle */}
                 <button
                   onClick={handleToggleWishlist}
                   className={`bg-white p-2 mb-1 rounded-full shadow-md border flex items-center justify-center ${
@@ -548,7 +515,6 @@ export default function ProductDetails() {
               </div>
             </div>
 
-            {/* Try On AR */}
             <div className="flex items-center gap-3">
               <button
                 onClick={() => toast("Try On AR - placeholder UI")}
@@ -562,9 +528,7 @@ export default function ProductDetails() {
               </div>
             </div>
 
-            {/* Accordions */}
             <div className="space-y-2">
-              {/* Description accordion (open by default) */}
               <Accordion
                 title="Description"
                 isOpen={openAccordions.description}
@@ -618,7 +582,6 @@ export default function ProductDetails() {
   );
 }
 
-/* Simple Accordion subcomponent */
 function Accordion({ title, children, isOpen = false, onToggle }) {
   return (
     <div className="border border-gray-200 rounded-md overflow-hidden">
