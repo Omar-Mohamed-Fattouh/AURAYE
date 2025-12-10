@@ -36,7 +36,7 @@ export default function Wishlist() {
         }
 
         // نعمل mapping لنفس فورمات getProducts
-        const BASE_URL = "http://graduation-project1.runasp.net";
+        const BASE_URL = "http://graduationproject11.runasp.net";
 
         const mappedProducts = data.map((p) => {
           const images =
