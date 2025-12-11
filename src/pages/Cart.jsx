@@ -17,7 +17,7 @@ import CartSummary from "../components/CartSummary";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { formatEGP } from "../components/formatCurrency";
 
-const BASE_URL = "http://graduation-project1.runasp.net";
+const BASE_URL = "http://graduationproject11.runasp.net";
 const FREE_SHIPPING = 1500;
 
 export default function Cart() {

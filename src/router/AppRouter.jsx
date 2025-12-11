@@ -47,6 +47,7 @@ import Mission from "../pages/Mission.jsx";
 import WhyUS from "../pages/WhyUS.jsx";
 import TeamPgae from "../pages/TeamPgae.jsx";
 import ArTry from "../pages/Ar-try.jsx";
+import TryAr from "../pages/TryAr.jsx";
 
 const queryClient = new QueryClient();
 const stripePromise = loadStripe(
@@ -297,6 +298,13 @@ export default function AppRouter() {
                 </RouteWithTitle>
               }
               />
+              <Route 
+              path="devices"
+              element={
+                <RouteWithTitle title="devices">
+                  <TryAr/>
+                </RouteWithTitle>
+              }></Route>
 
               {/* Protected Routes */}
               <Route

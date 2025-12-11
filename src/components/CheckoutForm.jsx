@@ -31,7 +31,7 @@ export default function CheckoutForm({
       paymentMethod: "cod",
     },
   });
-const BASE_URL = 'https://graduation-project1.runasp.net'
+const BASE_URL = 'https://graduationproject11.runasp.net'
   const selectedPayment = watch("paymentMethod");
 
   const inputClass =

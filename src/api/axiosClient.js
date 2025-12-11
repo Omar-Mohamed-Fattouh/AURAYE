@@ -1,12 +1,13 @@
 import axios from "axios";
 
 const axiosClient = axios.create({
-  baseURL: "https://graduationproject11.runasp.net/api",
+  baseURL: import.meta.env.VITE_API_URL,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
+// ✅ Token Interceptor
 axiosClient.interceptors.request.use((config) => {
   let token = null;
 
