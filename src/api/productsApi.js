@@ -209,7 +209,15 @@ export const getProductsAr = async () => {
 
   const BASE_URL = "https://graduationproject11.runasp.net";
 
-  return response.data.map((product) => {
+  // نضمن إن اللي هنمشي عليه Array مهما كان شكل ال API
+  const productsArray =
+    Array.isArray(response.data)
+      ? response.data
+      : Array.isArray(response.data.data)
+      ? response.data.data
+      : [];
+
+  return productsArray.map((product) => {
     const images =
       product.productImages && product.productImages.length > 0
         ? product.productImages.map((img) => ({
@@ -221,7 +229,7 @@ export const getProductsAr = async () => {
     const models =
       product.product3dModels && product.product3dModels.length > 0
         ? product.product3dModels.map((m) => ({
-            url: m.modelUrl, // FULL .glb URL
+            url: m.modelUrl,
             defaultScale: m.defaultScale || 1,
             color: m.color || "black",
           }))
