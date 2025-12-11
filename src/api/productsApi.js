@@ -132,7 +132,7 @@ export const getProducts = async () => {
       : Array.isArray(response.data.data)
       ? response.data.data
       : [];
-
+console.log(productsArray)
   return productsArray.map((product) => {
     const images = [
       {
