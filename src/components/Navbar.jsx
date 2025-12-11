@@ -181,7 +181,7 @@ const navBaseClasses = "w-full text-white font-semibold z-50";
           {/* RIGHT SIDE: Wishlist + Cart + Profile */}
           <div className="flex items-center gap-4 min-w-0">
             {/* DESKTOP: Wishlist + Cart + Profile */}
-            <div className="hidden md:flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-4">
               {isUserLoggedIn && (
                 <>
                   <WishlistMenu count={wishlistCount} />
@@ -534,7 +534,7 @@ function ProfileMenu({ user, onLogoutClick, logoutLoading }) {
         className="flex items-center gap-2 hover:text-gray-300 truncate max-w-[180px] text-lg"
         aria-label="Open profile menu"
       >
-        <User size={20} /> <span className="truncate">{name}&apos;s Profile</span>
+        <User size={22} /> <span className="truncate">{name}&apos;s Profile</span>
       </DropdownMenu.Trigger>
 
       <DropdownMenu.Content

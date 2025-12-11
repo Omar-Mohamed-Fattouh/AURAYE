@@ -10,10 +10,11 @@ import { toast } from "sonner";
 
 import { getProductsAr } from "../api/productsApi";
 
-// tracking constants
+// Face tracking constants
 const MIN_EYE_DIST = 0.06;
 const MAX_EYE_DIST = 0.25;
 const Y_OFFSET = 0.02;
+const REF_EYE_DIST = 0.12; // reference eye distance for scaling
 
 export default function TryAr() {
   const videoRef = useRef(null);
@@ -28,8 +29,9 @@ export default function TryAr() {
     rotationZ: 0,
   });
 
-  const [userScale, setUserScale] = useState(1); // slider
-  const userScaleRef = useRef(1);
+  // 0 = Small, 1 = Medium, 2 = Large
+  const [sizePreset, setSizePreset] = useState(1);
+  const sizePresetRef = useRef(1);
 
   const [modelFailed, setModelFailed] = useState(false);
 
@@ -37,14 +39,14 @@ export default function TryAr() {
   const [loadingProduct, setLoadingProduct] = useState(true);
 
   useEffect(() => {
-    userScaleRef.current = userScale;
-  }, [userScale]);
-
-  useEffect(() => {
     dimensionsRef.current = dimensions;
   }, [dimensions]);
 
-  // ---------- load first AR product ----------
+  useEffect(() => {
+    sizePresetRef.current = sizePreset;
+  }, [sizePreset]);
+
+  // ---------- Load first AR product ----------
   useEffect(() => {
     const load = async () => {
       try {
@@ -64,14 +66,14 @@ export default function TryAr() {
     load();
   }, []);
 
-  // ---------- resize container ----------
+  // ---------- Resize container ----------
   useEffect(() => {
     const updateSize = () => {
       if (!containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
       setDimensions({
         width: rect.width,
-        height: rect.width * 0.75,
+        height: rect.width * 0.75, // 4:3
       });
     };
     updateSize();
@@ -108,6 +110,7 @@ export default function TryAr() {
 
         const landmarks = results.multiFaceLandmarks[0];
 
+        // Eye landmarks (Mediapipe indices)
         const leftEye = landmarks[33];
         const rightEye = landmarks[263];
 
@@ -125,14 +128,26 @@ export default function TryAr() {
 
         const angle = Math.atan2(dy, dx);
 
-        // نحاول نخلي الرينج صغير شوية عشان يبقى في النص
-        const x = (centerX - 0.5) * 1.4; // بدل 2
-        const y = -(centerY - 0.5) * 1.4 + Y_OFFSET;
+        // Map from [0,1] to a smaller range around center
+        const x = (centerX - 0.5) * 1.5;
+        const y = -(centerY - 0.5) * 1.5 + Y_OFFSET;
 
-        // scale بسيط (هنظبط الموديل نفسه)
-        let dynamicScale = 0.9 * (eyeDist / 0.12) * userScaleRef.current;
-        dynamicScale = Math.min(2.5, Math.max(0.5, dynamicScale));
+        // Base scale from face size
+        let baseScale = (eyeDist / REF_EYE_DIST) * 0.6;
 
+        // Small / Medium / Large preset multiplier
+        const preset = sizePresetRef.current;
+        let presetMul = 1;
+        if (preset === 0) presetMul = 0.9; // Small
+        else if (preset === 2) presetMul = 1.15; // Large
+        else presetMul = 1.02; // Medium
+
+        let dynamicScale = baseScale * presetMul;
+
+        // Clamp
+        dynamicScale = Math.min(1.6, Math.max(0.4, dynamicScale));
+
+        // Direct mapping (no smoothing)
         setGlassesTransform({
           position: [x, y, 0],
           scale: dynamicScale,
@@ -193,7 +208,8 @@ export default function TryAr() {
             <span>AR Try-On — First AR Frame</span>
           </h1>
           <p className="text-xs sm:text-sm leading-relaxed text-white/80">
-            Camera + 3D overlay. لو شُفت نظارة صفراء فوق عينك كده التراكينج تمام.
+            Turn on your camera and see your first AR-enabled frame in real-time.
+            Move your head slowly and pick the size that fits you best.
           </p>
         </div>
       </header>
@@ -219,7 +235,7 @@ export default function TryAr() {
               style={{ transform: "scaleX(-1)" }}
             />
 
-            {/* OVERLAY */}
+            {/* 3D OVERLAY */}
             <div
               className="absolute inset-0 pointer-events-none z-20"
               style={{ transform: "scaleX(-1)" }}
@@ -238,18 +254,9 @@ export default function TryAr() {
                   pointerEvents: "none",
                 }}
               >
-                {/* إضاءة بسيطة */}
                 <ambientLight intensity={1.1} />
                 <directionalLight position={[2, 2, 3]} intensity={0.8} />
 
-                {/* Placeholder نظارة صفراء – لازم تشوفها الأول */}
-                <PlaceholderGlasses
-                  position={glassesTransform.position}
-                  scale={glassesTransform.scale}
-                  rotationZ={glassesTransform.rotationZ}
-                />
-
-                {/* GLB فوقها لو اشتغل */}
                 {!modelFailed && (
                   <Suspense fallback={null}>
                     <GlassesGLB
@@ -265,34 +272,48 @@ export default function TryAr() {
             </div>
           </div>
 
-          {/* Slider */}
+          {/* Size presets */}
           <div className="px-4 pt-2 pb-1 bg-black/95 border-t border-white/15 text-[11px] text-white/80">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between gap-4">
               <span className="whitespace-nowrap">Frame size</span>
-              <input
-                type="range"
-                min="0.5"
-                max="2"
-                step="0.05"
-                value={userScale}
-                onChange={(e) => setUserScale(parseFloat(e.target.value))}
-                className="w-full accent-white"
-              />
-              <span className="w-10 text-right">
-                {Math.round(userScale * 100)}%
-              </span>
+
+              <div className="flex-1 flex flex-col gap-1">
+                <input
+                  type="range"
+                  min="0"
+                  max="2"
+                  step="1"
+                  value={sizePreset}
+                  onChange={(e) => setSizePreset(Number(e.target.value))}
+                  className="w-full accent-white"
+                />
+                <div className="flex justify-between text-[10px] uppercase tracking-[0.15em]">
+                  {["Small", "Medium", "Large"].map((label, idx) => (
+                    <span
+                      key={label}
+                      className={
+                        idx === sizePreset
+                          ? "text-white font-semibold"
+                          : "text-white/50"
+                      }
+                    >
+                      {label}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
           <div className="px-4 py-2 bg-black/95 text-[11px] text-white/70 flex justify-between items-center">
-            <span>Tip: Move your head slowly left and right.</span>
+            <span>Tip: Move your head slowly left and right for better tracking.</span>
             <span className="hidden md:inline">
-              Your camera stays in your browser only.
+              Your camera runs locally in your browser only.
             </span>
           </div>
         </section>
 
-        {/* Product info (نفس القديم تقريباً) */}
+        {/* Product info */}
         <aside className="space-y-4">
           <div className="rounded-2xl border border-white/15 bg-white/5 backdrop-blur-md p-4 sm:p-5 flex flex-col h-full">
             {loadingProduct && (
@@ -379,8 +400,8 @@ export default function TryAr() {
 
                 <div className="mt-auto text-[11px] text-white/70">
                   This frame is automatically loaded into the AR view on the
-                  left. Just look at the camera and adjust the slider to tune
-                  the fit.
+                  left. Choose Small, Medium, or Large and look straight at
+                  the camera for the best fit.
                 </div>
               </>
             )}
@@ -391,32 +412,7 @@ export default function TryAr() {
   );
 }
 
-/* ========== Placeholder yellow glasses (لازم تشوفها) ========== */
-function PlaceholderGlasses({ position, scale, rotationZ }) {
-  const s = scale * 0.8;
-  const frameColor = "transparent";
-
-  return (
-    <group position={position} rotation={[0, 0, rotationZ]} scale={[1, 1, 1]}>
-      {/* left lens */}
-      <mesh position={[-0.45 * s, 0, 0]}>
-        {/* <circleGeometry args={[0.3 * s, 32]} /> */}
-        {/* <meshBasicMaterial color={frameColor} wireframe /> */}
-      </mesh>
-      {/* right lens */}
-      <mesh position={[0.45 * s, 0, 0]}>
-        {/* <circleGeometry args={[0.3 * s, 32]} /> */}
-        {/* <meshBasicMaterial color={frameColor} wireframe /> */}
-      </mesh>
-      {/* bridge */}
-      <mesh position={[0, 0, 0]}>
-        {/* <boxGeometry args={[0.25 * s, 0.08 * s, 0.01]} /> */}
-        {/* <meshBasicMaterial color={frameColor} /> */}
-      </mesh>
-    </group>
-  );
-}
-/* ========== GLB model, فوق الـ placeholder لو اشتغل ========== */
+/* ========== GLB model (aligned to face) ========== */
 function GlassesGLB({ url, position, scale, rotationZ, onError }) {
   let gltf;
   try {
@@ -432,39 +428,33 @@ function GlassesGLB({ url, position, scale, rotationZ, onError }) {
   const calibratedScene = useMemo(() => {
     const cloned = scene.clone(true);
 
-    // نجيب الـ bounding box
+    // Compute bounding box
     const box = new Box3().setFromObject(cloned);
     const size = new Vector3();
     const center = new Vector3();
     box.getSize(size);
     box.getCenter(center);
 
-    // 1) نركّز الموديل حوالين (0,0,0)
+    // Center model at (0,0,0)
     cloned.position.sub(center);
 
-    // 2) نرفعه شوية لفوق عشان العدسات تيجي عند الـ origin
-    //    (ربع الارتفاع تقريباً بيظبط معظم موديلات النظارات)
+    // Lift slightly so lenses sit around origin
     cloned.position.y += size.y * 0.44;
 
-    // 3) نطبّع العرض: نخليه ≈ 0.8 وحدة
+    // Normalize width (~0.85 units)
     const width = size.x || 1;
-    const targetWidth = 0.9;
+    const targetWidth = 0.80;
     const normScale = targetWidth / width;
     cloned.scale.setScalar(normScale);
 
     return cloned;
   }, [scene]);
 
-  // scale اللي جاي من الـ FaceMesh + الـ slider
   const s = scale;
   const finalScale = [s, s, s];
 
   return (
-    <group
-      position={position}
-      rotation={[0, 0, rotationZ]} // Math.PI لو الموديل ضهره مواجه للكاميرا
-      scale={finalScale}
-    >
+    <group position={position} rotation={[0, 0, rotationZ]} scale={finalScale}>
       <primitive object={calibratedScene} />
     </group>
   );
