@@ -17,7 +17,13 @@ export default function BestSellerSection() {
     const loadBestSellers = async () => {
       try {
         const best = await getBestSellerProducts();
-        setProducts(best);
+        // تأكد إنها مصفوفة
+        const productsArray = Array.isArray(best)
+          ? best
+          : Array.isArray(best?.data)
+            ? best.data
+            : [];
+        setProducts(productsArray);
       } catch (err) {
         console.error("Failed to load best sellers:", err);
       }
@@ -75,8 +81,8 @@ export default function BestSellerSection() {
               <ProductCard
                 product={p}
                 linkTo={`/products/${p.id}`}
-                showAddToCart={false}   // <-- مفيش add to cart في best sellers
-                badge="Best Seller"     // <-- optional badge
+                showAddToCart={false} // <-- مفيش add to cart في best sellers
+                badge="Best Seller" // <-- optional badge
               />
             </SwiperSlide>
           ))}

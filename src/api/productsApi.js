@@ -132,7 +132,7 @@ export const getProducts = async () => {
       : Array.isArray(response.data.data)
       ? response.data.data
       : [];
-console.log(productsArray)
+console.log("GET_PRODUCTS URL:", axiosClient.defaults.baseURL + "/Products");
   return productsArray.map((product) => {
     const images = [
       {
