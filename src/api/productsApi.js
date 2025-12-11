@@ -125,8 +125,15 @@ export const getProducts = async () => {
   const response = await axiosClient.get("/Products");
   const BASE_URL = "https://graduationproject11.runasp.net";
 
-  return response.data.map((product) => {
-    // كل منتج عنده صورة واحدة default + ألوان فقط
+  // حل مضمون يمنع الأخطاء
+  const productsArray =
+    Array.isArray(response.data)
+      ? response.data
+      : Array.isArray(response.data.data)
+      ? response.data.data
+      : [];
+
+  return productsArray.map((product) => {
     const images = [
       {
         url: BASE_URL + product.defaultImgUrl,
@@ -141,23 +148,19 @@ export const getProducts = async () => {
       price: product.price,
       oldPrice: product.oldPrice || null,
 
-      images, // صورة واحدة فقط للـ list
+      images,
 
       category: product.categoryName || "Other",
       shape: product.shape || "Standard",
       gender: product.gender || "Unisex",
       frameMaterial: product.frameMaterial || "Standard",
-
       sizes: product.sizes || [],
-
-      // مهم: عشان تبقى consistent مع الـ productById
       availableColors: product.availableColors || [],
-
-      // في الـ List مش بيرجع stockQuantity → نحط null
       stockQuantity: product.stockQuantity || null,
     };
   });
 };
+
 
 
 /* -------------------------- BESTSELLER -------------------------- */
