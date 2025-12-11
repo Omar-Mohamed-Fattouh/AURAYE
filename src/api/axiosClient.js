@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: import.meta.env.VITE_API_URL|| "https://graduationproject11.runasp.net",
   headers: {
     "Content-Type": "application/json",
   },
