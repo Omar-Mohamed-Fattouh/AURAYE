@@ -26,7 +26,7 @@ export default function App() {
 
   return (
     <>
-      <div className="font-sans hide-scrollbar">
+      <div className="font-sans  hide-scrollbar">
         <ToastContainer position="top-right" />
         <AppRouter />
         <ChatWidget projectContext={PROJECT_CONTEXT} />

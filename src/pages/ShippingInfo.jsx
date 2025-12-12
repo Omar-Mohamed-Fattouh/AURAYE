@@ -8,9 +8,11 @@ import {
   Search,
   Filter,
   CreditCard,
+  ChevronDown,
 } from "lucide-react";
 import { formatEGP } from "../components/formatCurrency";
 import SubscribeSection from "../components/SubscribeSection";
+import AurayeLoader from "../components/AurayeLoader";
 
 export default function ShippingInfo() {
   const [orders, setOrders] = useState([]);
@@ -27,7 +29,9 @@ export default function ShippingInfo() {
     const fetchOrders = async () => {
       try {
         setLoading(true);
-        const data = await getOrders();
+        setError(null);
+        const res = await getOrders();
+        const data = res?.data ?? res;
         setOrders(Array.isArray(data) ? data : data || []);
       } catch (err) {
         console.error(err);
@@ -59,8 +63,7 @@ export default function ShippingInfo() {
 
         if (
           statusFilter !== "all" &&
-          String(order.status || "").toLowerCase() !==
-            statusFilter.toLowerCase()
+          String(order.status || "").toLowerCase() !== statusFilter.toLowerCase()
         ) {
           return false;
         }
@@ -85,28 +88,17 @@ export default function ShippingInfo() {
       });
   }, [orders, search, statusFilter, paymentFilter, shippingFilter]);
 
+  // ✅ AURAYE loader (keep consistent with the rest of the website)
   if (loading) {
-    return (
-      <div className="min-h-[60vh] bg-slate-50 flex items-center justify-center px-4">
-        <div className="w-full max-w-4xl bg-white rounded-3xl border border-slate-100 shadow-sm p-8 animate-pulse space-y-6">
-          <div className="h-6 w-40 bg-slate-200 rounded" />
-          <div className="h-11 bg-slate-100 rounded-xl" />
-          <div className="space-y-3">
-            <div className="h-24 bg-slate-100 rounded-2xl" />
-            <div className="h-24 bg-slate-100 rounded-2xl" />
-            <div className="h-24 bg-slate-100 rounded-2xl" />
-          </div>
-        </div>
-      </div>
-    );
+    return <AurayeLoader label="Loading orders" subtitle="AURAYE" />;
   }
 
   if (error) {
     return (
-      <div className="min-h-[40vh] bg-slate-50 flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-white border border-red-100 rounded-2xl p-6 flex items-center gap-3 text-red-700 shadow-sm">
-          <AlertCircle className="w-5 h-5" />
-          <p className="text-sm font-medium">{error}</p>
+      <div className="min-h-[50vh] bg-white flex items-center justify-center px-4">
+        <div className="max-w-md w-full rounded-2xl border border-black/10 bg-white p-6 flex items-center gap-3 text-black shadow-[0_18px_60px_rgba(0,0,0,0.08)]">
+          <AlertCircle className="w-5 h-5 text-black/70" />
+          <p className="text-sm font-medium text-black/80">{error}</p>
         </div>
       </div>
     );
@@ -114,13 +106,11 @@ export default function ShippingInfo() {
 
   if (!orders.length) {
     return (
-      <div className="min-h-[40vh] bg-slate-50 flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-white border border-slate-100 rounded-2xl p-8 text-center shadow-sm">
-          <Package className="w-10 h-10 mx-auto mb-3 text-slate-400" />
-          <h2 className="text-lg font-semibold text-slate-900">
-            No orders yet
-          </h2>
-          <p className="text-sm text-slate-500 mt-1">
+      <div className="min-h-[50vh] bg-white flex items-center justify-center px-4">
+        <div className="max-w-md w-full rounded-2xl border border-black/10 bg-white p-8 text-center shadow-[0_18px_60px_rgba(0,0,0,0.08)]">
+          <Package className="w-10 h-10 mx-auto mb-3 text-black/40" />
+          <h2 className="text-lg font-semibold text-black">No orders yet</h2>
+          <p className="text-sm text-black/60 mt-1">
             When you place an order, its shipping details will appear here.
           </p>
         </div>
@@ -129,31 +119,37 @@ export default function ShippingInfo() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4">
-      <main className="max-w-7xl mx-auto bg-white rounded-3xl border border-slate-100 shadow-sm p-6 md:p-8 space-y-6">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-          <div>
-            <h1 className="text-xl md:text-2xl font-semibold text-slate-900 flex items-center gap-2">
-              <Truck className="w-5 h-5 text-emerald-600" />
-              Shipping & Orders
-            </h1>
-            <p className="text-sm text-slate-500 mt-1">
-              Track your orders, payment status, and delivery details.
-            </p>
-          </div>
+    <div className="min-h-screen bg-white px-4 py-8">
+      <main className="max-w-7xl mx-auto space-y-6">
+        {/* Header (thin) */}
+        <div className="rounded-3xl border border-black/10 bg-white p-6 md:p-8 shadow-[0_18px_60px_rgba(0,0,0,0.06)]">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <div className="h-9 w-9 rounded-2xl border border-black/10 bg-black text-white grid place-items-center">
+                  <Truck className="w-4 h-4" />
+                </div>
+                <h1 className="text-xl md:text-2xl font-semibold tracking-tight text-black">
+                  Shipping & Orders
+                </h1>
+              </div>
+              <p className="text-sm text-black/60 mt-2">
+                Track your orders, payment status, and delivery details.
+              </p>
+            </div>
 
-          <div className="flex items-center gap-2 text-xs md:text-sm bg-slate-50 rounded-full px-3 py-1 border border-slate-100">
-            <Package className="w-4 h-4 text-slate-500" />
-            <span className="text-slate-600">
-              {orders.length} order{orders.length > 1 ? "s" : ""} in total
-            </span>
+            <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-3 py-1.5 text-xs md:text-sm text-black/70">
+              <Package className="w-4 h-4 text-black/50" />
+              <span>
+                {orders.length} order{orders.length > 1 ? "s" : ""} in total
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Filters */}
-        <section className="rounded-2xl border border-slate-100 bg-slate-50/60 p-4 md:p-5 space-y-3">
-          <div className="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-[0.16em]">
+        {/* Filters (thin + styled dropdowns) */}
+        <section className="rounded-3xl border border-black/10 bg-white p-4 md:p-6 shadow-[0_18px_60px_rgba(0,0,0,0.06)] space-y-4">
+          <div className="flex items-center gap-2 text-[11px] font-semibold text-black/50 uppercase tracking-[0.18em]">
             <Filter className="w-4 h-4" />
             <span>Filters & search</span>
           </div>
@@ -161,63 +157,60 @@ export default function ShippingInfo() {
           <div className="flex flex-col md:flex-row gap-3 md:items-center">
             {/* Search */}
             <div className="flex-1 relative">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-black/40 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Search by order ID or address..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 placeholder:text-slate-400"
+                className="w-full pl-9 pr-3 py-2.5 rounded-2xl border border-black/10 bg-white text-sm text-black
+                           focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black/30
+                           placeholder:text-black/35"
               />
             </div>
 
-            {/* Status filters */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 w-full md:w-[420px]">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white text-xs md:text-sm px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
-              >
+            {/* Dropdowns */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 w-full md:w-[460px]">
+              <SelectThin value={statusFilter} onChange={setStatusFilter}>
                 <option value="all">Status: All</option>
                 <option value="Pending">Status: Pending</option>
                 <option value="Processing">Status: Processing</option>
                 <option value="Shipped">Status: Shipped</option>
                 <option value="Delivered">Status: Delivered</option>
                 <option value="Cancelled">Status: Cancelled</option>
-              </select>
+              </SelectThin>
 
-              <select
-                value={paymentFilter}
-                onChange={(e) => setPaymentFilter(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white text-xs md:text-sm px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
-              >
+              <SelectThin value={paymentFilter} onChange={setPaymentFilter}>
                 <option value="all">Payment: All</option>
                 <option value="Pending">Payment: Pending</option>
                 <option value="Awaiting Payment">Awaiting Payment</option>
                 <option value="Paid">Paid</option>
                 <option value="Failed">Failed</option>
-              </select>
+              </SelectThin>
 
-              <select
-                value={shippingFilter}
-                onChange={(e) => setShippingFilter(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white text-xs md:text-sm px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
-              >
+              <SelectThin value={shippingFilter} onChange={setShippingFilter}>
                 <option value="all">Shipping: All</option>
                 <option value="Pending">Shipping: Pending</option>
                 <option value="Processing">Shipping: Processing</option>
                 <option value="Shipped">Shipped</option>
                 <option value="Delivered">Delivered</option>
-              </select>
+              </SelectThin>
             </div>
+          </div>
+
+          {/* Quick stats row */}
+          <div className="flex flex-wrap gap-2 pt-1">
+            <Pill text={`Showing ${filteredOrders.length} result${filteredOrders.length !== 1 ? "s" : ""}`} />
+            <Pill text={`Search: ${search ? "On" : "Off"}`} />
+            <Pill text={`Filters: ${statusFilter !== "all" || paymentFilter !== "all" || shippingFilter !== "all" ? "On" : "Off"}`} />
           </div>
         </section>
 
         {/* Orders list */}
         <section className="space-y-3">
           {filteredOrders.length === 0 ? (
-            <div className="rounded-2xl border border-amber-100 bg-amber-50/70 p-4 flex gap-2 text-amber-800 text-sm">
-              <AlertCircle className="w-4 h-4 mt-0.5" />
+            <div className="rounded-3xl border border-black/10 bg-white p-4 flex gap-2 text-black/70 text-sm shadow-[0_18px_60px_rgba(0,0,0,0.06)]">
+              <AlertCircle className="w-4 h-4 mt-0.5 text-black/50" />
               <p>No orders match the current search and filters.</p>
             </div>
           ) : (
@@ -233,86 +226,76 @@ export default function ShippingInfo() {
               const shippingStatus = order.shippingStatus || "—";
               const status = order.status || "Pending";
 
-              const date = order.deliveryDate || order.orderDate || order.createdAt;
+              const date =
+                order.deliveryDate || order.orderDate || order.createdAt;
 
-              const statusColor =
+              const statusTone =
                 status === "Delivered"
-                  ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                  ? "border-black/10 bg-black text-white"
                   : status === "Cancelled"
-                  ? "bg-rose-50 text-rose-700 border-rose-100"
-                  : "bg-slate-50 text-slate-700 border-slate-200";
+                  ? "border-black/15 bg-white text-black"
+                  : "border-black/10 bg-white text-black";
 
               return (
                 <article
                   key={id}
-                  className="border border-slate-100 rounded-2xl px-4 py-4 md:px-5 md:py-4 bg-slate-50/40 flex flex-col gap-3"
+                  className="rounded-3xl border border-black/10 bg-white p-5 md:p-6 shadow-[0_18px_60px_rgba(0,0,0,0.06)]"
                 >
-                  <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <p className="text-sm font-semibold text-slate-900">
+                      <p className="text-sm font-semibold text-black">
                         Order #{id}
                       </p>
-                      <p className="text-xs text-slate-500">
-                        {date
-                          ? new Date(date).toLocaleString()
-                          : "Date not available"}
+                      <p className="text-xs text-black/55 mt-1">
+                        {date ? new Date(date).toLocaleString() : "Date not available"}
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                       <span
-                        className={`inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-medium ${statusColor}`}
+                        className={`inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-semibold ${statusTone}`}
                       >
-                        <Package className="w-3.5 h-3.5 mr-1.5" />
+                        <Package className={`w-3.5 h-3.5 mr-1.5 ${status === "Delivered" ? "text-white" : "text-black/60"}`} />
                         {status}
                       </span>
-                      <span className="text-[11px] text-slate-500">
-                        {itemsCount || 0} item
-                        {(itemsCount || 0) !== 1 ? "s" : ""}
+
+                      <span className="text-[11px] text-black/55">
+                        {itemsCount || 0} item{(itemsCount || 0) !== 1 ? "s" : ""}
                       </span>
                     </div>
                   </div>
 
-                  <div className="grid md:grid-cols-3 gap-3 text-sm">
-                    <div className="space-y-1">
-                      <p className="text-[11px] uppercase text-slate-400 tracking-wide">
-                        Total amount
-                      </p>
-                      <p className="font-semibold text-slate-900">
-                        {formatEGP(order.totalAmount || order.total || 0)}
-                      </p>
+                  <div className="mt-4 grid md:grid-cols-3 gap-4 text-sm">
+                    <InfoBlock
+                      label="Total amount"
+                      value={formatEGP(order.totalAmount || order.total || 0)}
+                      subLabel="Shipping cost"
+                      subValue={formatEGP(order.shippingCost || 0)}
+                    />
 
-                      <p className="text-[11px] uppercase text-slate-400 tracking-wide mt-2">
-                        Shipping cost
-                      </p>
-                      <p className="text-slate-800">
-                        {formatEGP(order.shippingCost || 0)}
-                      </p>
-                    </div>
-
-                    <div className="space-y-1">
-                      <p className="text-[11px] uppercase text-slate-400 tracking-wide">
+                    <div className="rounded-2xl border border-black/10 bg-white p-4">
+                      <p className="text-[11px] uppercase text-black/45 tracking-wide">
                         Payment status
                       </p>
-                      <p className="inline-flex items-center gap-1 text-slate-800">
-                        <CreditCard className="w-3.5 h-3.5 text-slate-500" />
-                        <span>{paymentStatus}</span>
+                      <p className="mt-1 inline-flex items-center gap-1 text-black/80">
+                        <CreditCard className="w-3.5 h-3.5 text-black/45" />
+                        <span className="font-medium">{paymentStatus}</span>
                       </p>
 
-                      <p className="text-[11px] uppercase text-slate-400 tracking-wide mt-2">
+                      <p className="text-[11px] uppercase text-black/45 tracking-wide mt-3">
                         Shipping status
                       </p>
-                      <p className="inline-flex items-center gap-1 text-slate-800">
-                        <Truck className="w-3.5 h-3.5 text-slate-500" />
-                        <span>{shippingStatus}</span>
+                      <p className="mt-1 inline-flex items-center gap-1 text-black/80">
+                        <Truck className="w-3.5 h-3.5 text-black/45" />
+                        <span className="font-medium">{shippingStatus}</span>
                       </p>
                     </div>
 
-                    <div className="space-y-1">
-                      <p className="text-[11px] uppercase text-slate-400 tracking-wide">
+                    <div className="rounded-2xl border border-black/10 bg-white p-4">
+                      <p className="text-[11px] uppercase text-black/45 tracking-wide">
                         Shipping address
                       </p>
-                      <p className="text-slate-800 text-sm leading-snug">
+                      <p className="mt-1 text-black/75 text-sm leading-snug">
                         {order.shippingAddress || "—"}
                       </p>
                     </div>
@@ -322,8 +305,49 @@ export default function ShippingInfo() {
             })
           )}
         </section>
-      </main>
+
         <SubscribeSection />
+      </main>
+    </div>
+  );
+}
+
+/* -------------------- tiny UI helpers -------------------- */
+
+function Pill({ text }) {
+  return (
+    <span className="inline-flex items-center rounded-full border border-black/10 bg-white px-3 py-1 text-[11px] font-semibold text-black/60">
+      {text}
+    </span>
+  );
+}
+
+function SelectThin({ value, onChange, children }) {
+  return (
+    <div className="relative">
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full appearance-none rounded-2xl border border-black/10 bg-white
+                   px-3 py-2.5 pr-9 text-xs md:text-sm text-black/80
+                   focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black/30"
+      >
+        {children}
+      </select>
+
+      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black/35" />
+    </div>
+  );
+}
+
+function InfoBlock({ label, value, subLabel, subValue }) {
+  return (
+    <div className="rounded-2xl border border-black/10 bg-white p-4">
+      <p className="text-[11px] uppercase text-black/45 tracking-wide">{label}</p>
+      <p className="mt-1 font-semibold text-black">{value}</p>
+
+      <p className="text-[11px] uppercase text-black/45 tracking-wide mt-3">{subLabel}</p>
+      <p className="mt-1 text-black/75">{subValue}</p>
     </div>
   );
 }

@@ -1,31 +1,16 @@
-// src/pages/ProductDetails.jsx
-import React, {
-  useEffect,
-  useMemo,
-  useState,
-  useRef,
-  Suspense,
-} from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { useContext } from "react";
+// src/components/ProductDetails.jsx
+import React, { useEffect, useMemo, useState, useRef, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../features/auth/AuthContext";
 import { CartContext } from "../store/cartContext";
-import { addToCart } from "../api/productsApi";
 import {
-  getProductById,
+  addToCart,
   addToWishlist,
   removeFromWishlist,
   isProductInWishlist,
 } from "../api/productsApi";
 import { toast } from "sonner";
-import {
-  Heart,
-  ShoppingCart,
-  Eye,
-  Minus,
-  Plus,
-  ChevronDown,
-} from "lucide-react";
+import { Heart, ShoppingCart, Eye, Minus, Plus, ChevronDown } from "lucide-react";
 
 // AR imports
 import { Canvas } from "@react-three/fiber";
@@ -39,12 +24,10 @@ import ConfirmDialog from "../components/ConfirmDialog";
 const MIN_EYE_DIST = 0.06;
 const MAX_EYE_DIST = 0.25;
 const Y_OFFSET = 0.02;
-const REF_EYE_DIST = 0.12; // reference for scaling
+const REF_EYE_DIST = 0.12;
 
-export default function ProductDetails() {
-  const { id } = useParams();
+export default function ProductDetails({ product }) {
   const navigate = useNavigate();
-
   const { isLoggedIn, setIsLoggedIn } = useContext(AuthContext);
   const { refreshCounts } = useContext(CartContext);
 
@@ -56,8 +39,6 @@ export default function ProductDetails() {
     return () => window.removeEventListener("storage", handleStorage);
   }, [setIsLoggedIn]);
 
-  const [loading, setLoading] = useState(true);
-  const [product, setProduct] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
   const [availableColors, setAvailableColors] = useState([]);
   const [mainImageIndex, setMainImageIndex] = useState(0);
@@ -82,61 +63,38 @@ export default function ProductDetails() {
   });
   const [isBusy, setIsBusy] = useState(false);
 
+  // init local UI state when product changes
   useEffect(() => {
-    let mounted = true;
+    if (!product) return;
 
-    async function fetchProduct() {
-      try {
-        setLoading(true);
-        const found = await getProductById(id);
-        if (!mounted) return;
+    const colors = Array.from(
+      new Set(
+        (product.images || []).map((img) =>
+          img?.color ? img.color.trim() : "Default"
+        )
+      )
+    );
 
-        if (!found) {
-          navigate("/NotFoundPage", { replace: true });
-          return;
-        }
-
-        setProduct(found);
-
-        const colors = Array.from(
-          new Set(
-            (found.images || []).map((img) =>
-              img.color ? img.color.trim() : "Default"
-            )
-          )
-        );
-
-        setAvailableColors(colors);
-        setSelectedColor((prev) => prev || colors[0] || "Default");
-        setMainImageIndex(0);
-        setQuantity(1);
-        setSelectedSize("");
-        setIsWishlisted(false);
-      } catch (err) {
-        console.error(err);
-        toast.error("Failed to load product data.");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchProduct();
-    return () => {
-      mounted = false;
-    };
-  }, [id, navigate]);
+    setAvailableColors(colors);
+    setSelectedColor((prev) => prev || colors[0] || "Default");
+    setMainImageIndex(0);
+    setQuantity(1);
+    setSelectedSize("");
+    setIsWishlisted(false);
+  }, [product]);
 
   const galleryImages = useMemo(() => {
-    if (!product || !product.images) return [];
-    if (!selectedColor) return product.images;
+    if (!product) return [];
+    const imgs = product.images || [];
+    if (!selectedColor) return imgs;
 
-    const filtered = product.images.filter(
+    const filtered = imgs.filter(
       (img) =>
-        (img.color ? img.color.trim() : "Default") ===
+        (img?.color ? img.color.trim() : "Default") ===
         (selectedColor ? selectedColor.trim() : "Default")
     );
 
-    return filtered.length > 0 ? filtered : product.images;
+    return filtered.length > 0 ? filtered : imgs;
   }, [product, selectedColor]);
 
   const mainImageUrl = useMemo(() => {
@@ -148,7 +106,7 @@ export default function ProductDetails() {
     }
 
     if (product.defaultImgUrl) {
-      if (product.defaultImgUrl.startsWith("http")) {
+      if (String(product.defaultImgUrl).startsWith("http")) {
         return product.defaultImgUrl;
       }
       if (product.images && product.images[0]?.url) {
@@ -157,9 +115,7 @@ export default function ProductDetails() {
       return product.defaultImgUrl;
     }
 
-    return product.images && product.images[0]?.url
-      ? product.images[0].url
-      : "";
+    return product.images && product.images[0]?.url ? product.images[0].url : "";
   }, [product, galleryImages, mainImageIndex]);
 
   function formatEGP(value) {
@@ -193,7 +149,9 @@ export default function ProductDetails() {
     if (!product) return;
     const next = quantity + delta;
     if (next < 1) return;
-    if (next > product.stockQuantity) {
+
+    const stock = Number(product.stockQuantity || 0);
+    if (stock && next > stock) {
       toast.error("Selected quantity exceeds available stock.");
       return;
     }
@@ -314,6 +272,7 @@ export default function ProductDetails() {
     }
   }
 
+  // check wishlist when product changes
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -322,14 +281,14 @@ export default function ProductDetails() {
       return;
     }
 
+    let mounted = true;
+
     async function checkWishlist() {
       try {
         const res = await isProductInWishlist(Number(product.id));
-        if (
-          res.data === true ||
-          res.data === "true" ||
-          res.data?.exists === true
-        ) {
+        if (!mounted) return;
+
+        if (res?.data === true || res?.data === "true" || res?.data?.exists === true) {
           setIsWishlisted(true);
         } else {
           setIsWishlisted(false);
@@ -340,6 +299,9 @@ export default function ProductDetails() {
     }
 
     checkWishlist();
+    return () => {
+      mounted = false;
+    };
   }, [product]);
 
   // Open AR Try-On with confirm dialog
@@ -367,7 +329,6 @@ export default function ProductDetails() {
 
     try {
       setIsBusy(true);
-      // Just open the modal; camera permission is handled by the browser
       setShowTryOn(true);
     } finally {
       setIsBusy(false);
@@ -375,18 +336,18 @@ export default function ProductDetails() {
     }
   };
 
-  if (loading || !product) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div>Loading...</div>
-      </div>
-    );
-  }
+  if (!product) return null;
+
+  const categoryText =
+    typeof product.category === "string"
+      ? product.category
+      : product.category?.name || "";
 
   return (
     <>
       <div className="max-w-[1400px] mx-auto px-4 lg:px-8 py-14">
         <div className="grid gap-8 lg:grid-cols-12">
+          {/* LEFT: Gallery */}
           <div className="lg:col-span-7">
             <div className="flex gap-4">
               <div className="hidden md:flex flex-col gap-4 w-24">
@@ -408,8 +369,9 @@ export default function ProductDetails() {
                   </button>
                 ))}
               </div>
+
               <div className="flex-1 flex items-center justify-center">
-                <div className="w-full h-full flex items-center justify-center p-4 border border-gray-200  bg-white">
+                <div className="w-full h-full flex items-center justify-center p-4 border border-gray-200 bg-white">
                   <img
                     src={mainImageUrl}
                     alt={product.name}
@@ -418,6 +380,7 @@ export default function ProductDetails() {
                 </div>
               </div>
             </div>
+
             {galleryImages.length > 1 && (
               <div className="mt-4 flex gap-3 md:hidden overflow-x-auto pb-1">
                 {galleryImages.map((img, idx) => (
@@ -441,12 +404,13 @@ export default function ProductDetails() {
             )}
           </div>
 
+          {/* RIGHT: Info */}
           <div className="lg:col-span-5">
             <div className="space-y-4">
               <div>
                 <h2 className="text-2xl font-bold">{product.name}</h2>
                 <div className="text-sm text-gray-500 mt-1">
-                  {product.category} • {product.shape} • {product.gender}
+                  {categoryText} • {product.shape} • {product.gender}
                 </div>
               </div>
 
@@ -476,7 +440,7 @@ export default function ProductDetails() {
                 </div>
 
                 <div className="ml-auto text-sm">
-                  {product.stockQuantity > 0 ? (
+                  {Number(product.stockQuantity || 0) > 0 ? (
                     <span className="text-green-600">In stock</span>
                   ) : (
                     <span className="text-red-600">Out of stock</span>
@@ -484,6 +448,7 @@ export default function ProductDetails() {
                 </div>
               </div>
 
+              {/* Colors */}
               <div>
                 <div className="text-sm font-medium mb-2">Color</div>
                 <div className="flex gap-3 items-center flex-wrap">
@@ -498,6 +463,7 @@ export default function ProductDetails() {
                       }`}
                       style={{ backgroundColor: getColorValue(color) }}
                       aria-label={color}
+                      title={color}
                     >
                       <span className="sr-only">{color}</span>
                     </button>
@@ -505,11 +471,10 @@ export default function ProductDetails() {
                 </div>
               </div>
 
+              {/* Sizes */}
               {product.sizes && product.sizes.length > 0 && (
                 <div>
-                  <div className="text-sm font-medium mb-2">
-                    Select Fit / Size
-                  </div>
+                  <div className="text-sm font-medium mb-2">Select Fit / Size</div>
                   <div className="flex gap-2 flex-wrap">
                     {product.sizes.map((s) => (
                       <button
@@ -528,6 +493,7 @@ export default function ProductDetails() {
                 </div>
               )}
 
+              {/* Quantity + Cart + Wishlist */}
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2 border border-gray-200 rounded-md p-1">
                   <button
@@ -551,16 +517,16 @@ export default function ProductDetails() {
                   <button
                     onClick={handleAddToCart}
                     className={`flex-1 py-2 px-4 rounded-md flex items-center justify-center gap-2 ${
-                      !isLoggedIn || product.stockQuantity <= 0
+                      !isLoggedIn || Number(product.stockQuantity || 0) <= 0
                         ? "bg-gray-400 cursor-not-allowed text-white"
                         : "bg-black text-white hover:opacity-95"
                     }`}
-                    disabled={!isLoggedIn || product.stockQuantity <= 0}
+                    disabled={!isLoggedIn || Number(product.stockQuantity || 0) <= 0}
                   >
                     <ShoppingCart size={18} />
                     {!isLoggedIn
                       ? "Log in to add"
-                      : product.stockQuantity <= 0
+                      : Number(product.stockQuantity || 0) <= 0
                       ? "Out of stock"
                       : "Add to Cart"}
                   </button>
@@ -570,6 +536,7 @@ export default function ProductDetails() {
                     className={`bg-white p-2 mb-1 rounded-full shadow-md border flex items-center justify-center ${
                       isWishlisted ? "border-red-500" : "border-gray-200"
                     }`}
+                    aria-label="wishlist"
                   >
                     <Heart
                       size={20}
@@ -580,6 +547,7 @@ export default function ProductDetails() {
                 </div>
               </div>
 
+              {/* AR Try-on */}
               <div className="flex items-center gap-3">
                 <button
                   onClick={handleOpenTryOn}
@@ -593,6 +561,7 @@ export default function ProductDetails() {
                 </div>
               </div>
 
+              {/* Accordions */}
               <div className="space-y-2">
                 <Accordion
                   title="Description"
@@ -640,6 +609,14 @@ export default function ProductDetails() {
                   </div>
                 </Accordion>
               </div>
+
+              {/* Optional back */}
+              <button
+                onClick={() => navigate(-1)}
+                className="text-xs text-gray-500 underline underline-offset-4 w-fit"
+              >
+                Back
+              </button>
             </div>
           </div>
         </div>
@@ -662,9 +639,7 @@ export default function ProductDetails() {
             ? "We’ll use your camera in a live preview to show how this frame looks on you. The video stays on your device and is not stored."
             : "Do you want to continue?"
         }
-        confirmLabel={
-          confirmConfig.type === "arTryOn" ? "Start AR" : "Confirm"
-        }
+        confirmLabel={confirmConfig.type === "arTryOn" ? "Start AR" : "Confirm"}
         cancelLabel="Cancel"
         onConfirm={handleConfirm}
         onCancel={closeConfirm}
@@ -683,9 +658,7 @@ function Accordion({ title, children, isOpen = false, onToggle }) {
         <div className="font-medium">{title}</div>
         <ChevronDown
           size={18}
-          className={`transition-transform ${
-            isOpen ? "rotate-180" : "rotate-0"
-          }`}
+          className={`transition-transform ${isOpen ? "rotate-180" : "rotate-0"}`}
         />
       </button>
       {isOpen && <div className="px-4 py-3 bg-gray-50">{children}</div>}
@@ -733,12 +706,9 @@ function TryOnModal({ onClose }) {
 
       const onResults = (results) => {
         if (!running) return;
-        if (!results.multiFaceLandmarks || !results.multiFaceLandmarks[0]) {
-          return;
-        }
+        if (!results.multiFaceLandmarks || !results.multiFaceLandmarks[0]) return;
 
         const landmarks = results.multiFaceLandmarks[0];
-
         const leftEye = landmarks[33];
         const rightEye = landmarks[263];
 
@@ -749,31 +719,24 @@ function TryOnModal({ onClose }) {
         const dy = rightEye.y - leftEye.y;
 
         const eyeDistRaw = Math.sqrt(dx * dx + dy * dy);
-        const eyeDist = Math.min(
-          MAX_EYE_DIST,
-          Math.max(MIN_EYE_DIST, eyeDistRaw)
-        );
+        const eyeDist = Math.min(MAX_EYE_DIST, Math.max(MIN_EYE_DIST, eyeDistRaw));
 
         const angle = Math.atan2(dy, dx);
 
-        // position mapping (like the previous version)
         const x = (centerX - 0.5) * 1.4;
         const y = -(centerY - 0.5) * 1.4 + Y_OFFSET;
 
-        // base scale from face
         let baseScale = (eyeDist / REF_EYE_DIST) * 0.9;
 
-        // small / medium / large
         const preset = sizePresetRef.current;
         let presetMul = 1;
-        if (preset === 0) presetMul = 0.8; // small
-        else if (preset === 2) presetMul = 1.25; // large
-        else presetMul = 1.0; // medium
+        if (preset === 0) presetMul = 0.8;
+        else if (preset === 2) presetMul = 1.25;
+        else presetMul = 1.0;
 
         let dynamicScale = baseScale * presetMul;
         dynamicScale = Math.min(2.5, Math.max(0.5, dynamicScale));
 
-        // light smoothing for natural movement
         setGlassesTransform((prev) => ({
           position: [
             prev.position[0] * 0.4 + x * 0.6,
@@ -825,7 +788,6 @@ function TryOnModal({ onClose }) {
   return (
     <div className="fixed inset-0 z-[9999] bg-black/70 flex items-center justify-center">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden">
-        {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
           <div>
             <p className="text-[11px] text-gray-500 uppercase tracking-[0.15em]">
@@ -843,7 +805,6 @@ function TryOnModal({ onClose }) {
           </button>
         </div>
 
-        {/* Camera + overlay */}
         <div className="relative bg-black" style={{ aspectRatio: "4 / 3" }}>
           <video
             ref={videoRef}
@@ -859,11 +820,7 @@ function TryOnModal({ onClose }) {
             style={{ transform: "scaleX(-1)" }}
           >
             <Canvas
-              gl={{
-                alpha: true,
-                antialias: true,
-                powerPreference: "high-performance",
-              }}
+              gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
               camera={{ position: [0, 0, 2.5], fov: 35 }}
               style={{
                 width: "100%",
@@ -874,8 +831,6 @@ function TryOnModal({ onClose }) {
             >
               <ambientLight intensity={1.1} />
               <directionalLight position={[2, 2, 3]} intensity={0.8} />
-
-              {/* Yellow placeholder glasses */}
               <PlaceholderGlasses
                 position={glassesTransform.position}
                 scale={glassesTransform.scale}
@@ -885,7 +840,6 @@ function TryOnModal({ onClose }) {
           </div>
         </div>
 
-        {/* Size presets */}
         <div className="px-4 pt-2 pb-1 bg-gray-50 border-t border-gray-200 text-[11px] text-gray-700">
           <div className="flex items-center justify-between gap-4">
             <span className="whitespace-nowrap font-medium">Frame size</span>
@@ -918,21 +872,16 @@ function TryOnModal({ onClose }) {
           </div>
         </div>
 
-        {/* Tip */}
         <div className="px-4 py-2 bg-white text-[11px] text-gray-500 flex justify-between items-center">
-          <span>
-            Tip: Look straight at the camera and move your head slowly.
-          </span>
-          <span className="hidden md:inline">
-            Your camera runs locally in your browser.
-          </span>
+          <span>Tip: Look straight at the camera and move your head slowly.</span>
+          <span className="hidden md:inline">Your camera runs locally in your browser.</span>
         </div>
       </div>
     </div>
   );
 }
 
-/* ====== Yellow placeholder glasses (old style) ====== */
+/* ====== Yellow placeholder glasses ====== */
 function PlaceholderGlasses({ position, scale, rotationZ }) {
   const s = scale * 0.8;
   const frameColor = "#facc15";
@@ -943,19 +892,16 @@ function PlaceholderGlasses({ position, scale, rotationZ }) {
       rotation={[0, 0, rotationZ]}
       scale={[1, 1, 1]}
     >
-      {/* left lens */}
       <mesh position={[-0.15 * s, 0, 0]}>
         <circleGeometry args={[0.1 * s, 32]} />
         <meshBasicMaterial color={frameColor} wireframe />
       </mesh>
 
-      {/* right lens */}
       <mesh position={[0.15 * s, 0, 0]}>
         <circleGeometry args={[0.1 * s, 32]} />
         <meshBasicMaterial color={frameColor} wireframe />
       </mesh>
 
-      {/* bridge */}
       <mesh position={[0, 0, 0]}>
         <boxGeometry args={[0.1 * s, 0.01 * s, 0.01]} />
         <meshBasicMaterial color={frameColor} />

@@ -130,7 +130,7 @@ export default function AboutHero() {
               />
 
               <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-5 sm:p-6">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="flex flex-col mb-4 sm:items-center sm:justify-between gap-3">
                   <div>
                     <p className="text-xs uppercase tracking-[0.25em] text-gray-300 mb-1">
                       Live AR Preview
@@ -141,17 +141,17 @@ export default function AboutHero() {
                     </p>
                   </div>
 
-                  <div className="flex flex-wrap gap-3">
+                  <div className="flex  gap-3">
                     <Link
-                      to="/tryon"
-                      className="inline-flex items-center justify-center rounded-full bg-white text-black text-[8px] font-semibold px-4 py-2 shadow-lg hover:bg-gray-200 transition-colors"
+                      to="/try"
+                      className="inline-flex items-center justify-center rounded-full bg-white text-black text-sm font-semibold px-4 py-2 shadow-lg hover:bg-gray-200 transition-colors"
                     >
                       Start AR Try-On
                     </Link>
 
                     <Link
                       to="/products"
-                      className="inline-flex items-center justify-center rounded-full border border-white/40 text-white text-[8px] font-semibold px-4 py-2 hover:bg-white/10 transition-colors"
+                      className="inline-flex items-center justify-center rounded-full border border-white/40 text-white text-sm font-semibold px-4 py-2 hover:bg-white/10 transition-colors"
                     >
                       Browse Collection
                     </Link>
@@ -165,7 +165,7 @@ export default function AboutHero() {
               initial={{ opacity: 0, y: 40, x: -20 }}
               animate={{ opacity: 1, y: 0, x: 0 }}
               transition={{ delay: 0.5, duration: 0.6, ease: "easeOut" }}
-              className="hidden sm:flex absolute -bottom-8 -left-4 md:-left-10 bg-white text-black rounded-2xl px-4 py-3 shadow-2xl border border-gray-200 backdrop-blur-xl"
+              className="hidden sm:flex absolute -bottom-10 -left-4 md:-left-10 bg-white text-black rounded-2xl px-4 py-3 shadow-2xl border border-gray-200 backdrop-blur-xl"
             >
               <div className="mr-3 flex h-10 w-10 items-center justify-center rounded-xl bg-black text-white text-xs font-semibold">
                 4K

@@ -1,48 +1,38 @@
-// RelatedProducts.jsx
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useMemo } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import { ChevronRight, ChevronLeft } from "lucide-react";
-
-import { getProducts } from "../api/productsApi";
 
 import "swiper/css";
 import "swiper/css/navigation";
 
 import ProductCard from "./ProductCard";
 
-export default function RelatedProducts() {
-  const { id } = useParams();
-  const [related, setRelated] = useState([]);
+export default function RelatedProducts({ currentProduct, products = [] }) {
+  const related = useMemo(() => {
+    if (!currentProduct || !Array.isArray(products) || products.length === 0) return [];
 
-  useEffect(() => {
-    const loadRelated = async () => {
-      try {
-        const products = await getProducts();
+    const currentId = Number(currentProduct.id);
+    const currentCategory =
+      typeof currentProduct.category === "string"
+        ? currentProduct.category
+        : currentProduct.category?.name;
 
-        const current = products.find((p) => Number(p.id) === Number(id));
-        if (!current) {
-          setRelated([]);
-          return;
-        }
+    // handle category as string or object in products list
+    const getCat = (p) =>
+      typeof p.category === "string" ? p.category : p.category?.name;
 
-        const filtered = products.filter(
-          (p) =>
-            p.category === current.category &&
-            Number(p.id) !== Number(current.id)
+    return products
+      .filter((p) => {
+        const cat = getCat(p);
+        return (
+          String(cat || "").toLowerCase().trim() ===
+            String(currentCategory || "").toLowerCase().trim() &&
+          Number(p.id) !== currentId
         );
-
-        setRelated(filtered.slice(0, 10));
-      } catch (err) {
-        console.error("Failed to load related products:", err);
-      }
-    };
-
-    if (id) {
-      loadRelated();
-    }
-  }, [id]);
+      })
+      .slice(0, 10);
+  }, [currentProduct, products]);
 
   if (!related || related.length === 0) return null;
 
@@ -70,10 +60,7 @@ export default function RelatedProducts() {
 
         <Swiper
           modules={[Navigation]}
-          navigation={{
-            nextEl: ".related-next",
-            prevEl: ".related-prev",
-          }}
+          navigation={{ nextEl: ".related-next", prevEl: ".related-prev" }}
           spaceBetween={20}
           slidesPerView={5}
           loop={related.length > 5}
@@ -91,7 +78,7 @@ export default function RelatedProducts() {
               <ProductCard
                 product={p}
                 linkTo={`/products/${p.id}`}
-                showAddToCart={false}   // Related من غير Add to Cart
+                showAddToCart={false}
               />
             </SwiperSlide>
           ))}

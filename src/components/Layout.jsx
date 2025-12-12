@@ -10,7 +10,7 @@ export default function Layout({ user, setUser }) {
       <Navbar user={user} setUser={setUser} />
 
       {/* Main Content */}
-      <main className="flex-grow">
+      <main className="flex-1 min-h-0">
         <Outlet />
       </main>
 

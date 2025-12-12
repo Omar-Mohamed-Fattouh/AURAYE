@@ -1,5 +1,4 @@
-// BestSellerSection.jsx
-import { useEffect, useState } from "react";
+// src/components/BestSellerSection.jsx
 import { ChevronRight, ChevronLeft } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
@@ -7,31 +6,10 @@ import { Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 
-import { getBestSellerProducts } from "../api/productsApi";
 import ProductCard from "./ProductCard";
 
-export default function BestSellerSection() {
-  const [products, setProducts] = useState([]);
-
-  useEffect(() => {
-    const loadBestSellers = async () => {
-      try {
-        const best = await getBestSellerProducts();
-        // تأكد إنها مصفوفة
-        const productsArray = Array.isArray(best)
-          ? best
-          : Array.isArray(best?.data)
-            ? best.data
-            : [];
-        setProducts(productsArray);
-      } catch (err) {
-        console.error("Failed to load best sellers:", err);
-      }
-    };
-
-    loadBestSellers();
-  }, []);
-
+export default function BestSellerSection({ products = [], loading = false }) {
+  if (loading) return null;
   if (!products || products.length === 0) return null;
 
   return (
@@ -39,16 +17,15 @@ export default function BestSellerSection() {
       <div className="container mx-auto px-6">
         <div className="absolute left-1/2 -translate-x-1/2 top-0 w-full max-w-6xl border-t border-gray-300" />
 
-        {/* Title */}
         <h2 className="text-2xl md:text-4xl text-center font-bold text-gray-900 mb-2">
           Best Sellers
         </h2>
 
         <p className="text-gray-600 text-center text-sm md:text-base mb-6">
-          Our most popular frames chosen by thousands of customers.
+          Discover our top-rated frames, carefully selected and trusted by
+          thousands of customers.
         </p>
 
-        {/* NAV BUTTONS */}
         <div className="flex justify-end gap-4 mb-4">
           <button className="bestseller-prev p-2 border rounded-full hover:bg-gray-100">
             <ChevronLeft size={22} />
@@ -60,10 +37,7 @@ export default function BestSellerSection() {
 
         <Swiper
           modules={[Navigation]}
-          navigation={{
-            nextEl: ".bestseller-next",
-            prevEl: ".bestseller-prev",
-          }}
+          navigation={{ nextEl: ".bestseller-next", prevEl: ".bestseller-prev" }}
           spaceBetween={20}
           slidesPerView={5}
           loop={products.length > 5}
@@ -81,8 +55,8 @@ export default function BestSellerSection() {
               <ProductCard
                 product={p}
                 linkTo={`/products/${p.id}`}
-                showAddToCart={false} // <-- مفيش add to cart في best sellers
-                badge="Best Seller" // <-- optional badge
+                showAddToCart={false}
+                badge="Best Seller"
               />
             </SwiperSlide>
           ))}

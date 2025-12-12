@@ -1,96 +1,56 @@
-// src/pages/SunGlasses.jsx
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Search, SlidersHorizontal, X } from "lucide-react";
-import { getProducts } from "../api/productsApi";
 import ProductCard from "../components/ProductCard";
 
-export default function SunGlasses() {
-  const [sunProducts, setSunProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  // search + filters
+export default function SunGlasses({ products = [], loading = false }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [shapeFilter, setShapeFilter] = useState("");
   const [frameFilter, setFrameFilter] = useState("");
   const [genderFilter, setGenderFilter] = useState("");
 
-  // mobile filters sheet
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
-  useEffect(() => {
-    const loadSunProducts = async () => {
-      try {
-        const all = await getProducts();
-        const filtered = (all || []).filter(
-          (p) =>
-            String(
-              typeof p.category === "string" ? p.category : p.category?.name
-            )
-              .toLowerCase()
-              .trim() === "sunglasses"
-        );
-        setSunProducts(filtered);
-      } catch (err) {
-        console.error("Failed to load sunglasses:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadSunProducts();
-  }, []);
-
-  // dropdown options from data
   const shapes = useMemo(() => {
     const set = new Set(
-      sunProducts
-        .map((p) => p.shape)
-        .filter((s) => s && String(s).trim() !== "")
+      (products || []).map((p) => p.shape).filter((s) => s && String(s).trim() !== "")
     );
     return Array.from(set);
-  }, [sunProducts]);
+  }, [products]);
 
   const frameMaterials = useMemo(() => {
     const set = new Set(
-      sunProducts
-        .map((p) => p.frameMaterial)
-        .filter((m) => m && String(m).trim() !== "")
+      (products || []).map((p) => p.frameMaterial).filter((m) => m && String(m).trim() !== "")
     );
     return Array.from(set);
-  }, [sunProducts]);
+  }, [products]);
 
   const genders = useMemo(() => {
     const set = new Set(
-      sunProducts
-        .map((p) => p.gender)
-        .filter((g) => g && String(g).trim() !== "")
+      (products || []).map((p) => p.gender).filter((g) => g && String(g).trim() !== "")
     );
     return Array.from(set);
-  }, [sunProducts]);
+  }, [products]);
 
-  // filtered list
   const filteredProducts = useMemo(() => {
-    return sunProducts.filter((p) => {
+    return (products || []).filter((p) => {
       const name = (p.name || p.title || "").toLowerCase();
       const search = searchTerm.toLowerCase().trim();
 
       const nameMatch = !search || name.includes(search);
 
       const shapeMatch =
-        !shapeFilter ||
-        String(p.shape).toLowerCase() === shapeFilter.toLowerCase();
+        !shapeFilter || String(p.shape || "").toLowerCase() === shapeFilter.toLowerCase();
 
       const frameMatch =
         !frameFilter ||
-        String(p.frameMaterial).toLowerCase() === frameFilter.toLowerCase();
+        String(p.frameMaterial || "").toLowerCase() === frameFilter.toLowerCase();
 
       const genderMatch =
-        !genderFilter ||
-        String(p.gender).toLowerCase() === genderFilter.toLowerCase();
+        !genderFilter || String(p.gender || "").toLowerCase() === genderFilter.toLowerCase();
 
       return nameMatch && shapeMatch && frameMatch && genderMatch;
     });
-  }, [sunProducts, searchTerm, shapeFilter, frameFilter, genderFilter]);
+  }, [products, searchTerm, shapeFilter, frameFilter, genderFilter]);
 
   const hasActiveFilters = !!(shapeFilter || frameFilter || genderFilter);
 
@@ -103,9 +63,7 @@ export default function SunGlasses() {
   if (loading) {
     return (
       <section className="min-h-screen bg-white flex items-center justify-center">
-        <p className="text-sm text-gray-500 tracking-wide">
-          Loading sunglasses…
-        </p>
+        <p className="text-sm text-gray-500 tracking-wide">Loading sunglasses…</p>
       </section>
     );
   }
@@ -118,34 +76,34 @@ export default function SunGlasses() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <h1 className="text-3xl md:text-4xl font-semibold text-black tracking-tight">
-                Sunglasses
+                Sunglasses Collection
               </h1>
               <p className="mt-1 text-xs md:text-sm text-gray-500 max-w-xl">
-                Explore our sunglasses collection and protect your eyes with
-                style.
+                Browse premium sunglasses and filter by shape, frame material, and gender.
+              </p>
+
+              <p className="mt-2 text-xs text-gray-600">
+                Showing{" "}
+                <span className="font-semibold text-black">{filteredProducts.length}</span>{" "}
+                of{" "}
+                <span className="font-semibold text-black">{products.length}</span>{" "}
+                sunglasses
               </p>
             </div>
 
-            {/* Desktop stats */}
             <div className="hidden md:flex items-center gap-4 text-xs text-gray-600">
               <div className="px-3 py-1 rounded-full bg-white border border-gray-200 shadow-sm">
-                Total sunglasses:{" "}
-                <span className="font-medium text-black">
-                  {sunProducts.length}
-                </span>
+                Total: <span className="font-medium text-black">{products.length}</span>
               </div>
               <div className="px-3 py-1 rounded-full bg-white border border-gray-200 shadow-sm">
                 Showing:{" "}
-                <span className="font-medium text-black">
-                  {filteredProducts.length}
-                </span>
+                <span className="font-medium text-black">{filteredProducts.length}</span>
               </div>
             </div>
           </div>
 
           {/* Search + filters button (mobile) */}
           <div className="rounded-3xl bg-black border border-gray-200 shadow-sm px-4 py-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            {/* Search (black) */}
             <div className="w-full md:max-w-lg">
               <div className="flex items-center gap-2 rounded-2xl bg-[#212121] border border-neutral-800 px-3 py-2 focus-within:border-white focus-within:shadow-sm transition">
                 <Search className="w-4 h-4 text-neutral-300" />
@@ -159,7 +117,6 @@ export default function SunGlasses() {
               </div>
             </div>
 
-            {/* Mobile filters button فقط للموبايل */}
             <div className="flex items-center justify-between gap-3 md:justify-end">
               <button
                 type="button"
@@ -173,9 +130,9 @@ export default function SunGlasses() {
           </div>
         </div>
 
-        {/* MAIN LAYOUT: Desktop => filters جنب الجريد */}
+        {/* MAIN LAYOUT */}
         <div className="flex flex-col gap-6 lg:flex-row">
-          {/* SIDEBAR (Desktop only) */}
+          {/* SIDEBAR Desktop */}
           <aside className="hidden lg:block w-72 flex-shrink-0">
             <div className="sticky top-24">
               <FilterPanel
@@ -194,63 +151,40 @@ export default function SunGlasses() {
             </div>
           </aside>
 
-          {/* PRODUCTS SIDE */}
+          {/* PRODUCTS */}
           <main className="flex-1">
-            {/* Quick gender chips: All / Men / Women */}
             {genders.length > 0 && (
               <div className="mb-4 flex flex-wrap gap-2 text-[11px]">
-                <FilterChip
-                  label="All"
-                  active={genderFilter === ""}
-                  onClick={() => setGenderFilter("")}
-                />
-                <FilterChip
-                  label="Men"
-                  active={genderFilter.toLowerCase() === "men"}
-                  onClick={() => setGenderFilter("Men")}
-                />
-                <FilterChip
-                  label="Women"
-                  active={genderFilter.toLowerCase() === "women"}
-                  onClick={() => setGenderFilter("Women")}
-                />
+                <FilterChip label="All" active={genderFilter === ""} onClick={() => setGenderFilter("")} />
+                <FilterChip label="Men" active={genderFilter.toLowerCase() === "men"} onClick={() => setGenderFilter("Men")} />
+                <FilterChip label="Women" active={genderFilter.toLowerCase() === "women"} onClick={() => setGenderFilter("Women")} />
+                <FilterChip label="Unisex" active={genderFilter.toLowerCase() === "unisex"} onClick={() => setGenderFilter("Unisex")} />
               </div>
             )}
 
-            {/* count (mobile & desktop) */}
-            <div className="mb-3 text-xs text-gray-500">
-              Showing{" "}
-              <span className="font-semibold text-black">
-                {filteredProducts.length}
-              </span>{" "}
-              of {sunProducts.length} sunglasses
-            </div>
-
-            {/* grid */}
             {filteredProducts.length === 0 ? (
               <div className="rounded-3xl bg-white border border-gray-200 shadow-sm p-10 text-center">
-                <p className="text-sm font-medium text-black">
-                  No sunglasses match your filters.
-                </p>
-                <p className="mt-1 text-xs text-gray-500">
-                  Try adjusting the filters or search term.
-                </p>
+                <p className="text-sm font-medium text-black">No sunglasses match your filters.</p>
+                <p className="mt-1 text-xs text-gray-500">Try adjusting the filters or search term.</p>
               </div>
             ) : (
               <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4">
-                {filteredProducts.map((product) => (
-                  <div
-                    key={product.id}
-                    className="group rounded-3xl bg-white border border-gray-100 hover:-translate-y-1 hover:shadow-md transition-all duration-200"
-                  >
-                    <ProductCard
-                      product={product}
-                      linkTo={`/products/${product.id}`}
-                      showAddToCart={false}
-                      badge={null}
-                    />
-                  </div>
-                ))}
+                {filteredProducts.map((product) => {
+                  const id = product.productId ?? product.id;
+                  return (
+                    <div
+                      key={id}
+                      className="group rounded-3xl bg-white border border-gray-100 hover:-translate-y-1 hover:shadow-md transition-all duration-200"
+                    >
+                      <ProductCard
+                        product={product}
+                        linkTo={`/products/${id}`}
+                        showAddToCart={false}
+                        badge={null}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             )}
           </main>
@@ -260,10 +194,7 @@ export default function SunGlasses() {
       {/* MOBILE FILTERS SHEET */}
       {showMobileFilters && (
         <div className="fixed inset-0 z-40 flex items-end lg:hidden">
-          <div
-            className="absolute inset-0 bg-black/40"
-            onClick={() => setShowMobileFilters(false)}
-          />
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowMobileFilters(false)} />
           <div className="relative z-50 w-full rounded-t-3xl bg-[#050505] text-white shadow-2xl p-4 max-h-[80vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
@@ -327,25 +258,20 @@ function FilterPanel({
       <div className="flex items-center justify-between">
         <div className="flex flex-col">
           <span className="text-sm font-semibold">Filters</span>
-          <span className="text-[11px] text-neutral-400">
-            Refine sunglasses by details
-          </span>
+          <span className="text-[11px] text-neutral-400">Refine sunglasses by details</span>
         </div>
         <button
           type="button"
           onClick={clearFilters}
           disabled={!hasActiveFilters}
           className={`text-[11px] ${
-            hasActiveFilters
-              ? "text-neutral-300 hover:text-white"
-              : "text-neutral-600 cursor-not-allowed"
+            hasActiveFilters ? "text-neutral-300 hover:text-white" : "text-neutral-600 cursor-not-allowed"
           }`}
         >
           Clear all
         </button>
       </div>
 
-      {/* Gender */}
       {genders.length > 0 && (
         <SidebarSelect
           label="Gender"
@@ -356,7 +282,6 @@ function FilterPanel({
         />
       )}
 
-      {/* Shape */}
       <SidebarSelect
         label="Shape"
         value={shapeFilter}
@@ -365,7 +290,6 @@ function FilterPanel({
         allLabel="All shapes"
       />
 
-      {/* Frame material */}
       <SidebarSelect
         label="Frame material"
         value={frameFilter}

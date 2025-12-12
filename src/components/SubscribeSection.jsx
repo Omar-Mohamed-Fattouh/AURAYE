@@ -18,13 +18,18 @@ export default function SubscribeSection() {
     try {
       setLoading(true);
 
-      // 🔥 Call the real API
       await subscribeNewsletter(email.trim());
 
       toast.success("You're subscribed! Check your inbox");
       setEmail("");
     } catch (err) {
-      toast.error(err.message || "Something went wrong. Please try again.");
+      const msg = err.message?.toLowerCase() || "";
+
+      if (msg.includes("already")) {
+        toast.info("You are already subscribed.");
+      } else {
+        toast.error(err.message || "Something went wrong. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -39,7 +44,8 @@ export default function SubscribeSection() {
           </h2>
           <p className="text-xs md:text-base text-white max-w-4xl">
             Join our community and receive regular updates, exclusive offers,
-            and tips delivered straight to your inbox. It's quick, easy, and free.
+            and tips delivered straight to your inbox. It's quick, easy, and
+            free.
           </p>
 
           <form

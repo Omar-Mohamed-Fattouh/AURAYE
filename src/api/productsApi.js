@@ -209,13 +209,11 @@ export const getProductsAr = async () => {
 
   const BASE_URL = "https://graduationproject11.runasp.net";
 
-  // نضمن إن اللي هنمشي عليه Array مهما كان شكل ال API
-  const productsArray =
-    Array.isArray(response.data)
-      ? response.data
-      : Array.isArray(response.data.data)
-      ? response.data.data
-      : [];
+  const productsArray = Array.isArray(response.data)
+    ? response.data
+    : Array.isArray(response.data.data)
+    ? response.data.data
+    : [];
 
   return productsArray.map((product) => {
     const images =
@@ -228,11 +226,26 @@ export const getProductsAr = async () => {
 
     const models =
       product.product3dModels && product.product3dModels.length > 0
-        ? product.product3dModels.map((m) => ({
-            url: m.modelUrl,
-            defaultScale: m.defaultScale || 1,
-            color: m.color || "black",
-          }))
+        ? product.product3dModels
+            .map((m) => {
+              const rawUrl = m.modelUrl || "";
+              const isAbsolute = /^https?:\/\//i.test(rawUrl);
+              const fullUrl = (isAbsolute ? rawUrl : BASE_URL + rawUrl).trim();
+
+              const clean = fullUrl.split("?")[0].trim();
+              const parts = clean.split(".");
+              if (parts.length < 2) return null;
+              const ext = parts.pop().trim().toLowerCase();
+
+              // ✅ هنا بنرمي أي mtl أو حاجه مش مدعومة
+              if (!["glb", "gltf", "obj"].includes(ext)) return null;
+
+              return {
+                url: clean,
+                defaultScale: m.defaultScale || 1,
+              };
+            })
+            .filter(Boolean)
         : [];
 
     return {

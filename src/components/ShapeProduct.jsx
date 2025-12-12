@@ -1,42 +1,24 @@
-// src/pages/ShapeProduct.jsx
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
-import { getProducts } from "../api/productsApi";
-import ProductCard from "../components/ProductCard";
+import ProductCard from "./ProductCard";
 
-export default function ShapeProduct() {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-
+export default function ShapeProduct({ products = [], loading = false }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [shapeFilter, setShapeFilter] = useState("");
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const all = await getProducts();
-        setProducts(Array.isArray(all) ? all : []);
-      } catch (err) {
-        console.error("Failed to load products:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, []);
+  const safeProducts = Array.isArray(products) ? products : [];
 
-  // all shapes from data
   const shapes = useMemo(() => {
     const set = new Set(
-      products
+      safeProducts
         .map((p) => p.shape)
         .filter((s) => s && String(s).trim() !== "")
     );
     return Array.from(set);
-  }, [products]);
+  }, [safeProducts]);
 
   const filteredProducts = useMemo(() => {
-    return products.filter((p) => {
+    return safeProducts.filter((p) => {
       const name = (p.name || p.title || "").toLowerCase();
       const search = searchTerm.toLowerCase().trim();
 
@@ -48,14 +30,14 @@ export default function ShapeProduct() {
 
       return nameMatch && shapeMatch;
     });
-  }, [products, searchTerm, shapeFilter]);
+  }, [safeProducts, searchTerm, shapeFilter]);
+
+  const getId = (p) => p.productId ?? p.id;
 
   if (loading) {
     return (
       <section className="min-h-screen bg-white flex items-center justify-center">
-        <p className="text-sm text-gray-500 tracking-wide">
-          Loading products…
-        </p>
+        <p className="text-sm text-gray-500 tracking-wide">Loading products…</p>
       </section>
     );
   }
@@ -71,29 +53,23 @@ export default function ShapeProduct() {
                 Shop by Shape
               </h1>
               <p className="mt-1 text-xs md:text-sm text-gray-500 max-w-xl">
-                Explore frames by their shape. Use search and filters to quickly
-                find what you like.
+                Explore frames by shape and quickly find what fits your style.
               </p>
             </div>
 
-            {/* Desktop stats */}
             <div className="hidden md:flex items-center gap-4 text-xs text-gray-600">
               <div className="px-3 py-1 rounded-full bg-white border border-gray-200 shadow-sm">
                 Total products:{" "}
-                <span className="font-medium text-black">
-                  {products.length}
-                </span>
+                <span className="font-medium text-black">{safeProducts.length}</span>
               </div>
               <div className="px-3 py-1 rounded-full bg-white border border-gray-200 shadow-sm">
                 Showing:{" "}
-                <span className="font-medium text-black">
-                  {filteredProducts.length}
-                </span>
+                <span className="font-medium text-black">{filteredProducts.length}</span>
               </div>
             </div>
           </div>
 
-          {/* Search (black card like other pages) */}
+          {/* Search */}
           <div className="rounded-3xl bg-black border border-gray-200 shadow-sm px-4 py-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div className="w-full md:max-w-lg">
               <div className="flex items-center gap-2 rounded-2xl bg-[#212121] border border-neutral-800 px-3 py-2 focus-within:border-white focus-within:shadow-sm transition">
@@ -129,40 +105,39 @@ export default function ShapeProduct() {
           </div>
         )}
 
-        {/* Results count (mobile + desktop) */}
+        {/* Count */}
         <div className="mb-4 text-xs text-gray-500">
           Showing{" "}
-          <span className="font-semibold text-black">
-            {filteredProducts.length}
-          </span>{" "}
-          of {products.length} products
+          <span className="font-semibold text-black">{filteredProducts.length}</span>{" "}
+          of {safeProducts.length} products
         </div>
 
         {/* Grid */}
         {filteredProducts.length === 0 ? (
           <div className="rounded-3xl bg-white border border-gray-200 shadow-sm p-10 text-center">
-            <p className="text-sm font-medium text-black">
-              No products found.
-            </p>
+            <p className="text-sm font-medium text-black">No products found.</p>
             <p className="mt-1 text-xs text-gray-500">
               Try another shape or search term.
             </p>
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4">
-            {filteredProducts.map((product) => (
-              <div
-                key={product.id}
-                className="group rounded-3xl bg-white border border-gray-100 hover:-translate-y-1 hover:shadow-md transition-all duration-200"
-              >
-                <ProductCard
-                  product={product}
-                  linkTo={`/products/${product.id}`}
-                  showAddToCart={false}
-                  badge={null}
-                />
-              </div>
-            ))}
+            {filteredProducts.map((product) => {
+              const id = getId(product);
+              return (
+                <div
+                  key={id}
+                  className="group rounded-3xl bg-white border border-gray-100 hover:-translate-y-1 hover:shadow-md transition-all duration-200"
+                >
+                  <ProductCard
+                    product={product}
+                    linkTo={`/products/${id}`}
+                    showAddToCart={false}
+                    badge={null}
+                  />
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

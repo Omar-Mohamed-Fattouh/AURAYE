@@ -17,6 +17,9 @@ import CartSummary from "../components/CartSummary";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { formatEGP } from "../components/formatCurrency";
 
+// ✅ AURAYE loader
+import AurayeLoader from "../components/AurayeLoader";
+
 const BASE_URL = "http://graduationproject11.runasp.net";
 const FREE_SHIPPING = 1500;
 
@@ -269,21 +272,9 @@ export default function Cart() {
     }
   };
 
-  // ------------- RENDER STATES -------------
+  // ✅ LOADER ONLY (بدون أي تغيير في الستايل)
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#f7f7f8]">
-        <main className="w-full max-w-7xl mx-auto px-4 md:px-6 py-16">
-          <div className="animate-pulse space-y-6">
-            <div className="h-7 w-56 bg-gray-200 rounded" />
-            <div className="grid md:grid-cols-[minmax(0,2.1fr)_minmax(320px,1fr)] gap-6 md:gap-8">
-              <div className="h-80 bg-white rounded-2xl" />
-              <div className="h-80 bg-white rounded-2xl" />
-            </div>
-          </div>
-        </main>
-      </div>
-    );
+    return <AurayeLoader label="Loading your cart" subtitle="AURAYE" />;
   }
 
   if (!items.length) {
@@ -356,7 +347,7 @@ export default function Cart() {
             </div>
 
             {/* ROWS */}
-            <div >
+            <div>
               {items.map((item) => (
                 <CartItem
                   key={item.id}

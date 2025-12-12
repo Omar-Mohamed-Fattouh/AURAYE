@@ -1,13 +1,8 @@
-// src/pages/AllProducts.jsx
 import { useEffect, useMemo, useState } from "react";
 import { Search, SlidersHorizontal, X } from "lucide-react";
-import { getProducts } from "../api/productsApi";
 import ProductCard from "../components/ProductCard";
 
-export default function AllProducts() {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-
+export default function AllProducts({ products = [], loading = false }) {
   // search
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -30,30 +25,27 @@ export default function AllProducts() {
   // mobile filters sheet
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const all = await getProducts();
-        setProducts(Array.isArray(all) ? all : []);
-      } catch (err) {
-        console.error("Failed to load products:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, []);
-
   const getId = (p) => p.productId ?? p.id;
   const getTitle = (p) => p.title || p.name || "";
   const getCategoryName = (p) =>
     (typeof p.category === "string" ? p.category : p.category?.name) || "";
 
+  const norm = (v) => String(v ?? "").trim().toLowerCase();
+
+  const getStockQty = (p) => {
+    const candidates = [p.stockQuantity, p.stock, p.quantity, p.qty];
+    for (const c of candidates) {
+      const n = Number(c);
+      if (!Number.isNaN(n)) return n;
+    }
+    return 0;
+  };
+
   /* ---------- OPTIONS من الداتا ---------- */
 
   const genderOptions = useMemo(() => {
     const set = new Set(
-      products
+      (products || [])
         .map((p) => p.gender)
         .filter((g) => g && String(g).trim() !== "")
     );
@@ -62,7 +54,7 @@ export default function AllProducts() {
 
   const categoryOptions = useMemo(() => {
     const set = new Set(
-      products
+      (products || [])
         .map((p) => getCategoryName(p))
         .filter((c) => c && String(c).trim() !== "")
     );
@@ -71,7 +63,7 @@ export default function AllProducts() {
 
   const shapeOptions = useMemo(() => {
     const set = new Set(
-      products
+      (products || [])
         .map((p) => p.shape)
         .filter((s) => s && String(s).trim() !== "")
     );
@@ -80,37 +72,42 @@ export default function AllProducts() {
 
   const frameOptions = useMemo(() => {
     const set = new Set(
-      products
+      (products || [])
         .map((p) => p.frameMaterial)
         .filter((f) => f && String(f).trim() !== "")
     );
     return Array.from(set);
   }, [products]);
 
+  // ✅ clean sizes (remove duplicates + normalize)
   const sizeOptions = useMemo(() => {
     const set = new Set();
-    products.forEach((p) => {
+    (products || []).forEach((p) => {
       if (Array.isArray(p.sizes)) {
         p.sizes.forEach((s) => {
-          if (s && String(s).trim() !== "") set.add(s);
+          const v = norm(s);
+          if (v) set.add(v);
         });
       }
     });
-    return Array.from(set);
+    // show in nice format
+    const toLabel = (v) =>
+      v.length <= 3 ? v.toUpperCase() : v.charAt(0).toUpperCase() + v.slice(1);
+    return Array.from(set).map(toLabel);
   }, [products]);
 
   const colorOptions = useMemo(() => {
     const set = new Set();
-    products.forEach((p) => {
+    (products || []).forEach((p) => {
       if (Array.isArray(p.productImages)) {
         p.productImages.forEach((img) => {
-          if (img?.color && String(img.color).trim() !== "") {
-            set.add(img.color);
-          }
+          const v = norm(img?.color);
+          if (v) set.add(v);
         });
       }
     });
-    return Array.from(set);
+    const toLabel = (v) => v.charAt(0).toUpperCase() + v.slice(1);
+    return Array.from(set).map(toLabel);
   }, [products]);
 
   const { minPrice, maxPrice } = useMemo(() => {
@@ -119,10 +116,7 @@ export default function AllProducts() {
       .map((p) => Number(p.price))
       .filter((x) => !Number.isNaN(x));
     if (!prices.length) return { minPrice: 0, maxPrice: 0 };
-    return {
-      minPrice: Math.min(...prices),
-      maxPrice: Math.max(...prices),
-    };
+    return { minPrice: Math.min(...prices), maxPrice: Math.max(...prices) };
   }, [products]);
 
   useEffect(() => {
@@ -136,7 +130,7 @@ export default function AllProducts() {
   /* ---------- MAIN FILTER + SORT ---------- */
 
   const filteredProducts = useMemo(() => {
-    let result = products.filter((p) => {
+    let result = (products || []).filter((p) => {
       const title = getTitle(p);
       const categoryName = getCategoryName(p);
       const search = searchTerm.trim().toLowerCase();
@@ -156,41 +150,35 @@ export default function AllProducts() {
 
       const matchesGender =
         genderFilter === "all" ||
-        (p.gender &&
-          p.gender.toLowerCase() === genderFilter.toLowerCase());
+        (p.gender && norm(p.gender) === norm(genderFilter));
 
       const matchesCategory =
         categoryFilter === "all" ||
-        (categoryName &&
-          categoryName.toLowerCase() === categoryFilter.toLowerCase());
+        (categoryName && norm(categoryName) === norm(categoryFilter));
 
       const matchesShape =
         shapeFilter === "all" ||
-        (p.shape &&
-          p.shape.toLowerCase() === shapeFilter.toLowerCase());
+        (p.shape && norm(p.shape) === norm(shapeFilter));
 
       const matchesFrame =
         frameFilter === "all" ||
-        (p.frameMaterial &&
-          p.frameMaterial.toLowerCase() === frameFilter.toLowerCase());
+        (p.frameMaterial && norm(p.frameMaterial) === norm(frameFilter));
 
       const matchesSize =
         sizeFilter === "all" ||
         (Array.isArray(p.sizes) &&
-          p.sizes
-            .map((s) => String(s).toLowerCase())
-            .includes(sizeFilter.toLowerCase()));
+          p.sizes.map((s) => norm(s)).includes(norm(sizeFilter)));
 
       const matchesColor =
         colorFilter === "all" ||
         (Array.isArray(p.productImages) &&
-          p.productImages.some(
-            (img) =>
-              img?.color &&
-              img.color.toLowerCase() === colorFilter.toLowerCase()
-          ));
+          p.productImages.some((img) => norm(img?.color) === norm(colorFilter)));
 
-      const matchesAvailability = !inStockOnly || p.isAvailable;
+      // ✅ stockQuantity works
+      const stockQty = getStockQty(p);
+      const matchesAvailability = !inStockOnly
+        ? true
+        : stockQty > 0 || p.isAvailable === true;
 
       const price = Number(p.price);
       const from = Number(priceFrom) || minPrice || 0;
@@ -212,13 +200,9 @@ export default function AllProducts() {
     });
 
     if (sortBy === "price-asc") {
-      result = [...result].sort(
-        (a, b) => Number(a.price) - Number(b.price)
-      );
+      result = [...result].sort((a, b) => Number(a.price) - Number(b.price));
     } else if (sortBy === "price-desc") {
-      result = [...result].sort(
-        (a, b) => Number(b.price) - Number(a.price)
-      );
+      result = [...result].sort((a, b) => Number(b.price) - Number(a.price));
     } else if (sortBy === "newest") {
       result = [...result].sort((a, b) => {
         const da = new Date(a.createdAt || 0).getTime();
@@ -227,7 +211,6 @@ export default function AllProducts() {
         return (b.productId ?? b.id ?? 0) - (a.productId ?? a.id ?? 0);
       });
     } else {
-      // recommended
       result = [...result].sort(
         (a, b) => (b.productId ?? b.id ?? 0) - (a.productId ?? a.id ?? 0)
       );
@@ -267,9 +250,7 @@ export default function AllProducts() {
   if (loading) {
     return (
       <section className="min-h-screen bg-white flex items-center justify-center">
-        <p className="text-sm text-gray-500 tracking-wide">
-          Loading products…
-        </p>
+        <p className="text-sm text-gray-500 tracking-wide">Loading products…</p>
       </section>
     );
   }
@@ -279,37 +260,41 @@ export default function AllProducts() {
   return (
     <section className="min-h-screen bg-white py-10">
       <div className="w-full mx-auto px-4 lg:px-8">
-        {/* TOP BAR */}
+        {/* HEADER */}
         <div className="mb-6 flex flex-col gap-3">
           <div className="flex items-center justify-between gap-3">
             <div>
               <h1 className="text-2xl md:text-3xl font-semibold text-black tracking-tight">
-                All Products
+                Explore Our Full Collection
               </h1>
               <p className="mt-1 text-xs md:text-sm text-gray-500">
-                Browse our full collection and fine-tune with advanced filters.
+                Use smart filters to find the perfect fit — style, size, color, and availability.
+              </p>
+
+              {/* ✅ Showing X of Y */}
+              <p className="mt-2 text-xs text-gray-600">
+                Showing{" "}
+                <span className="font-semibold text-black">{filteredProducts.length}</span>{" "}
+                of{" "}
+                <span className="font-semibold text-black">{products.length}</span>{" "}
+                products
               </p>
             </div>
 
             <div className="hidden md:flex items-center gap-4 text-xs text-gray-600">
               <div className="px-3 py-1 rounded-full bg-white border border-gray-200 shadow-sm">
-                Total products:{" "}
-                <span className="font-medium text-black">
-                  {products.length}
-                </span>
+                Total:{" "}
+                <span className="font-medium text-black">{products.length}</span>
               </div>
               <div className="px-3 py-1 rounded-full bg-white border border-gray-200 shadow-sm">
                 Showing:{" "}
-                <span className="font-medium text-black">
-                  {filteredProducts.length}
-                </span>
+                <span className="font-medium text-black">{filteredProducts.length}</span>
               </div>
             </div>
           </div>
 
           {/* Search + sort + mobile filter btn */}
           <div className="rounded-3xl bg-black border border-gray-200 shadow-sm px-4 py-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            {/* search (أسود زي الفيلترز) */}
             <div className="w-full md:max-w-lg">
               <div className="flex items-center gap-2 rounded-2xl bg-[#242424] border border-neutral-800 px-3 py-2 focus-within:border-white focus-within:shadow-sm transition">
                 <Search className="w-4 h-4 text-white" />
@@ -323,7 +308,6 @@ export default function AllProducts() {
               </div>
             </div>
 
-            {/* sort + mobile filters */}
             <div className="flex items-center justify-between gap-3 md:justify-end">
               <div className="flex items-center gap-2">
                 <span className="text-[11px] uppercase tracking-[0.16em] text-white">
@@ -399,14 +383,11 @@ export default function AllProducts() {
 
           {/* PRODUCTS GRID */}
           <main className="flex-1">
-            {/* quick chips: All Products / Men / Women / Sunglasses */}
+            {/* ✅ Quick chips + Unisex */}
             <div className="mb-4 flex flex-wrap gap-2 text-[11px]">
               <QuickChip
                 label="All Products"
-                active={
-                  genderFilter === "all" &&
-                  categoryFilter === "all"
-                }
+                active={genderFilter === "all" && categoryFilter === "all"}
                 onClick={() => {
                   setGenderFilter("all");
                   setCategoryFilter("all");
@@ -414,30 +395,29 @@ export default function AllProducts() {
               />
               <QuickChip
                 label="Men"
-                active={genderFilter.toLowerCase() === "men"}
+                active={norm(genderFilter) === "men"}
                 onClick={() => setGenderFilter("men")}
               />
               <QuickChip
                 label="Women"
-                active={genderFilter.toLowerCase() === "women"}
+                active={norm(genderFilter) === "women"}
                 onClick={() => setGenderFilter("women")}
               />
               <QuickChip
+                label="Unisex"
+                active={norm(genderFilter) === "unisex"}
+                onClick={() => setGenderFilter("unisex")}
+              />
+              <QuickChip
                 label="Sunglasses"
-                active={
-                  categoryFilter.toLowerCase() === "sunglasses"
-                }
+                active={norm(categoryFilter) === "sunglasses"}
                 onClick={() => setCategoryFilter("Sunglasses")}
               />
-            </div>
-
-            {/* count */}
-            <div className="mb-3 text-xs text-gray-500">
-              Showing{" "}
-              <span className="font-semibold text-black">
-                {filteredProducts.length}
-              </span>{" "}
-              of {products.length} products
+              <QuickChip
+                label="Eyeglasses"
+                active={norm(categoryFilter) === "eyeglasses"}
+                onClick={() => setCategoryFilter("Eyeglasses")}
+              />
             </div>
 
             {filteredProducts.length === 0 ? (
@@ -530,7 +510,7 @@ export default function AllProducts() {
             <button
               type="button"
               onClick={() => setShowMobileFilters(false)}
-              className="mt-4 w-full rounded-full bg.white text-black text-xs py-2.5 font-medium"
+              className="mt-4 w-full rounded-full bg-white text-black text-xs py-2.5 font-medium"
             >
               Apply filters
             </button>
@@ -644,7 +624,6 @@ function FilterPanel(props) {
         />
       )}
 
-      {/* price */}
       <div className="space-y-2">
         <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-neutral-400">
           Price (EGP)
@@ -676,7 +655,6 @@ function FilterPanel(props) {
         )}
       </div>
 
-      {/* availability */}
       <div className="space-y-1">
         <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-neutral-400">
           Availability

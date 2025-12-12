@@ -1,45 +1,27 @@
-// src/pages/EyeGlasses.jsx
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Search, SlidersHorizontal, X } from "lucide-react";
-import { getProducts } from "../api/productsApi";
-import ProductCard from "../components/ProductCard";
+import ProductCard from "./ProductCard";
 
-export default function EyeGlasses() {
-  const [eyeProducts, setEyeProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  // search + filters
+export default function EyeGlasses({ products = [], loading = false }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [shapeFilter, setShapeFilter] = useState("");
   const [frameFilter, setFrameFilter] = useState("");
   const [genderFilter, setGenderFilter] = useState("");
 
-  // mobile filters sheet
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
-  useEffect(() => {
-    const loadEyeProducts = async () => {
-      try {
-        const all = await getProducts();
-        const filtered = (all || []).filter(
-          (p) =>
-            String(
-              typeof p.category === "string" ? p.category : p.category?.name
-            )
-              .toLowerCase()
-              .trim() === "eyeglasses"
-        );
-        setEyeProducts(filtered);
-      } catch (err) {
-        console.error("Failed to load eyeglasses:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const norm = (v) => String(v ?? "").trim().toLowerCase();
+  const getCategoryName = (p) =>
+    (typeof p.category === "string" ? p.category : p.category?.name) || "";
 
-    loadEyeProducts();
-  }, []);
+  // ✅ EYEGLASSES ONLY
+  const eyeProducts = useMemo(() => {
+    return (products || []).filter(
+      (p) => norm(getCategoryName(p)) === "eyeglasses"
+    );
+  }, [products]);
 
+  // dropdown options from data
   const shapes = useMemo(() => {
     const set = new Set(
       eyeProducts
@@ -67,24 +49,17 @@ export default function EyeGlasses() {
     return Array.from(set);
   }, [eyeProducts]);
 
+  // filtered list
   const filteredProducts = useMemo(() => {
     return eyeProducts.filter((p) => {
       const name = (p.name || p.title || "").toLowerCase();
       const search = searchTerm.toLowerCase().trim();
 
       const nameMatch = !search || name.includes(search);
-
-      const shapeMatch =
-        !shapeFilter ||
-        String(p.shape).toLowerCase() === shapeFilter.toLowerCase();
-
+      const shapeMatch = !shapeFilter || norm(p.shape) === norm(shapeFilter);
       const frameMatch =
-        !frameFilter ||
-        String(p.frameMaterial).toLowerCase() === frameFilter.toLowerCase();
-
-      const genderMatch =
-        !genderFilter ||
-        String(p.gender).toLowerCase() === genderFilter.toLowerCase();
+        !frameFilter || norm(p.frameMaterial) === norm(frameFilter);
+      const genderMatch = !genderFilter || norm(p.gender) === norm(genderFilter);
 
       return nameMatch && shapeMatch && frameMatch && genderMatch;
     });
@@ -116,17 +91,30 @@ export default function EyeGlasses() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <h1 className="text-3xl md:text-4xl font-semibold text-black tracking-tight">
-                Eyeglasses
+                Eyeglasses Collection
               </h1>
               <p className="mt-1 text-xs md:text-sm text-gray-500 max-w-xl">
-                Browse our eyeglasses collection for everyday comfort and style.
+                Browse premium eyeglasses built for everyday comfort, clarity, and a clean modern look.
+              </p>
+
+              {/* ✅ Showing X of Y */}
+              <p className="mt-2 text-xs text-gray-600">
+                Showing{" "}
+                <span className="font-semibold text-black">
+                  {filteredProducts.length}
+                </span>{" "}
+                of{" "}
+                <span className="font-semibold text-black">
+                  {eyeProducts.length}
+                </span>{" "}
+                eyeglasses
               </p>
             </div>
 
             {/* Desktop stats */}
             <div className="hidden md:flex items-center gap-4 text-xs text-gray-600">
               <div className="px-3 py-1 rounded-full bg-white border border-gray-200 shadow-sm">
-                Total eyeglasses:{" "}
+                Total:{" "}
                 <span className="font-medium text-black">
                   {eyeProducts.length}
                 </span>
@@ -142,7 +130,7 @@ export default function EyeGlasses() {
 
           {/* Search + filters button (mobile) */}
           <div className="rounded-3xl bg-black border border-gray-200 shadow-sm px-4 py-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            {/* Search - أسود زي AllProducts */}
+            {/* Search */}
             <div className="w-full md:max-w-lg">
               <div className="flex items-center gap-2 rounded-2xl bg-[#212121] border border-neutral-800 px-3 py-2 focus-within:border-white focus-within:shadow-sm transition">
                 <Search className="w-4 h-4 text-neutral-300" />
@@ -156,7 +144,6 @@ export default function EyeGlasses() {
               </div>
             </div>
 
-            {/* Mobile filters button فقط للموبايل */}
             <div className="flex items-center justify-between gap-3 md:justify-end">
               <button
                 type="button"
@@ -170,7 +157,7 @@ export default function EyeGlasses() {
           </div>
         </div>
 
-        {/* MAIN LAYOUT: Desktop => filters جنب الجريد */}
+        {/* MAIN LAYOUT */}
         <div className="flex flex-col gap-6 lg:flex-row">
           {/* SIDEBAR (Desktop only) */}
           <aside className="hidden lg:block w-72 flex-shrink-0">
@@ -191,36 +178,30 @@ export default function EyeGlasses() {
             </div>
           </aside>
 
-          {/* PRODUCTS SIDE */}
+          {/* PRODUCTS */}
           <main className="flex-1">
-            {/* Quick gender chips: All / Men / Women */}
-            {genders.length > 0 && (
-              <div className="mb-4 flex flex-wrap gap-2 text-[11px]">
-                <FilterChip
-                  label="All"
-                  active={genderFilter === ""}
-                  onClick={() => setGenderFilter("")}
-                />
-                <FilterChip
-                  label="Men"
-                  active={genderFilter.toLowerCase() === "men"}
-                  onClick={() => setGenderFilter("Men")}
-                />
-                <FilterChip
-                  label="Women"
-                  active={genderFilter.toLowerCase() === "women"}
-                  onClick={() => setGenderFilter("Women")}
-                />
-              </div>
-            )}
-
-            {/* count (mobile & desktop) */}
-            <div className="mb-3 text-xs text-gray-500">
-              Showing{" "}
-              <span className="font-semibold text-black">
-                {filteredProducts.length}
-              </span>{" "}
-              of {eyeProducts.length} eyeglasses
+            {/* ✅ Quick gender chips: All / Men / Women / Unisex */}
+            <div className="mb-4 flex flex-wrap gap-2 text-[11px]">
+              <FilterChip
+                label="All"
+                active={genderFilter === ""}
+                onClick={() => setGenderFilter("")}
+              />
+              <FilterChip
+                label="Men"
+                active={norm(genderFilter) === "men"}
+                onClick={() => setGenderFilter("Men")}
+              />
+              <FilterChip
+                label="Women"
+                active={norm(genderFilter) === "women"}
+                onClick={() => setGenderFilter("Women")}
+              />
+              <FilterChip
+                label="Unisex"
+                active={norm(genderFilter) === "unisex"}
+                onClick={() => setGenderFilter("Unisex")}
+              />
             </div>
 
             {/* grid */}
@@ -235,19 +216,22 @@ export default function EyeGlasses() {
               </div>
             ) : (
               <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4">
-                {filteredProducts.map((product) => (
-                  <div
-                    key={product.id}
-                    className="group rounded-3xl bg-white border border-gray-100 hover:-translate-y-1 hover:shadow-md transition-all duration-200"
-                  >
-                    <ProductCard
-                      product={product}
-                      linkTo={`/products/${product.id}`}
-                      showAddToCart={false}
-                      badge={null}
-                    />
-                  </div>
-                ))}
+                {filteredProducts.map((product) => {
+                  const id = product.id ?? product.productId;
+                  return (
+                    <div
+                      key={id}
+                      className="group rounded-3xl bg-white border border-gray-100 hover:-translate-y-1 hover:shadow-md transition-all duration-200"
+                    >
+                      <ProductCard
+                        product={product}
+                        linkTo={`/products/${id}`}
+                        showAddToCart={false}
+                        badge={null}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             )}
           </main>
@@ -342,7 +326,6 @@ function FilterPanel({
         </button>
       </div>
 
-      {/* Gender */}
       {genders.length > 0 && (
         <SidebarSelect
           label="Gender"
@@ -353,7 +336,6 @@ function FilterPanel({
         />
       )}
 
-      {/* Shape */}
       <SidebarSelect
         label="Shape"
         value={shapeFilter}
@@ -362,7 +344,6 @@ function FilterPanel({
         allLabel="All shapes"
       />
 
-      {/* Frame material */}
       <SidebarSelect
         label="Frame material"
         value={frameFilter}

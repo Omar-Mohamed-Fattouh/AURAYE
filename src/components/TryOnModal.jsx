@@ -1,16 +1,18 @@
 // src/components/TryOnModal.jsx
 import { useEffect, useRef, useState, useMemo } from "react";
 import { X } from "lucide-react";
-import { Canvas } from "@react-three/fiber";
-import { OrthographicCamera, useGLTF } from "@react-three/drei";
+import { Canvas, useLoader } from "@react-three/fiber";
+import { useGLTF } from "@react-three/drei";
 import { FaceMesh } from "@mediapipe/face_mesh";
 import { Camera as MP_Camera } from "@mediapipe/camera_utils";
+import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
+import { Box3, Vector3 } from "three";
 
-// ===== إعدادات عامة للترانسفورم =====
-const BASE_SCALE_MULTIPLIER = 800; // لو صغير جداً زوّد الرقم ده
+// Face tracking constants
 const MIN_EYE_DIST = 0.06;
 const MAX_EYE_DIST = 0.25;
-const Y_OFFSET = 0.02; // تحريك النضارة لفوق/تحت بسيط
+const REF_EYE_DIST = 0.12;
+const Y_OFFSET = 0.02;
 const Z_POSITION = 0;
 
 export default function TryOnModal({
@@ -25,29 +27,26 @@ export default function TryOnModal({
   const [dimensions, setDimensions] = useState({ width: 640, height: 480 });
   const dimensionsRef = useRef(dimensions);
 
-  // tracking state
   const [glassesTransform, setGlassesTransform] = useState({
     position: [0, 0, Z_POSITION],
-    scale: defaultScale,
+    scale: 1,
     rotationZ: 0,
   });
 
-  // slider للتحكم في الحجم
-  const [userScale, setUserScale] = useState(1); // من 0.5 لـ 2 مثلاً
-  const userScaleRef = useRef(1);
+  // Small / Medium / Large
+  const [sizePreset, setSizePreset] = useState(1);
+  const sizePresetRef = useRef(1);
   useEffect(() => {
-    userScaleRef.current = userScale;
-  }, [userScale]);
+    sizePresetRef.current = sizePreset;
+  }, [sizePreset]);
 
   const [modelReady, setModelReady] = useState(false);
   const [modelError, setModelError] = useState(null);
 
-  // نخلي آخر dimensions في ref عشان الـ effect بتاع FaceMesh
   useEffect(() => {
     dimensionsRef.current = dimensions;
   }, [dimensions]);
 
-  // اعتبر الموديل جاهز طول ما في URL
   useEffect(() => {
     if (!modelUrl) {
       setModelError("No 3D model URL provided.");
@@ -58,14 +57,14 @@ export default function TryOnModal({
     }
   }, [modelUrl]);
 
-  // resize للكونتينر
+  // Resize container
   useEffect(() => {
     const updateSize = () => {
       if (!containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
       setDimensions({
         width: rect.width,
-        height: rect.width * 0.75, // 4:3
+        height: rect.width * 0.75,
       });
     };
 
@@ -74,7 +73,7 @@ export default function TryOnModal({
     return () => window.removeEventListener("resize", updateSize);
   }, []);
 
-  // ===== FaceMesh + camera – tracking حقيقي لملامح الوش =====
+  // FaceMesh tracking
   useEffect(() => {
     let mpCamera;
     let faceMesh;
@@ -103,7 +102,6 @@ export default function TryOnModal({
 
         const landmarks = results.multiFaceLandmarks[0];
 
-        // نقاط العينين (دي نقاط ثابته من Mediapipe)
         const leftEye = landmarks[33];
         const rightEye = landmarks[263];
 
@@ -119,24 +117,26 @@ export default function TryOnModal({
           Math.max(MIN_EYE_DIST, eyeDistRaw)
         );
 
-        // زاوية ميلان الرأس حوالين محور Z
         const angle = Math.atan2(dy, dx);
 
-        // من [0,1] إلى [-1,1] + تعويض بسيط في الـ Y
-        const x = (centerX - 0.5) * 2;
-        const y = -(centerY - 0.5) * 2 + Y_OFFSET;
+        const x = (centerX - 0.5) * 1.5;
+        const y = -(centerY - 0.5) * 1.5 + Y_OFFSET;
 
-        // scale ديناميكي حسب المسافة بين العينين + الـ slider بتاعك
-        const dynamicScale =
-          eyeDist *
-          BASE_SCALE_MULTIPLIER *
-          (defaultScale || 1) *
-          userScaleRef.current;
+        let baseScale = (eyeDist / REF_EYE_DIST) * 0.6 * (defaultScale || 1);
+
+        const preset = sizePresetRef.current;
+        let presetMul = 1;
+        if (preset === 0) presetMul = 0.9; // Small
+        else if (preset === 2) presetMul = 1.15; // Large
+        else presetMul = 1.02; // Medium
+
+        let dynamicScale = baseScale * presetMul;
+        dynamicScale = Math.min(1.8, Math.max(0.4, dynamicScale));
 
         setGlassesTransform({
           position: [x, y, Z_POSITION],
           scale: dynamicScale,
-          rotationZ: -angle, // نعكسها عشان الكاميرا
+          rotationZ: -angle,
         });
       };
 
@@ -144,20 +144,22 @@ export default function TryOnModal({
 
       const { width, height } = dimensionsRef.current;
 
-      mpCamera = new MP_Camera(videoRef.current, {
-        onFrame: async () => {
-          if (!running) return;
-          try {
-            await faceMesh.send({ image: videoRef.current });
-          } catch (err) {
-            // errors داخلية من wasm – مفيش مشكلة لو حصلت أحياناً
-          }
-        },
-        width,
-        height,
-      });
+      try {
+        mpCamera = new MP_Camera(videoRef.current, {
+          onFrame: async () => {
+            if (!running) return;
+            try {
+              await faceMesh.send({ image: videoRef.current });
+            } catch (_) {}
+          },
+          width,
+          height,
+        });
 
-      mpCamera.start();
+        mpCamera.start();
+      } catch (err) {
+        console.error("Failed to start Mediapipe camera:", err);
+      }
     };
 
     setupFaceMesh();
@@ -175,7 +177,7 @@ export default function TryOnModal({
         } catch (_) {}
       }
     };
-  }, [defaultScale]); // مش بنحط userScale هنا عشان ما نعملش init كل مره
+  }, [defaultScale]);
 
   return (
     <div className="fixed inset-0 z-[9999] bg-black/80 flex items-center justify-center">
@@ -202,7 +204,6 @@ export default function TryOnModal({
           className="relative bg-black flex items-center justify-center"
           style={{ aspectRatio: "4 / 3" }}
         >
-          {/* الكاميرا – mirrored بس في الـ CSS، ال data اللي رايحة للـ faceMesh مش بتتقلب */}
           <video
             ref={videoRef}
             autoPlay
@@ -212,20 +213,18 @@ export default function TryOnModal({
             style={{ transform: "scaleX(-1)" }}
           />
 
-          {/* 3D overlay – بنقلبه برضه عشان يبقى نفس اتجاه وشّك */}
           {modelReady && (
             <div
               className="absolute inset-0 pointer-events-none"
               style={{ transform: "scaleX(-1)" }}
             >
               <Canvas
-                orthographic
                 gl={{
                   alpha: true,
                   antialias: true,
                   powerPreference: "high-performance",
                 }}
-                camera={{ position: [0, 0, 5], zoom: 320 }}
+                camera={{ position: [0, 0, 2.5], fov: 35 }}
                 style={{
                   width: "100%",
                   height: "100%",
@@ -233,9 +232,8 @@ export default function TryOnModal({
                   pointerEvents: "none",
                 }}
               >
-                <OrthographicCamera makeDefault position={[0, 0, 5]} />
-                <ambientLight intensity={0.9} />
-                <directionalLight position={[0, 5, 5]} intensity={0.7} />
+                <ambientLight intensity={1.1} />
+                <directionalLight position={[2, 2, 3]} intensity={0.8} />
 
                 <GlassesModel
                   url={modelUrl}
@@ -254,27 +252,39 @@ export default function TryOnModal({
           )}
         </div>
 
-        {/* Slider للتحكم في حجم الموديل */}
+        {/* Small / Medium / Large */}
         <div className="px-4 pt-2 pb-1 bg-black border-t border-white/20 text-[11px] text-white/80">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between gap-4">
             <span className="whitespace-nowrap">Frame size</span>
-            <input
-              type="range"
-              min="0.5"
-              max="2"
-              step="0.05"
-              value={userScale}
-              onChange={(e) => setUserScale(parseFloat(e.target.value))}
-              className="w-full accent-white"
-            />
-            <span className="w-10 text-right">
-              {Math.round(userScale * 100)}%
-            </span>
+
+            <div className="flex-1 flex flex-col gap-1">
+              <input
+                type="range"
+                min="0"
+                max="2"
+                step="1"
+                value={sizePreset}
+                onChange={(e) => setSizePreset(Number(e.target.value))}
+                className="w-full accent-white"
+              />
+              <div className="flex justify-between text-[10px] uppercase tracking-[0.15em]">
+                {["Small", "Medium", "Large"].map((label, idx) => (
+                  <span
+                    key={label}
+                    className={
+                      idx === sizePreset ? "text-white font-semibold" : "text-white/50"
+                    }
+                  >
+                    {label}
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
         <div className="px-4 py-2 bg-black text-[11px] text-white/70 flex justify-between items-center">
-          <span>Tip: move your head slowly left and right.</span>
+          <span>Tip: Look straight at the camera and move your head slowly.</span>
           <span className="hidden md:inline">
             Your camera stays in your browser only.
           </span>
@@ -284,16 +294,96 @@ export default function TryOnModal({
   );
 }
 
-// 👓 3D Glasses component
-function GlassesModel({ url, position, scale, rotationZ }) {
-  const { scene } = useGLTF(url);
+// ---------- 3D models (GLB / OBJ) ----------
 
-  const clonedScene = useMemo(() => scene.clone(), [scene]);
-  const finalScale = Array.isArray(scale) ? scale : [scale, scale, scale];
+function GlassesModel({ url, position, scale, rotationZ }) {
+  const ext = (url || "").split(".").pop().toLowerCase();
+
+  if (ext === "obj") {
+    return (
+      <OBJGlasses
+        url={url}
+        position={position}
+        scale={scale}
+        rotationZ={rotationZ}
+      />
+    );
+  }
+
+  // default: glb / gltf
+  return (
+    <GLBGlasses
+      url={url}
+      position={position}
+      scale={scale}
+      rotationZ={rotationZ}
+    />
+  );
+}
+
+function GLBGlasses({ url, position, scale, rotationZ }) {
+  const gltf = useGLTF(url);
+  const { scene } = gltf;
+
+  const calibratedScene = useMemo(() => {
+    const cloned = scene.clone(true);
+
+    const box = new Box3().setFromObject(cloned);
+    const size = new Vector3();
+    const center = new Vector3();
+    box.getSize(size);
+    box.getCenter(center);
+
+    cloned.position.sub(center);
+    cloned.position.y += size.y * 0.38;
+
+    const width = size.x || 1;
+    const targetWidth = 0.8;
+    const normScale = targetWidth / width;
+    cloned.scale.setScalar(normScale);
+
+    return cloned;
+  }, [scene]);
+
+  const s = scale;
+  const finalScale = [s, s, s];
 
   return (
-    <group position={position} rotation={[0, 0, rotationZ]}>
-      <primitive object={clonedScene} scale={finalScale} />
+    <group position={position} rotation={[0, 0, rotationZ]} scale={finalScale}>
+      <primitive object={calibratedScene} />
+    </group>
+  );
+}
+
+function OBJGlasses({ url, position, scale, rotationZ }) {
+  const obj = useLoader(OBJLoader, url);
+
+  const calibratedScene = useMemo(() => {
+    const cloned = obj.clone(true);
+
+    const box = new Box3().setFromObject(cloned);
+    const size = new Vector3();
+    const center = new Vector3();
+    box.getSize(size);
+    box.getCenter(center);
+
+    cloned.position.sub(center);
+    cloned.position.y += size.y * 0.38;
+
+    const width = size.x || 1;
+    const targetWidth = 0.8;
+    const normScale = targetWidth / width;
+    cloned.scale.setScalar(normScale);
+
+    return cloned;
+  }, [obj]);
+
+  const s = scale;
+  const finalScale = [s, s, s];
+
+  return (
+    <group position={position} rotation={[0, 0, rotationZ]} scale={finalScale}>
+      <primitive object={calibratedScene} />
     </group>
   );
 }
