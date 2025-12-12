@@ -1,13 +1,15 @@
 // src/components/SubscribeSection.jsx
 import { useState } from "react";
 import { toast } from "sonner";
+import { subscribeNewsletter } from "../api/contactApi"; // ← أهم إضافة
 
-export default function SubscribeSection({ onSubscribe }) {
+export default function SubscribeSection() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!email.trim()) {
       toast.error("Please enter your email.");
       return;
@@ -16,16 +18,13 @@ export default function SubscribeSection({ onSubscribe }) {
     try {
       setLoading(true);
 
-      // If parent passes custom handler, use it
-      if (onSubscribe) {
-        await onSubscribe(email.trim());
-      }
+      // 🔥 Call the real API
+      await subscribeNewsletter(email.trim());
 
-      // demo feedback
-      toast.success("You’re subscribed! Check your inbox 🔔");
+      toast.success("You're subscribed! Check your inbox");
       setEmail("");
     } catch (err) {
-      toast.error("Something went wrong. Please try again.");
+      toast.error(err.message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -40,8 +39,7 @@ export default function SubscribeSection({ onSubscribe }) {
           </h2>
           <p className="text-xs md:text-base text-white max-w-4xl">
             Join our community and receive regular updates, exclusive offers,
-            and tips delivered straight to your inbox. It&apos;s quick, easy,
-            and free.
+            and tips delivered straight to your inbox. It's quick, easy, and free.
           </p>
 
           <form
@@ -51,6 +49,7 @@ export default function SubscribeSection({ onSubscribe }) {
             <label htmlFor="subscribe-email" className="sr-only">
               Email address
             </label>
+
             <input
               id="subscribe-email"
               type="email"

@@ -23,7 +23,6 @@ Business rules:
 `;
 
 export default function App() {
-  console.log("API URL (PROD):", import.meta.env.VITE_API_URL);
 
   return (
     <>

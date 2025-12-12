@@ -238,50 +238,62 @@ export default function ChatWidget({ projectContext = "" }) {
 /**
  * Call Gemini API
  */
+/**
+ * Call Gemini API (safe, updated for latest SDK)
+ */
 async function callGemini({ messages, projectContext }) {
   if (!genAI) {
     throw new Error("Gemini client not initialized – missing API key?");
   }
 
   const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
+    model: "gemini-1.5-flash-latest", // <-- Latest stable version
   });
 
-  const historyText = messages
-    .map((m) => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`)
-    .join("\n");
-
   const lastUserMessage =
-    messages.filter((m) => m.role === "user").slice(-1)[0]?.content || "";
+    messages.filter((m) => m.role === "user").pop()?.content || "";
 
-  const contextText = projectContext?.trim()
-    ? projectContext.trim()
-    : "No extra project context was provided.";
+  const history = messages
+    .slice(0, -1)
+    .map((msg) => ({
+      role: msg.role,
+      parts: [{ text: msg.content }],
+    }));
 
-  const prompt = `
-You are an AI assistant for an AR-powered eyewear e-commerce website.
+  const contextText =
+    projectContext?.trim() || "No extra project context was provided.";
 
-Project documentation:
+  const finalPrompt = `
+You are an AI assistant for an AR eyewear e-commerce website.
 
-""" 
+Use the following project documentation when answering:
+
+"""
 ${contextText}
 """
 
-Always use this documentation first when answering questions about the project.
+Stay relevant to:
+- Eyeglasses
+- Frames & lenses
+- AR try-on
+- Orders, shipping, returns
+- Customer support
 
-If the answer isn't there, you can use general knowledge, but stay relevant
-to eyewear, AR try-on, orders, and customer support.
-
-Conversation so far:
-${historyText}
-
-Now answer this user message clearly and helpfully:
+Now answer the user's last question:
 "${lastUserMessage}"
 `;
 
-  const result = await model.generateContent(prompt);
-  const response = await result.response;
-  const text = response.text();
+  const result = await model.generateContent({
+    contents: [
+      ...history,
+      {
+        role: "user",
+        parts: [{ text: finalPrompt }],
+      },
+    ],
+  });
 
-  return text || "I’m here to help! Could you say that in another way?";
+  const text = result.response.text();
+  return text?.trim() || "I’m here to help! Could you rephrase that?";
 }
+

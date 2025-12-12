@@ -10,17 +10,35 @@ export const sendContactMessage = async ({ name, email, subject, message }) => {
       subject,
       message,
     });
-    return response.data; // return the API response data
+    return response.data; 
   } catch (error) {
-    // Handle errors more gracefully
     if (error.response) {
-      // Server responded with a status other than 2xx
       throw new Error(error.response.data.message || "Failed to send message");
     } else if (error.request) {
-      // No response received
       throw new Error("No response from server");
     } else {
-      // Other errors
+      throw new Error(error.message);
+    }
+  }
+};
+
+// ✅ Subscribe to newsletter
+export const subscribeNewsletter = async (email) => {
+  try {
+    const response = await axiosClient.post(
+      "/Newsletter/subscribe",
+      { email }
+    );
+
+    return response.data;
+  } catch (error) {
+    if (error.response) {
+      throw new Error(
+        error.response.data.message || "Failed to subscribe to newsletter"
+      );
+    } else if (error.request) {
+      throw new Error("No response from server");
+    } else {
       throw new Error(error.message);
     }
   }

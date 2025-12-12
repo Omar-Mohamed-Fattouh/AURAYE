@@ -132,8 +132,7 @@ export const getProducts = async () => {
       : Array.isArray(response.data.data)
       ? response.data.data
       : [];
-console.log("API URL:", import.meta.env.VITE_API_URL);
-axiosClient.get("/Products").then(res => console.log(res.data));
+
   return productsArray.map((product) => {
     const images = [
       {
