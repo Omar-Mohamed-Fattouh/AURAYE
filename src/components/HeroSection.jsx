@@ -28,27 +28,22 @@ export default function HeroSection({
 
   /* -------------------- LOAD PRODUCTS -------------------- */
 
-  // keep in sync with props if parent passes products
   useEffect(() => {
     if (products && products.length > 0) {
       setSourceProducts(products);
     }
   }, [products]);
 
-  // if no products from props, fetch from API once
-  // LOAD PRODUCTS ONLY ONCE
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoadingProducts(true);
 
-        // لو الـ parent بعت products جاهزة → استخدمها
         if (products && products.length > 0) {
           setSourceProducts(products);
           return;
         }
 
-        // لو مفيش products من props → fetch مرة واحدة
         const data = await getProducts();
         setSourceProducts(data || []);
       } catch (err) {
@@ -59,7 +54,7 @@ export default function HeroSection({
     };
 
     fetchData();
-  }, []); // <<< important: dependency فاضية عشان يشتغل مرة واحدة بس
+  }, []); // once only
 
   /* -------------------- DEBOUNCE -------------------- */
 
@@ -76,10 +71,7 @@ export default function HeroSection({
     const values = [];
 
     sourceProducts.forEach((p) => {
-      if (p.category) {
-        // في getProducts بنرجع category كسطر نصّي
-        values.push(p.category);
-      }
+      if (p.category) values.push(p.category);
       if (p.shape) values.push(p.shape);
       if (p.gender) values.push(p.gender);
     });
@@ -116,10 +108,7 @@ export default function HeroSection({
   /* -------------------- IMAGE HELPER -------------------- */
 
   const getThumb = (item) => {
-    // الشكل الجديد من getProducts: images = [{ url, color }]
     if (item.images?.length) return item.images[0].url;
-
-    // fallback لو في بيانات جاية من مصدر قديم
     if (item.productImages?.length) return item.productImages[0].imgUrl;
 
     return (
@@ -156,10 +145,8 @@ export default function HeroSection({
 
     if (onSelect) return onSelect(item);
 
-    // بعد الماب في getProducts بقى عندنا id فقط
     const id = item.id ?? item.productId;
     if (id != null) {
-      // عدّلي الباث لو عندك route مختلف
       navigate(`/products/${id}`, { state: { product: item } });
     }
   };
@@ -167,20 +154,26 @@ export default function HeroSection({
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!debounced) return;
-    setOpen(true);
+
+    // لو في نتيجة استخدم أول واحدة وودّي عليها مباشرة
+    if (filtered.length > 0) {
+      handleSelect(filtered[0]);
+    } else {
+      setOpen(true);
+    }
   };
 
   /* -------------------- UI -------------------- */
 
   return (
     <motion.section
-      className="relative z-20 w-full min-h-screen lg:h-screen flex items-center overflow-hidden pt-24 md:pt-28"
+      className="relative z-20 w-full min-h-screen lg:h-screen flex items-center pt-24 md:pt-28"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
     >
       {/* BACKGROUND IMAGE + GRADIENTS */}
-      <div className="absolute inset-0 -z-20">
+      <div className="absolute inset-0 -z-20 overflow-hidden">
         <img
           src={backgroundImage}
           alt="Auraye eyewear hero"
@@ -197,7 +190,7 @@ export default function HeroSection({
 
       {/* CONTENT */}
       <div className="relative z-10 w-full">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-10 lg:px-14 flex flex-col lg:flex-row items-center lg:items-start gap-10">
+        <div className="container mx-auto px-4 sm:px-6 md:px-10 lg:px-14 flex flex-col lg:flex-row items-center lg:items-start gap-10">
           {/* LEFT: text + search */}
           <div className="w-full lg:max-w-xl xl:max-w-2xl">
             <div className="inline-flex items-center gap-2 rounded-full bg-white/5 border border-white/15 px-3 sm:px-4 py-1 text-[11px] uppercase tracking-[0.25em] text-white/70 mb-4">
@@ -206,8 +199,8 @@ export default function HeroSection({
             </div>
 
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight mb-3">
-              Find Your
-                Perfect Pair
+              Find Your{" "}
+              Perfect Pair
             </h1>
 
             <p className="text-sm sm:text-base md:text-lg text-gray-200/90 max-w-xl mb-6">
@@ -260,14 +253,14 @@ export default function HeroSection({
                 </button>
               </div>
 
-              {/* DROPDOWN RESULTS */}
+              {/* DROPDOWN RESULTS (جوا الهيرو نفسه) */}
               {open && debounced && (
                 <div
                   ref={resultsRef}
                   className="
                     absolute left-0 right-0 mt-3 rounded-2xl bg-black/95 
                     border border-white/10 shadow-2xl backdrop-blur-2xl 
-                    max-h-80 overflow-y-auto z-[9999] p-1
+                    max-h-80 overflow-y-auto z-[40] p-1
                   "
                   style={{
                     scrollbarWidth: "thin",
@@ -292,7 +285,7 @@ export default function HeroSection({
                           key={item.id ?? item.productId}
                           type="button"
                           onClick={() => handleSelect(item)}
-                          className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-white/5 transition-colors"
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg:white/5 hover:bg-white/5 transition-colors"
                         >
                           {getThumb(item) ? (
                             <img
@@ -350,7 +343,7 @@ export default function HeroSection({
                       inputRef.current?.focus();
                       setOpen(true);
                     }}
-                    className="px-4 py-1.5 rounded-full bg-white/5 border border-white/15 text-xs sm:text-sm text-white hover:bg-white/15 transition-colors"
+                    className="px-4 py-1.5 rounded-full bg-white/5 border border-white/15 text-xs sm:text-sm text:white text-white hover:bg-white/15 transition-colors"
                   >
                     {tag}
                   </button>

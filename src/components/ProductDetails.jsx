@@ -32,7 +32,10 @@ import { Canvas } from "@react-three/fiber";
 import { FaceMesh } from "@mediapipe/face_mesh";
 import { Camera as MP_Camera } from "@mediapipe/camera_utils";
 
-// Face tracking constants (لنظارة الصفرا)
+// Confirm dialog
+import ConfirmDialog from "../components/ConfirmDialog";
+
+// Face tracking constants (yellow placeholder glasses)
 const MIN_EYE_DIST = 0.06;
 const MAX_EYE_DIST = 0.25;
 const Y_OFFSET = 0.02;
@@ -44,6 +47,7 @@ export default function ProductDetails() {
 
   const { isLoggedIn, setIsLoggedIn } = useContext(AuthContext);
   const { refreshCounts } = useContext(CartContext);
+
   useEffect(() => {
     const handleStorage = () => {
       setIsLoggedIn(!!localStorage.getItem("token"));
@@ -68,8 +72,15 @@ export default function ProductDetails() {
     frame: false,
   });
 
-  // 🔹 AR Try-On modal
+  // AR Try-On modal
   const [showTryOn, setShowTryOn] = useState(false);
+
+  // Confirm dialog state
+  const [confirmConfig, setConfirmConfig] = useState({
+    open: false,
+    type: null,
+  });
+  const [isBusy, setIsBusy] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -331,19 +342,37 @@ export default function ProductDetails() {
     checkWishlist();
   }, [product]);
 
-  // 🔹 Open AR Try-On with confirm dialog
+  // Open AR Try-On with confirm dialog
   const handleOpenTryOn = () => {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       toast.error("Camera is not supported on this device.");
       return;
     }
 
-    const ok = window.confirm(
-      "To use AR Try-On, we need to access your camera. Do you want to continue?"
-    );
-    if (!ok) return;
+    setConfirmConfig({
+      open: true,
+      type: "arTryOn",
+    });
+  };
 
-    setShowTryOn(true);
+  const closeConfirm = () => {
+    setConfirmConfig((prev) => ({ ...prev, open: false, type: null }));
+  };
+
+  const handleConfirm = async () => {
+    if (confirmConfig.type !== "arTryOn") {
+      closeConfirm();
+      return;
+    }
+
+    try {
+      setIsBusy(true);
+      // Just open the modal; camera permission is handled by the browser
+      setShowTryOn(true);
+    } finally {
+      setIsBusy(false);
+      closeConfirm();
+    }
   };
 
   if (loading || !product) {
@@ -560,7 +589,7 @@ export default function ProductDetails() {
                   Try On AR
                 </button>
                 <div className="text-xs text-gray-500">
-                  Preview this frame using AR.
+                  Preview this frame live using your camera.
                 </div>
               </div>
 
@@ -616,8 +645,30 @@ export default function ProductDetails() {
         </div>
       </div>
 
-      {/* 🔹 AR Try-On Modal */}
+      {/* AR Try-On Modal */}
       {showTryOn && <TryOnModal onClose={() => setShowTryOn(false)} />}
+
+      {/* CONFIRM DIALOG */}
+      <ConfirmDialog
+        open={confirmConfig.open}
+        loading={isBusy}
+        title={
+          confirmConfig.type === "arTryOn"
+            ? "Use your camera for AR Try-On?"
+            : "Are you sure?"
+        }
+        message={
+          confirmConfig.type === "arTryOn"
+            ? "We’ll use your camera in a live preview to show how this frame looks on you. The video stays on your device and is not stored."
+            : "Do you want to continue?"
+        }
+        confirmLabel={
+          confirmConfig.type === "arTryOn" ? "Start AR" : "Confirm"
+        }
+        cancelLabel="Cancel"
+        onConfirm={handleConfirm}
+        onCancel={closeConfirm}
+      />
     </>
   );
 }
@@ -705,7 +756,7 @@ function TryOnModal({ onClose }) {
 
         const angle = Math.atan2(dy, dx);
 
-        // position mapping (زي القديمة تقريباً)
+        // position mapping (like the previous version)
         const x = (centerX - 0.5) * 1.4;
         const y = -(centerY - 0.5) * 1.4 + Y_OFFSET;
 
@@ -722,7 +773,7 @@ function TryOnModal({ onClose }) {
         let dynamicScale = baseScale * presetMul;
         dynamicScale = Math.min(2.5, Math.max(0.5, dynamicScale));
 
-        // smoothing خفيف عشان الحركة تبان طبيعية
+        // light smoothing for natural movement
         setGlassesTransform((prev) => ({
           position: [
             prev.position[0] * 0.4 + x * 0.6,
@@ -824,7 +875,7 @@ function TryOnModal({ onClose }) {
               <ambientLight intensity={1.1} />
               <directionalLight position={[2, 2, 3]} intensity={0.8} />
 
-              {/* النظارة الصفرا القديمة */}
+              {/* Yellow placeholder glasses */}
               <PlaceholderGlasses
                 position={glassesTransform.position}
                 scale={glassesTransform.scale}
@@ -869,7 +920,9 @@ function TryOnModal({ onClose }) {
 
         {/* Tip */}
         <div className="px-4 py-2 bg-white text-[11px] text-gray-500 flex justify-between items-center">
-          <span>Tip: Look straight at the camera and move your head slowly.</span>
+          <span>
+            Tip: Look straight at the camera and move your head slowly.
+          </span>
           <span className="hidden md:inline">
             Your camera runs locally in your browser.
           </span>
@@ -882,29 +935,31 @@ function TryOnModal({ onClose }) {
 /* ====== Yellow placeholder glasses (old style) ====== */
 function PlaceholderGlasses({ position, scale, rotationZ }) {
   const s = scale * 0.8;
-const frameColor = "#facc15";
+  const frameColor = "#facc15";
 
-return (
-  <group   position={[position[0], position[1] - 0.03, position[2]]}
- rotation={[0, 0, rotationZ]} scale={[1, 1, 1]}>
-    {/* left lens */}
-    <mesh position={[-0.15 * s, 0, 0]}>
-      <circleGeometry args={[0.10 * s, 32]} />
-      <meshBasicMaterial color={frameColor} wireframe />
-    </mesh>
+  return (
+    <group
+      position={[position[0], position[1] - 0.03, position[2]]}
+      rotation={[0, 0, rotationZ]}
+      scale={[1, 1, 1]}
+    >
+      {/* left lens */}
+      <mesh position={[-0.15 * s, 0, 0]}>
+        <circleGeometry args={[0.1 * s, 32]} />
+        <meshBasicMaterial color={frameColor} wireframe />
+      </mesh>
 
-    {/* right lens */}
-    <mesh position={[0.15 * s, 0, 0]}>
-      <circleGeometry args={[0.10 * s, 32]} />
-      <meshBasicMaterial color={frameColor} wireframe />
-    </mesh>
+      {/* right lens */}
+      <mesh position={[0.15 * s, 0, 0]}>
+        <circleGeometry args={[0.1 * s, 32]} />
+        <meshBasicMaterial color={frameColor} wireframe />
+      </mesh>
 
-    {/* bridge */}
-    <mesh position={[0, 0, 0]}>
-      <boxGeometry args={[0.1 * s, 0.01 * s, 0.01]} />
-      <meshBasicMaterial color={frameColor} />
-    </mesh>
-  </group>
-);
-
+      {/* bridge */}
+      <mesh position={[0, 0, 0]}>
+        <boxGeometry args={[0.1 * s, 0.01 * s, 0.01]} />
+        <meshBasicMaterial color={frameColor} />
+      </mesh>
+    </group>
+  );
 }

@@ -175,9 +175,10 @@ const colors = product.availableColors || [];
       </h3>
 
       {/* ✅ Description */}
-      <p className="text-gray-600 text-xs h-[36px] overflow-hidden">
-        {product.description || "High-quality eyeglasses for everyday use."}
-      </p>
+<p className="text-gray-600 text-xs line-clamp-2">
+  {product.description || "High-quality eyeglasses for everyday use."}
+</p>
+
 
       {/* ✅ Price */}
       <div className="flex items-center gap-2 mt-2">
@@ -203,7 +204,7 @@ const colors = product.availableColors || [];
         {colors.slice(0, 3).map((c, i) => (
           <span
             key={i}
-            className="w-3 h-3 rounded-full"
+            className="w-3 h-3 rounded-full  border border-gray-300 "
             style={{ backgroundColor: c }}
           ></span>
         ))}
@@ -226,20 +227,6 @@ const colors = product.availableColors || [];
         </button>
       )}
     </Link>
-
-      {/* ✅ Try-On Button */}
-      {onTryOn && (
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            onTryOn(product);
-          }}
-          className="mt-2 flex items-center justify-center text-sm border border-black text-black py-2 px-3 rounded-md hover:bg-black hover:text-white transition"
-        >
-          جرّبها افتراضياً
-        </button>
-      )}
-
             </>
   );
 }

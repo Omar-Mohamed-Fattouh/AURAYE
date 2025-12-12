@@ -1,3 +1,4 @@
+// src/components/Navbar.jsx
 import { useState, useRef, useEffect, useContext } from "react";
 import { Link, useLocation } from "react-router-dom";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
@@ -18,7 +19,7 @@ import ConfirmDialog from "../components/ConfirmDialog";
 
 export default function Navbar({ user, setUser }) {
   const { isLoggedIn, setIsLoggedIn } = useContext(AuthContext);
-  const { cartCount, wishlistCount } = useContext(CartContext);
+  const { cartCount, wishlistCount, refreshCounts } = useContext(CartContext);
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const mobileMenuRef = useRef(null);
@@ -30,24 +31,34 @@ export default function Navbar({ user, setUser }) {
   const isHome = location.pathname === "/";
 
   const [scrolled, setScrolled] = useState(false);
+  const [hideOnScroll, setHideOnScroll] = useState(false);
+  const lastScrollY = useRef(0);
 
-  /* ---------------------- Scroll behavior للـ Home فقط ---------------------- */
+  /* -------- Scroll behavior (background + hide/show) -------- */
   useEffect(() => {
-    if (!isHome) return;
-
     const handleScroll = () => {
-      setScrolled(window.scrollY > 40);
+      const current = window.scrollY;
+
+      // هل نعدّي مرحلة الـ hero في الـ Home
+      setScrolled(current > 40);
+
+      // hide on scroll down, show on scroll up
+      if (current > lastScrollY.current && current > 80) {
+        setHideOnScroll(true); // نازل لتحت → خبيه
+      } else {
+        setHideOnScroll(false); // طالع لفوق → رجّعه
+      }
+
+      lastScrollY.current = current;
     };
 
     window.addEventListener("scroll", handleScroll);
     handleScroll();
 
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, [isHome]);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
-  /* ---------------------- جلب بيانات المستخدم من الـ API ---------------------- */
+  /* -------- Fetch user profile -------- */
   useEffect(() => {
     async function fetchUserProfile() {
       try {
@@ -68,7 +79,14 @@ export default function Navbar({ user, setUser }) {
     fetchUserProfile();
   }, [isLoggedIn, setUser]);
 
-  /* ---------------------- Logout logic + Confirm dialog ---------------------- */
+  /* -------- Sync cart & wishlist counts on route change -------- */
+  useEffect(() => {
+    if (typeof refreshCounts === "function") {
+      refreshCounts();
+    }
+  }, [location.pathname, refreshCounts]);
+
+  /* -------- Logout logic + Confirm dialog -------- */
   const handleLogoutClick = () => {
     setConfirmOpen(true);
   };
@@ -91,7 +109,7 @@ export default function Navbar({ user, setUser }) {
     }
   };
 
-  /* ---------------------- إغلاق من برّه في الموبايل ---------------------- */
+  /* -------- Close mobile menu when clicking outside -------- */
   useEffect(() => {
     function handleClickOutside(event) {
       if (
@@ -114,20 +132,27 @@ export default function Navbar({ user, setUser }) {
   }, [mobileOpen]);
 
   const isUserLoggedIn = isLoggedIn;
+  /* -------- Navbar classes (fixed + bg variants) -------- */
+  const navBaseClasses =
+    (isHome ? "fixed top-0 left-0 right-0" : "sticky top-0") +
+    " w-full text-white font-semibold z-50 transition-transform duration-300";
 
-const navBaseClasses = "w-full text-white font-semibold z-50";
-
-
-  const homeClasses = isHome
+  const bgClasses = isHome
     ? scrolled
-      ? "fixed top-0 left-0 right-0 bg-black/95 shadow-xl backdrop-blur-md border-b border-white/10"
-      : "fixed top-0 left-0 right-0 bg-gradient-to-b from-black/60 via-black/30 to-transparent backdrop-blur-sm"
-    : "sticky top-0 bg-black shadow-xl backdrop-blur-md border-b border-white/10";
+      ? "bg-black/95 shadow-xl backdrop-blur-md border-b border-white/10"
+      : "bg-gradient-to-b from-black/60 via-black/30 to-transparent backdrop-blur-sm"
+    : "bg-black shadow-xl backdrop-blur-md border-b border-white/10";
+
+  const translateClass = hideOnScroll ? "-translate-y-full" : "translate-y-0";
 
   return (
     <>
-      <nav className={`${navBaseClasses} ${homeClasses}`}>
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+      <nav
+        className={`${navBaseClasses} ${translateClass} ${
+          mobileOpen ? "bg-black" : bgClasses
+        }`}
+      >
+        <div className="container mx-auto px-6 py-4 flex items-center justify-between relative">
           {/* LEFT SIDE: Logo + main links */}
           <div className="flex items-center gap-4 min-w-0">
             <Link
@@ -137,7 +162,7 @@ const navBaseClasses = "w-full text-white font-semibold z-50";
               <span className="text-white tracking-widest">AURAYE</span>
             </Link>
 
-            <div className="w-px h-7 bg-neutral-600"></div>
+            <div className="w-px h-7 bg-neutral-600" />
 
             <div className="hidden lg:flex items-center gap-6 truncate">
               <NavItem to="/">Home</NavItem>
@@ -281,11 +306,21 @@ const navBaseClasses = "w-full text-white font-semibold z-50";
           </div>
         </div>
 
-        {/* MOBILE MENU */}
+        {/* MOBILE MENU (overlay) */}
         {mobileOpen && (
           <div
             ref={mobileMenuRef}
-            className="lg:hidden bg-black text-white w-full px-4 pb-4 space-y-2"
+            className="
+              lg:hidden
+              absolute top-full left-0 right-0
+              bg-black text-white
+              px-4 pb-4 pt-2
+              space-y-2
+              border-t border-white/10
+              z-40
+              max-h-[80vh]
+              overflow-y-auto
+            "
           >
             <NavItemMobile to="/" onClick={() => setMobileOpen(false)}>
               Home
@@ -313,10 +348,7 @@ const navBaseClasses = "w-full text-white font-semibold z-50";
               >
                 Why Choose Us
               </DropItemMobile>
-              <DropItemMobile
-                to="/team"
-                closeMenu={() => setMobileOpen(false)}
-              >
+              <DropItemMobile to="/team" closeMenu={() => setMobileOpen(false)}>
                 Team
               </DropItemMobile>
             </DropdownMobile>
@@ -344,7 +376,7 @@ const navBaseClasses = "w-full text-white font-semibold z-50";
               >
                 Eyeglasses
               </DropItemMobile>
-                            <DropItemMobile
+              <DropItemMobile
                 to="/products/men"
                 closeMenu={() => setMobileOpen(false)}
               >
@@ -380,10 +412,7 @@ const navBaseClasses = "w-full text-white font-semibold z-50";
               label="AR Try-On"
               closeMenu={() => setMobileOpen(false)}
             >
-              <DropItemMobile
-                to="/try"
-                closeMenu={() => setMobileOpen(false)}
-              >
+              <DropItemMobile to="/try" closeMenu={() => setMobileOpen(false)}>
                 Try Now
               </DropItemMobile>
               <DropItemMobile
@@ -406,20 +435,14 @@ const navBaseClasses = "w-full text-white font-semibold z-50";
               </DropItemMobile>
             </DropdownMobile>
 
-            <DropdownMobile
-              label="Help"
-              closeMenu={() => setMobileOpen(false)}
-            >
+            <DropdownMobile label="Help" closeMenu={() => setMobileOpen(false)}>
               <DropItemMobile
                 to="/contact"
                 closeMenu={() => setMobileOpen(false)}
               >
                 Contact Us
               </DropItemMobile>
-              <DropItemMobile
-                to="/faq"
-                closeMenu={() => setMobileOpen(false)}
-              >
+              <DropItemMobile to="/faq" closeMenu={() => setMobileOpen(false)}>
                 FAQs
               </DropItemMobile>
               <DropItemMobile
@@ -441,7 +464,7 @@ const navBaseClasses = "w-full text-white font-semibold z-50";
                 <DropdownMobile
                   label={
                     <>
-                      {(user?.fullName || "My Account")}'s Profile
+                      {user?.fullName || "My Account"}'s Profile
                       <UserIcon />
                     </>
                   }
@@ -472,7 +495,7 @@ const navBaseClasses = "w-full text-white font-semibold z-50";
 
             {!isUserLoggedIn && (
               <div className="md:hidden">
-                <div className="border-t border-white/50"></div>
+                <div className="border-t border-white/50" />
                 <Link
                   to="/login"
                   onClick={() => setMobileOpen(false)}
@@ -534,7 +557,8 @@ function ProfileMenu({ user, onLogoutClick, logoutLoading }) {
         className="flex items-center gap-2 hover:text-gray-300 truncate max-w-[180px] text-lg"
         aria-label="Open profile menu"
       >
-        <User size={22} /> <span className="truncate">{name}&apos;s Profile</span>
+        <User size={22} />{" "}
+        <span className="truncate">{name}&apos;s Profile</span>
       </DropdownMenu.Trigger>
 
       <DropdownMenu.Content
@@ -678,7 +702,7 @@ function DropdownMobile({ label, children, icon: Icon, closeMenu }) {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [dropdownRef]);
+  }, []);
 
   return (
     <div ref={dropdownRef} className="flex flex-col">
