@@ -9,7 +9,7 @@ import CategoriesSection from "../components/CategoriesSection";
 import BestSellerSection from "../components/BestSellerSection";
 import SubscribeSection from "../components/SubscribeSection";
 import AurayeLoader from "../components/AurayeLoader";
-
+// import Brand from "../components/Brand"
 import { getProducts, getBestSellerProducts } from "../api/productsApi";
 
 const Home = () => {
@@ -77,6 +77,7 @@ const Home = () => {
     <div>
       <HeroSection products={products} />
       <CategoriesSection />
+      {/* <Brand/> */}
       <DealsSection products={products} />
       <BestSellerSection products={bestSellers} />
       <AchievementsSection />

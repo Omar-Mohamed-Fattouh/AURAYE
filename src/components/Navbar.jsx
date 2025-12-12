@@ -188,16 +188,15 @@ export default function Navbar({ user, setUser }) {
               </Dropdown>
 
               <Dropdown label="AR Try-On">
-                <DropItem to="/try">Try Now</DropItem>
+                <DropItem to="/try">Product AR</DropItem>
+                <DropItem to="/devices">Try Now</DropItem>
                 <DropItem to="/how-it-works">How It Works</DropItem>
-                <DropItem to="/devices">Supported Devices</DropItem>
-                <DropItem to="/saved">My Saved Try-ons</DropItem>
               </Dropdown>
 
               <Dropdown label="Help">
                 <DropItem to="/contact">Contact Us</DropItem>
                 <DropItem to="/faq">FAQs</DropItem>
-                {isUserLoggedIn && (
+                {isLoggedIn && (
                   <>
                     <DropItem to="/shipping">Shipping Info</DropItem>
                     <DropItem to="/track">Track Order</DropItem>
@@ -417,7 +416,7 @@ export default function Navbar({ user, setUser }) {
               closeMenu={() => setMobileOpen(false)}
             >
               <DropItemMobile to="/try" closeMenu={() => setMobileOpen(false)}>
-                Try Now
+                Product AR
               </DropItemMobile>
               <DropItemMobile
                 to="/how-it-works"
@@ -428,14 +427,8 @@ export default function Navbar({ user, setUser }) {
               <DropItemMobile
                 to="/devices"
                 closeMenu={() => setMobileOpen(false)}
+                Try Now
               >
-                Supported Devices
-              </DropItemMobile>
-              <DropItemMobile
-                to="/saved"
-                closeMenu={() => setMobileOpen(false)}
-              >
-                My Saved Try-ons
               </DropItemMobile>
             </DropdownMobile>
 
@@ -449,22 +442,21 @@ export default function Navbar({ user, setUser }) {
               <DropItemMobile to="/faq" closeMenu={() => setMobileOpen(false)}>
                 FAQs
               </DropItemMobile>
-              {isUserLoggedIn && (
-                <Dropdown label="Account">
-                  <DropItem to="/shipping">Shipping Info</DropItem>
-                  <DropItem to="/track">Track Order</DropItem>
-                </Dropdown>
-              )}
-
-              {isLoggedIn ? (
-                <DropItemMobile
-                  to="/track"
-                  closeMenu={() => setMobileOpen(false)}
-                >
-                  Track Order
-                </DropItemMobile>
-              ) : (
-                ""
+              {isLoggedIn && (
+                <>
+                  <DropItemMobile
+                    to="/shipping"
+                    closeMenu={() => setMobileOpen(false)}
+                  >
+                    Shipping Info
+                  </DropItemMobile>
+                  <DropItemMobile
+                    to="/track"
+                    closeMenu={() => setMobileOpen(false)}
+                  >
+                    Track Order
+                  </DropItemMobile>
+                </>
               )}
             </DropdownMobile>
 
@@ -651,25 +643,13 @@ function WishlistMenu({ count }) {
 
 /* DROPDOWN DESKTOP (generic) */
 function Dropdown({ label, children }) {
-  const itemCount = React.Children.count(children);
-
-  // حدد عدد الأعمدة تلقائيًا
-  const colsClass =
-    itemCount > 3
-        ? "grid-cols-3"
-        : "grid-cols-2";
-
   return (
     <DropdownMenu.Root modal={false}>
       <DropdownMenu.Trigger className="flex items-center px-4 py-2 gap-1 rounded-md hover:bg-white/10 transition text-sm">
         {label} <ChevronDown size={16} />
       </DropdownMenu.Trigger>
-
       <DropdownMenu.Content
-        className={`
-          bg-[#111] text-white rounded-md p-4 shadow-xl min-w-[220px]
-          border border-white/10 grid gap-2 ${colsClass}
-        `}
+        className="bg-[#111] text-white rounded-md p-4 shadow-xl min-w-[220px] border border-white/10 grid grid-cols-3 gap-2"
         sideOffset={8}
       >
         {children}

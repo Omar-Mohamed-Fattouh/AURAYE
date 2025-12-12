@@ -50,6 +50,7 @@ import ArTry from "../pages/Ar-try.jsx";
 import TryAr from "../pages/TryAr.jsx";
 import Track from "../components/Track.jsx";
 import TrackHome from "../pages/TrackHome.jsx";
+import HowToWork from "../pages/HowToWork.jsx";
 
 const queryClient = new QueryClient();
 const stripePromise = loadStripe(
@@ -210,7 +211,14 @@ export default function AppRouter() {
                   </RouteWithTitle>
                 }
               />
-
+              <Route
+                path="/how-it-works"
+                element={
+                  <RouteWithTitle title="How It Work">
+                    <HowToWork />
+                  </RouteWithTitle>
+                }
+              />
               <Route
                 path="/products/:id"
                 element={
@@ -225,15 +233,6 @@ export default function AppRouter() {
                 element={
                   <RouteWithTitle title="Contact">
                     <Contact />
-                  </RouteWithTitle>
-                }
-              />
-
-              <Route
-                path="/shipping"
-                element={
-                  <RouteWithTitle title="Shipping Info">
-                    <ShippingInfo />
                   </RouteWithTitle>
                 }
               />
@@ -328,7 +327,16 @@ export default function AppRouter() {
                   </RouteWithTitle>
                 }
               />
-
+              <Route
+                path="/shipping"
+                element={
+                  <RouteWithTitle title="Shipping Info">
+                    <ProtectedRoute>
+                      <ShippingInfo />
+                    </ProtectedRoute>
+                  </RouteWithTitle>
+                }
+              />
               {/* Protected Routes */}
               <Route
                 path="/profile"
