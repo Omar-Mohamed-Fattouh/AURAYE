@@ -1,14 +1,17 @@
-// src/pages/WishlistPage.jsx
+// src/components/Wishlist.jsx
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { getWishlist, removeFromWishlist } from "../api/productsApi";
 import ProductCard from "./ProductCard";
 
+// ✅ AURAYE loader
+import AurayeLoader from "./AurayeLoader";
+
 export default function Wishlist() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [confirmId, setConfirmId] = useState(null); // للـ popup
+  const [confirmId, setConfirmId] = useState(null);
 
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
@@ -24,18 +27,11 @@ export default function Wishlist() {
         setLoading(true);
         const res = await getWishlist();
 
-        let data = res.data;
+        let data = res?.data;
 
-        // لو backend بيرجع { data: [...] }
-        if (data && Array.isArray(data.data)) {
-          data = data.data;
-        }
+        if (data && Array.isArray(data.data)) data = data.data;
+        if (!Array.isArray(data)) data = [];
 
-        if (!Array.isArray(data)) {
-          data = [];
-        }
-
-        // نعمل mapping لنفس فورمات getProducts
         const BASE_URL = "http://graduationproject11.runasp.net";
 
         const mappedProducts = data.map((p) => {
@@ -75,20 +71,16 @@ export default function Wishlist() {
     fetchWishlist();
   }, [token]);
 
-  // لما يضغط على "Remove from wishlist" نفتح popup
   function askRemove(productId) {
     setConfirmId(productId);
   }
 
-  // تأكيد الحذف
   async function handleConfirmRemove() {
     if (!confirmId) return;
 
     try {
       await removeFromWishlist(confirmId);
-      setProducts((prev) =>
-        prev.filter((p) => Number(p.id) !== Number(confirmId))
-      );
+      setProducts((prev) => prev.filter((p) => Number(p.id) !== Number(confirmId)));
       toast.success("Product removed from wishlist.");
     } catch (err) {
       console.error("Failed to remove from wishlist:", err);
@@ -98,12 +90,9 @@ export default function Wishlist() {
     }
   }
 
-  // إلغاء الـ popup
   function handleCancelRemove() {
     setConfirmId(null);
   }
-
-  // --------------------------- RENDER STATES ---------------------------
 
   if (!token) {
     return (
@@ -124,15 +113,9 @@ export default function Wishlist() {
     );
   }
 
+  // ✅ LOADER ONLY
   if (loading) {
-    return (
-      <section className="min-h-[60vh] flex items-center">
-        <div className="max-w-4xl mx-auto px-4 py-10 text-center">
-          <h1 className="text-3xl font-bold mb-3">My Wishlist</h1>
-          <p className="text-gray-600">Loading your wishlist...</p>
-        </div>
-      </section>
-    );
+    return <AurayeLoader label="Loading your wishlist" subtitle="AURAYE" />;
   }
 
   if (!products.length) {
@@ -154,12 +137,9 @@ export default function Wishlist() {
     );
   }
 
-  // --------------------------- MAIN VIEW ---------------------------
-
   return (
     <section className="py-12 bg-white">
       <div className="max-w-6xl mx-auto px-4">
-        {/* Header */}
         <div className="mb-6 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
@@ -177,21 +157,19 @@ export default function Wishlist() {
           </div>
         </div>
 
-        {/* Grid */}
         <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {products.map((product) => (
             <div key={product.id} className="flex flex-col">
               <ProductCard
                 product={product}
                 linkTo={`/products/${product.id}`}
-                showAddToCart={false} // مفيش Add to Cart في الصفحة دي
+                showAddToCart={false}
               />
 
-              {/* زرار الحذف تحت الكارت (يفتح popup) */}
               <button
                 onClick={() => askRemove(product.id)}
                 className="
-                  -mt-4 inline-flex items-center justify-center 
+                  -mt-4 inline-flex items-center justify-center
                   text-xs font-medium
                   px-3 py-1.5 rounded-full
                   border border-gray-300 text-gray-700
@@ -206,7 +184,6 @@ export default function Wishlist() {
         </div>
       </div>
 
-      {/* Popup تأكيد الحذف */}
       {confirmId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6">

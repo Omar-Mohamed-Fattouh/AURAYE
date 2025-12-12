@@ -1,5 +1,5 @@
 // src/components/Navbar.jsx
-import { useState, useRef, useEffect, useContext } from "react";
+import React, { useState, useRef, useEffect, useContext } from "react";
 import { Link, useLocation } from "react-router-dom";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import {
@@ -197,8 +197,12 @@ export default function Navbar({ user, setUser }) {
               <Dropdown label="Help">
                 <DropItem to="/contact">Contact Us</DropItem>
                 <DropItem to="/faq">FAQs</DropItem>
-                <DropItem to="/shipping">Shipping Info</DropItem>
-                <DropItem to="/track">Track Order</DropItem>
+                {isUserLoggedIn && (
+                  <>
+                    <DropItem to="/shipping">Shipping Info</DropItem>
+                    <DropItem to="/track">Track Order</DropItem>
+                  </>
+                )}
               </Dropdown>
             </div>
           </div>
@@ -445,18 +449,23 @@ export default function Navbar({ user, setUser }) {
               <DropItemMobile to="/faq" closeMenu={() => setMobileOpen(false)}>
                 FAQs
               </DropItemMobile>
-              <DropItemMobile
-                to="/shipping"
-                closeMenu={() => setMobileOpen(false)}
-              >
-                Shipping Info
-              </DropItemMobile>
-              <DropItemMobile
-                to="/track"
-                closeMenu={() => setMobileOpen(false)}
-              >
-                Track Order
-              </DropItemMobile>
+              {isUserLoggedIn && (
+                <Dropdown label="Account">
+                  <DropItem to="/shipping">Shipping Info</DropItem>
+                  <DropItem to="/track">Track Order</DropItem>
+                </Dropdown>
+              )}
+
+              {isLoggedIn ? (
+                <DropItemMobile
+                  to="/track"
+                  closeMenu={() => setMobileOpen(false)}
+                >
+                  Track Order
+                </DropItemMobile>
+              ) : (
+                ""
+              )}
             </DropdownMobile>
 
             {isUserLoggedIn && (
@@ -642,13 +651,25 @@ function WishlistMenu({ count }) {
 
 /* DROPDOWN DESKTOP (generic) */
 function Dropdown({ label, children }) {
+  const itemCount = React.Children.count(children);
+
+  // حدد عدد الأعمدة تلقائيًا
+  const colsClass =
+    itemCount > 3
+        ? "grid-cols-3"
+        : "grid-cols-2";
+
   return (
     <DropdownMenu.Root modal={false}>
       <DropdownMenu.Trigger className="flex items-center px-4 py-2 gap-1 rounded-md hover:bg-white/10 transition text-sm">
         {label} <ChevronDown size={16} />
       </DropdownMenu.Trigger>
+
       <DropdownMenu.Content
-        className="bg-[#111] text-white rounded-md p-4 shadow-xl min-w-[220px] border border-white/10 grid grid-cols-3 gap-2"
+        className={`
+          bg-[#111] text-white rounded-md p-4 shadow-xl min-w-[220px]
+          border border-white/10 grid gap-2 ${colsClass}
+        `}
         sideOffset={8}
       >
         {children}

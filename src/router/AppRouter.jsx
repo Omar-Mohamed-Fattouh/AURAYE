@@ -48,6 +48,8 @@ import WhyUS from "../pages/WhyUS.jsx";
 import TeamPgae from "../pages/TeamPgae.jsx";
 import ArTry from "../pages/Ar-try.jsx";
 import TryAr from "../pages/TryAr.jsx";
+import Track from "../components/Track.jsx";
+import TrackHome from "../pages/TrackHome.jsx";
 
 const queryClient = new QueryClient();
 const stripePromise = loadStripe(
@@ -81,7 +83,6 @@ export default function AppRouter() {
 
           <Routes>
             <Route element={<Layout user={user} setUser={setUser} />}>
-
               {/* Auth */}
               <Route
                 path="/login"
@@ -290,21 +291,43 @@ export default function AppRouter() {
                   </RouteWithTitle>
                 }
               />
-              <Route 
-              path="try"
-              element={
-                <RouteWithTitle title="AR-TryOn">
-                  <ArTry/>
-                </RouteWithTitle>
-              }
+              <Route
+                path="try"
+                element={
+                  <RouteWithTitle title="AR-TryOn">
+                    <ArTry />
+                  </RouteWithTitle>
+                }
               />
-              <Route 
-              path="devices"
-              element={
-                <RouteWithTitle title="devices">
-                  <TryAr/>
-                </RouteWithTitle>
-              }></Route>
+              <Route
+                path="devices"
+                element={
+                  <RouteWithTitle title="Devices">
+                    <TryAr />
+                  </RouteWithTitle>
+                }
+              />
+              <Route
+                path="track"
+                element={
+                  <RouteWithTitle title="Track Order">
+                    <ProtectedRoute>
+                      <TrackHome />
+                    </ProtectedRoute>
+                  </RouteWithTitle>
+                }
+              />
+
+              <Route
+                path="track/:id"
+                element={
+                  <RouteWithTitle title="Track Order">
+                    <ProtectedRoute>
+                      <Track />
+                    </ProtectedRoute>
+                  </RouteWithTitle>
+                }
+              />
 
               {/* Protected Routes */}
               <Route
@@ -371,7 +394,6 @@ export default function AppRouter() {
                   </RouteWithTitle>
                 }
               />
-
             </Route>
           </Routes>
         </BrowserRouter>
