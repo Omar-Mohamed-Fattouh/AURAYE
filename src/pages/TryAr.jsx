@@ -195,7 +195,7 @@ export default function TryAr() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-black/95 to-black text-white px-4 sm:px-6 lg:px-12 py-8 sm:py-10">
+    <div className="min-h-screen bg-gradient-to-br from-black via-black/95 to-black text-white px-4 sm:px-6 lg:px-50 py-8 sm:py-10">
       {/* Header */}
       <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8 sm:mb-10">
         <div className="space-y-3 max-w-2xl">
