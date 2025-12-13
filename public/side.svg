@@ -1,0 +1,28 @@
+<svg viewBox="0 0 74 33" height="33" width="74" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern viewBox="0 0 73.165 18.881" patternTransform="matrix(-1, 0, 0, 1, 146.329, 0)" height="1" width="1" id="pattern">
+      <image xlink:href="data:image/png;base64,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" height="18.881" width="73.165" preserveAspectRatio="none"></image>
+    </pattern>
+    <clipPath id="clip-measure-2">
+      <rect height="33" width="74"></rect>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#clip-measure-2)" id="measure-2">
+    <rect fill="url(#pattern)" transform="translate(0 1)" height="18.881" width="73.165" id="image_17"></rect>
+    <g transform="translate(-0.495 25.438)" id="Vector">
+      <path fill="#c4c4c4" d="M13.716,3.091h3.658v.843H13.716Z" id="Path_44"></path>
+      <path fill="#c4c4c4" d="M1.827,3.091h9.146v.843H1.827Z" id="Path_45"></path>
+      <path fill="#c4c4c4" d="M.912.563h.915v5.9H.912Z" id="Path_46"></path>
+      <path fill="#c4c4c4" d="M73.162.563h.915v5.9h-.915Z" id="Path_47"></path>
+      <path fill="#c4c4c4" d="M64.017,3.091h9.146v.843H64.017Z" id="Path_48"></path>
+      <path fill="#c4c4c4" d="M19.2,3.091h3.658v.843H19.2Z" id="Path_49"></path>
+      <path fill="#c4c4c4" d="M24.691,3.091h3.658v.843H24.691Z" id="Path_50"></path>
+      <path fill="#c4c4c4" d="M30.178,3.091h3.658v.843H30.178Z" id="Path_51"></path>
+      <path fill="#c4c4c4" d="M35.665,3.091h3.658v.843H35.665Z" id="Path_52"></path>
+      <path fill="#c4c4c4" d="M41.153,3.091h3.658v.843H41.153Z" id="Path_53"></path>
+      <path fill="#c4c4c4" d="M46.64,3.091H50.3v.843H46.64Z" id="Path_54"></path>
+      <path fill="#c4c4c4" d="M52.127,3.091h3.658v.843H52.127Z" id="Path_55"></path>
+      <path fill="#c4c4c4" d="M57.615,3.091h3.658v.843H57.615Z" id="Path_56"></path>
+    </g>
+  </g>
+</svg>
