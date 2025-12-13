@@ -1,3 +1,4 @@
+// src/routes/AppRouter.jsx
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect, useContext } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -11,7 +12,6 @@ import RouteWithTitle from "./RouteWithTitle.jsx";
 // Auth Pages
 import Register from "../pages/Register";
 import Login from "../pages/Login";
-import Dashboard from "../pages/Dashboard";
 import ForgetPassword from "../pages/ForgetPassword";
 import ResetPassword from "../pages/ResetPassword";
 import ProtectedRoute from "../features/auth/ProtectedRoute";
@@ -52,6 +52,9 @@ import Track from "../components/Track.jsx";
 import TrackHome from "../pages/TrackHome.jsx";
 import HowToWork from "../pages/HowToWork.jsx";
 
+// ✅ Admin Routes (NEW)
+import AppAdmin from "../../admin/AppAdmin.jsx";
+
 const queryClient = new QueryClient();
 const stripePromise = loadStripe(
   import.meta.env.VITE_STRIPE_KEY ||
@@ -78,11 +81,15 @@ export default function AppRouter() {
   return (
     <QueryClientProvider client={queryClient}>
       <CartProvider>
-        <Toaster />
+        <Toaster position="top-right" richColors />
         <BrowserRouter>
           <ScrollToTop />
 
           <Routes>
+            {/* ========== ADMIN ROUTES ========== */}
+            <Route path="/admin/*" element={<AppAdmin />} />
+
+            {/* ========== USER ROUTES ========== */}
             <Route element={<Layout user={user} setUser={setUser} />}>
               {/* Auth */}
               <Route
@@ -127,15 +134,6 @@ export default function AppRouter() {
                 element={
                   <RouteWithTitle title="Home">
                     <Home />
-                  </RouteWithTitle>
-                }
-              />
-
-              <Route
-                path="/dashboard"
-                element={
-                  <RouteWithTitle title="Dashboard">
-                    <Dashboard />
                   </RouteWithTitle>
                 }
               />

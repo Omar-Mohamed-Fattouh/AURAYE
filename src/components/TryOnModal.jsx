@@ -8,12 +8,33 @@ import { Camera as MP_Camera } from "@mediapipe/camera_utils";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
 import { Box3, Vector3 } from "three";
 
-// Face tracking constants
-const MIN_EYE_DIST = 0.06;
-const MAX_EYE_DIST = 0.25;
-const REF_EYE_DIST = 0.12;
+/**
+ * ✅ Improvements added:
+ * 1) Stronger tracking settings (higher confidences)
+ * 2) Better anchors: nose bridge (168) for Y + eye center for X
+ * 3) Scale based on face width (cheeks 234/454) + clamp
+ * 4) Smoothing (low-pass filter) for position/scale/rotation
+ * 5) Extra pose feel: slight Yaw/Pitch from landmark Z/Y relations (optional but helps)
+ */
+
+// Tracking constants
+const MIN_FACE_W = 0.16;
+const MAX_FACE_W = 0.42;
+const REF_FACE_W = 0.28;
+
 const Y_OFFSET = 0.02;
 const Z_POSITION = 0;
+
+// Smoothing
+const SMOOTH = 0.18; // 0.12 ~ 0.25 (higher = more responsive, lower = more stable)
+
+// Helpers
+const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const lerpAngle = (a, b, t) => {
+  const d = Math.atan2(Math.sin(b - a), Math.cos(b - a));
+  return a + d * t;
+};
 
 export default function TryOnModal({
   modelUrl,
@@ -31,6 +52,8 @@ export default function TryOnModal({
     position: [0, 0, Z_POSITION],
     scale: 1,
     rotationZ: 0,
+    rotationY: 0,
+    rotationX: 0,
   });
 
   // Small / Medium / Large
@@ -42,6 +65,17 @@ export default function TryOnModal({
 
   const [modelReady, setModelReady] = useState(false);
   const [modelError, setModelError] = useState(null);
+
+  // smoothing memory
+  const prevRef = useRef({
+    x: 0,
+    y: 0,
+    z: Z_POSITION,
+    s: 1,
+    rz: 0,
+    ry: 0,
+    rx: 0,
+  });
 
   useEffect(() => {
     dimensionsRef.current = dimensions;
@@ -62,10 +96,9 @@ export default function TryOnModal({
     const updateSize = () => {
       if (!containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
-      setDimensions({
-        width: rect.width,
-        height: rect.width * 0.75,
-      });
+      const w = rect.width;
+      const h = w * 0.75;
+      setDimensions({ width: w, height: h });
     };
 
     updateSize();
@@ -87,43 +120,59 @@ export default function TryOnModal({
           `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`,
       });
 
+      // ✅ Stronger, more stable
       faceMesh.setOptions({
         maxNumFaces: 1,
         refineLandmarks: true,
-        minDetectionConfidence: 0.5,
-        minTrackingConfidence: 0.5,
+        minDetectionConfidence: 0.7,
+        minTrackingConfidence: 0.7,
       });
 
       const onResults = (results) => {
         if (!running) return;
-        if (!results.multiFaceLandmarks || !results.multiFaceLandmarks[0]) {
-          return;
-        }
+        const lm = results.multiFaceLandmarks?.[0];
+        if (!lm) return;
 
-        const landmarks = results.multiFaceLandmarks[0];
+        /**
+         * Landmarks used:
+         * - Eyes outer corners: 33 (L), 263 (R)
+         * - Nose bridge / between eyes: 168
+         * - Nose tip: 1
+         * - Cheeks: 234 (L), 454 (R) => better face width scaling
+         */
+        const leftEye = lm[33];
+        const rightEye = lm[263];
+        const bridge = lm[168];
+        const noseTip = lm[1];
+        const lCheek = lm[234];
+        const rCheek = lm[454];
 
-        const leftEye = landmarks[33];
-        const rightEye = landmarks[263];
-
+        // Center X from eyes
         const centerX = (leftEye.x + rightEye.x) / 2;
-        const centerY = (leftEye.y + rightEye.y) / 2;
 
+        // Center Y from bridge (more stable than eyes)
+        const centerY = bridge?.y ?? (leftEye.y + rightEye.y) / 2;
+
+        // Roll from eye line
         const dx = rightEye.x - leftEye.x;
         const dy = rightEye.y - leftEye.y;
+        const roll = Math.atan2(dy, dx);
 
-        const eyeDistRaw = Math.sqrt(dx * dx + dy * dy);
-        const eyeDist = Math.min(
-          MAX_EYE_DIST,
-          Math.max(MIN_EYE_DIST, eyeDistRaw)
-        );
+        // Face width from cheeks (more accurate scale)
+        const fdx = rCheek.x - lCheek.x;
+        const fdy = rCheek.y - lCheek.y;
+        const faceWRaw = Math.sqrt(fdx * fdx + fdy * fdy);
+        const faceW = clamp(faceWRaw, MIN_FACE_W, MAX_FACE_W);
 
-        const angle = Math.atan2(dy, dx);
-
+        // Map screen coords into your R3F plane coords
         const x = (centerX - 0.5) * 1.5;
         const y = -(centerY - 0.5) * 1.5 + Y_OFFSET;
 
-        let baseScale = (eyeDist / REF_EYE_DIST) * 0.6 * (defaultScale || 1);
+        // ✅ Scale based on face width
+        // (tweak 0.6 and REF_FACE_W if you want tighter/looser)
+        let baseScale = (faceW / REF_FACE_W) * 0.6 * (defaultScale || 1);
 
+        // Presets
         const preset = sizePresetRef.current;
         let presetMul = 1;
         if (preset === 0) presetMul = 0.9; // Small
@@ -131,12 +180,42 @@ export default function TryOnModal({
         else presetMul = 1.02; // Medium
 
         let dynamicScale = baseScale * presetMul;
-        dynamicScale = Math.min(1.8, Math.max(0.4, dynamicScale));
+        dynamicScale = clamp(dynamicScale, 0.45, 1.85);
+
+        // ✅ Optional: give a bit of yaw/pitch based on Z/Y relations
+        // Yaw: difference in z between eyes (when head turns, one eye appears closer)
+        const yaw = clamp((rightEye.z - leftEye.z) * 2.2, -0.45, 0.45);
+
+        // Pitch: nose tip relation to bridge (when head up/down changes)
+        const pitch = clamp(((noseTip?.y ?? 0) - (bridge?.y ?? 0)) * 2.0, -0.35, 0.35);
+
+        // ✅ Smoothing
+        const p = prevRef.current;
+
+        const nx = lerp(p.x, x, SMOOTH);
+        const ny = lerp(p.y, y, SMOOTH);
+        const ns = lerp(p.s, dynamicScale, SMOOTH);
+
+        const nrz = lerpAngle(p.rz, -roll, SMOOTH);
+        const nry = lerpAngle(p.ry, yaw, SMOOTH);
+        const nrx = lerpAngle(p.rx, -pitch, SMOOTH);
+
+        prevRef.current = {
+          x: nx,
+          y: ny,
+          z: Z_POSITION,
+          s: ns,
+          rz: nrz,
+          ry: nry,
+          rx: nrx,
+        };
 
         setGlassesTransform({
-          position: [x, y, Z_POSITION],
-          scale: dynamicScale,
-          rotationZ: -angle,
+          position: [nx, ny, Z_POSITION],
+          scale: ns,
+          rotationZ: nrz,
+          rotationY: nry,
+          rotationX: nrx,
         });
       };
 
@@ -240,6 +319,8 @@ export default function TryOnModal({
                   position={glassesTransform.position}
                   scale={glassesTransform.scale}
                   rotationZ={glassesTransform.rotationZ}
+                  rotationY={glassesTransform.rotationY}
+                  rotationX={glassesTransform.rotationX}
                 />
               </Canvas>
             </div>
@@ -255,7 +336,7 @@ export default function TryOnModal({
         {/* Small / Medium / Large */}
         <div className="px-4 pt-2 pb-1 bg-black border-t border-white/20 text-[11px] text-white/80">
           <div className="flex items-center justify-between gap-4">
-            <span className="whitespace-nowrap">Frame size</span>
+            <span className="whitespace-nowrap">Frame sizeثث</span>
 
             <div className="flex-1 flex flex-col gap-1">
               <input
@@ -272,7 +353,9 @@ export default function TryOnModal({
                   <span
                     key={label}
                     className={
-                      idx === sizePreset ? "text-white font-semibold" : "text-white/50"
+                      idx === sizePreset
+                        ? "text-white font-semibold"
+                        : "text-white/50"
                     }
                   >
                     {label}
@@ -296,7 +379,7 @@ export default function TryOnModal({
 
 // ---------- 3D models (GLB / OBJ) ----------
 
-function GlassesModel({ url, position, scale, rotationZ }) {
+function GlassesModel({ url, position, scale, rotationZ, rotationY, rotationX }) {
   const ext = (url || "").split(".").pop().toLowerCase();
 
   if (ext === "obj") {
@@ -306,6 +389,8 @@ function GlassesModel({ url, position, scale, rotationZ }) {
         position={position}
         scale={scale}
         rotationZ={rotationZ}
+        rotationY={rotationY}
+        rotationX={rotationX}
       />
     );
   }
@@ -317,11 +402,13 @@ function GlassesModel({ url, position, scale, rotationZ }) {
       position={position}
       scale={scale}
       rotationZ={rotationZ}
+      rotationY={rotationY}
+      rotationX={rotationX}
     />
   );
 }
 
-function GLBGlasses({ url, position, scale, rotationZ }) {
+function GLBGlasses({ url, position, scale, rotationZ, rotationY, rotationX }) {
   const gltf = useGLTF(url);
   const { scene } = gltf;
 
@@ -334,11 +421,15 @@ function GLBGlasses({ url, position, scale, rotationZ }) {
     box.getSize(size);
     box.getCenter(center);
 
+    // center object
     cloned.position.sub(center);
+
+    // lift a bit (helps sit on nose)
     cloned.position.y += size.y * 0.38;
 
+    // normalize model width
     const width = size.x || 1;
-    const targetWidth = 0.8;
+    const targetWidth = 0.8; // tweak if needed
     const normScale = targetWidth / width;
     cloned.scale.setScalar(normScale);
 
@@ -349,13 +440,17 @@ function GLBGlasses({ url, position, scale, rotationZ }) {
   const finalScale = [s, s, s];
 
   return (
-    <group position={position} rotation={[0, 0, rotationZ]} scale={finalScale}>
+    <group
+      position={position}
+      rotation={[rotationX || 0, rotationY || 0, rotationZ || 0]}
+      scale={finalScale}
+    >
       <primitive object={calibratedScene} />
     </group>
   );
 }
 
-function OBJGlasses({ url, position, scale, rotationZ }) {
+function OBJGlasses({ url, position, scale, rotationZ, rotationY, rotationX }) {
   const obj = useLoader(OBJLoader, url);
 
   const calibratedScene = useMemo(() => {
@@ -382,7 +477,11 @@ function OBJGlasses({ url, position, scale, rotationZ }) {
   const finalScale = [s, s, s];
 
   return (
-    <group position={position} rotation={[0, 0, rotationZ]} scale={finalScale}>
+    <group
+      position={position}
+      rotation={[rotationX || 0, rotationY || 0, rotationZ || 0]}
+      scale={finalScale}
+    >
       <primitive object={calibratedScene} />
     </group>
   );

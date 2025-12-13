@@ -199,34 +199,47 @@ export default function Ar() {
   );
 }
 
-/* ===================== MODAL + AR TRY-ON ===================== */
-
+/* ===================== MODAL + AR TRY-ON (FIXED BEHAVIOR) ===================== */
 /**
- * المطلوب:
- * 1) تراكينج مستمر + "يدور" ويحدد العين: عملنا Debug Overlay يرسم نقط العين/الخدود + خط عرض الوش بشكل حي.
- * 2) الحجم/العرض يتاخد من مساحة الوش: السكيل الأساسي مبني على FACE WIDTH (cheek-to-cheek).
- * 3) بعد ما يقيس عرض الوش، يقسم 3 مستويات Small/Medium/Large: slider multiplier.
- * 4) OBJ مع MTL: بنحاول نحمّل MTL لو موجود، لو فشل، نكمّل OBJ بمواد افتراضية بدون ما نكسّر الـ Canvas.
- * 5) منع Context Lost بسبب Errors: ما فيش useLoader/useGLTF اللي بيرموا exceptions؛ كل التحميل manual + error state.
+ * ✅ Fixes:
+ * 1) NO double mirroring: ONLY video is mirrored; debug + 3D overlay are NOT mirrored.
+ * 2) selfieMode: true
+ * 3) Use iris landmarks 468/473 (more stable)
+ * 4) Move glasses UP: wy - 0.18
+ * 5) Strong smoothing (steady) + safe angle lerp
+ * 6) High-res getUserMedia stream + clean stop tracks
  */
 
-const XY_RANGE = 1.35; // world mapping range for overlay positioning
-
-// Landmarks (MediaPipe FaceMesh)
 const LM_LEFT_EYE_OUTER = 33;
 const LM_RIGHT_EYE_OUTER = 263;
 const LM_NOSE_BRIDGE = 168;
+const LM_NOSE_TIP = 1;
 const LM_LEFT_CHEEK = 234;
 const LM_RIGHT_CHEEK = 454;
 
-// Scale clamp (world-ish)
+// iris centers (require refineLandmarks: true)
+const LM_LEFT_IRIS = 468;
+const LM_RIGHT_IRIS = 473;
+
+// scale from face width (cheek-to-cheek)
+const MIN_FACE_W = 0.16;
+const MAX_FACE_W = 0.42;
+const REF_FACE_W = 0.28;
+
+// smoothing (lower = steadier)
+const POS_SMOOTH = 0.14;
+const ROT_SMOOTH = 0.14;
+const SCALE_SMOOTH = 0.14;
+
 const MIN_S = 0.16;
 const MAX_S = 1.25;
+
+const CAMERA_Z = 2.7;
+const CAMERA_FOV = 35;
 
 function TryOnModal({ modelUrl, defaultScale = 1, productName, onClose }) {
   const videoRef = useRef(null);
   const containerRef = useRef(null);
-
   const debugCanvasRef = useRef(null);
 
   const [dimensions, setDimensions] = useState({ width: 640, height: 480 });
@@ -242,45 +255,42 @@ function TryOnModal({ modelUrl, defaultScale = 1, productName, onClose }) {
   const [modelReady, setModelReady] = useState(false);
   const [modelError, setModelError] = useState(null);
 
-  const [trackingLost, setTrackingLost] = useState(false);
-
   const [glassesTransform, setGlassesTransform] = useState({
     position: [0, 0, 0],
     scale: 0.45,
     rotationZ: 0,
+    rotationY: 0,
+    rotationX: 0,
   });
+
   const transformRef = useRef(glassesTransform);
-
-  // scanning animation for "searching"
   const scanRef = useRef({ t: 0 });
+  const streamRef = useRef(null);
 
-  useEffect(() => {
-    dimensionsRef.current = dimensions;
-  }, [dimensions]);
+  const clamp = (v, mn, mx) => Math.min(mx, Math.max(mn, v));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const lerpAngle = (a, b, t) => {
+    const d = Math.atan2(Math.sin(b - a), Math.cos(b - a));
+    return a + d * t;
+  };
 
-  // Normalize + resolve model url (OBJ/MTL/GLB/GLTF)
   const resolvedModel = useMemo(() => {
     const clean = (modelUrl || "").split("?")[0].trim();
     if (!clean) return { kind: "none" };
 
     const lower = clean.toLowerCase();
     if (lower.endsWith(".mtl")) {
-      // لو حد بعت mtl غلط بدل obj
       return { kind: "obj", objUrl: clean.replace(/\.mtl$/i, ".obj"), mtlUrl: clean };
     }
-
     if (lower.endsWith(".obj")) {
       return { kind: "obj", objUrl: clean, mtlUrl: clean.replace(/\.obj$/i, ".mtl") };
     }
-
     if (lower.endsWith(".glb") || lower.endsWith(".gltf")) {
       return { kind: "gltf", url: clean };
     }
-
     return { kind: "unsupported" };
   }, [modelUrl]);
 
-  // Validate model
   useEffect(() => {
     if (!modelUrl) {
       setModelError("No 3D model URL provided.");
@@ -296,21 +306,21 @@ function TryOnModal({ modelUrl, defaultScale = 1, productName, onClose }) {
     setModelReady(true);
   }, [modelUrl, resolvedModel.kind]);
 
-  // Resize container
+  // Resize container + debug canvas
   useEffect(() => {
     const updateSize = () => {
       if (!containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
-      setDimensions({
-        width: rect.width,
-        height: rect.width * 0.75, // 4:3
-      });
+      const w = rect.width;
+      const h = w * 0.75;
 
-      // resize debug canvas too
+      setDimensions({ width: w, height: h });
+      dimensionsRef.current = { width: w, height: h };
+
       const c = debugCanvasRef.current;
       if (c) {
-        c.width = rect.width;
-        c.height = rect.width * 0.75;
+        c.width = Math.floor(w);
+        c.height = Math.floor(h);
       }
     };
 
@@ -319,20 +329,28 @@ function TryOnModal({ modelUrl, defaultScale = 1, productName, onClose }) {
     return () => window.removeEventListener("resize", updateSize);
   }, []);
 
-  // FaceMesh tracking (continuous) + debug overlay tracing
+  // FaceMesh tracking
   useEffect(() => {
     let mpCamera;
     let faceMesh;
     let running = true;
-
-    // for "search" easing when face lost
     let lostFrames = 0;
 
-    const clamp = (v, mn, mx) => Math.min(mx, Math.max(mn, v));
-    const lerp = (a, b, t) => a + (b - a) * t;
+    const getWorldRanges = () => {
+      const { width, height } = dimensionsRef.current;
+      const aspect = (width || 1) / (height || 1);
+      const fovRad = (CAMERA_FOV * Math.PI) / 180;
+      const visibleH = 2 * CAMERA_Z * Math.tan(fovRad / 2);
+      const visibleW = visibleH * aspect;
+      return { xHalf: visibleW / 2, yHalf: visibleH / 2 };
+    };
 
-    const mapX = (nx) => (nx - 0.5) * (XY_RANGE * 2);
-    const mapY = (ny) => -(ny - 0.5) * (XY_RANGE * 2);
+    const mapToWorld = (nx, ny) => {
+      const { xHalf, yHalf } = getWorldRanges();
+      const x = (nx - 0.5) * (xHalf * 2);
+      const y = -(ny - 0.5) * (yHalf * 2);
+      return [x, y];
+    };
 
     const drawDebug = (lm) => {
       const c = debugCanvasRef.current;
@@ -345,14 +363,12 @@ function TryOnModal({ modelUrl, defaultScale = 1, productName, onClose }) {
 
       ctx.clearRect(0, 0, w, h);
 
-      // subtle vignette
       ctx.globalAlpha = 0.06;
       ctx.fillStyle = "#000";
       ctx.fillRect(0, 0, w, h);
       ctx.globalAlpha = 1;
 
       if (!lm) {
-        // scanning line when lost
         scanRef.current.t += 1;
         const t = scanRef.current.t;
         const y = (Math.sin(t * 0.08) * 0.5 + 0.5) * h;
@@ -370,30 +386,27 @@ function TryOnModal({ modelUrl, defaultScale = 1, productName, onClose }) {
         return;
       }
 
-      // landmarks
-      const leftEye = lm[LM_LEFT_EYE_OUTER];
-      const rightEye = lm[LM_RIGHT_EYE_OUTER];
+      const LI = lm[LM_LEFT_IRIS] || lm[LM_LEFT_EYE_OUTER];
+      const RI = lm[LM_RIGHT_IRIS] || lm[LM_RIGHT_EYE_OUTER];
       const nose = lm[LM_NOSE_BRIDGE];
       const leftCheek = lm[LM_LEFT_CHEEK];
       const rightCheek = lm[LM_RIGHT_CHEEK];
 
       const px = (p) => [p.x * w, p.y * h];
 
-      const [lex, ley] = px(leftEye);
-      const [rex, rey] = px(rightEye);
+      const [lix, liy] = px(LI);
+      const [rix, riy] = px(RI);
       const [nx, ny] = px(nose);
       const [lcx, lcy] = px(leftCheek);
       const [rcx, rcy] = px(rightCheek);
 
-      // eye line
       ctx.strokeStyle = "rgba(255,255,255,0.75)";
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(lex, ley);
-      ctx.lineTo(rex, rey);
+      ctx.moveTo(lix, liy);
+      ctx.lineTo(rix, riy);
       ctx.stroke();
 
-      // face width line (cheek-to-cheek)
       ctx.strokeStyle = "rgba(255,255,255,0.45)";
       ctx.lineWidth = 3;
       ctx.beginPath();
@@ -401,7 +414,6 @@ function TryOnModal({ modelUrl, defaultScale = 1, productName, onClose }) {
       ctx.lineTo(rcx, rcy);
       ctx.stroke();
 
-      // points
       const dot = (x, y, r, a) => {
         ctx.fillStyle = `rgba(255,255,255,${a})`;
         ctx.beginPath();
@@ -409,69 +421,99 @@ function TryOnModal({ modelUrl, defaultScale = 1, productName, onClose }) {
         ctx.fill();
       };
 
-      dot(lex, ley, 5, 0.95);
-      dot(rex, rey, 5, 0.95);
+      dot(lix, liy, 5, 0.95);
+      dot(rix, riy, 5, 0.95);
       dot(nx, ny, 4, 0.75);
       dot(lcx, lcy, 4, 0.6);
       dot(rcx, rcy, 4, 0.6);
 
-      // center target
-      const eyeCenterX = (lex + rex) / 2;
-      const eyeCenterY = (ley + rey) / 2;
-      const centerX = lerp(eyeCenterX, nx, 0.12);
-      const centerY = lerp(eyeCenterY, ny, 0.10);
+      const irisCenterX = (lix + rix) / 2;
+      const irisCenterY = (liy + riy) / 2;
+      const cx = lerp(irisCenterX, nx, 0.10);
+      const cy = lerp(irisCenterY, ny, 0.18);
 
       ctx.strokeStyle = "rgba(255,255,255,0.6)";
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(centerX, centerY, 14, 0, Math.PI * 2);
+      ctx.arc(cx, cy, 14, 0, Math.PI * 2);
       ctx.stroke();
     };
 
-    const applySmooth = (target, isObj) => {
+    const applySmooth = (target) => {
       const prev = transformRef.current;
-      const smooth = isObj ? 0.18 : 0.22;
 
       const nextPos = [
-        lerp(prev.position[0], target.position[0], smooth),
-        lerp(prev.position[1], target.position[1], smooth),
+        lerp(prev.position[0], target.position[0], POS_SMOOTH),
+        lerp(prev.position[1], target.position[1], POS_SMOOTH),
         0,
       ];
-      const nextScale = lerp(prev.scale, target.scale, smooth);
-      const nextRot = lerp(prev.rotationZ, target.rotationZ, smooth);
+      const nextScale = lerp(prev.scale, target.scale, SCALE_SMOOTH);
+      const nextRz = lerpAngle(prev.rotationZ, target.rotationZ, ROT_SMOOTH);
+      const nextRy = lerpAngle(prev.rotationY, target.rotationY, ROT_SMOOTH);
+      const nextRx = lerpAngle(prev.rotationX, target.rotationX, ROT_SMOOTH);
 
-      const next = { position: nextPos, scale: nextScale, rotationZ: nextRot };
+      const next = {
+        position: nextPos,
+        scale: nextScale,
+        rotationZ: nextRz,
+        rotationY: nextRy,
+        rotationX: nextRx,
+      };
+
       transformRef.current = next;
       setGlassesTransform(next);
+    };
+
+    const startHighResCamera = async () => {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: "user",
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
+        audio: false,
+      });
+
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play().catch(() => {});
+      }
     };
 
     const setup = async () => {
       if (!videoRef.current) return;
 
+      try {
+        await startHighResCamera();
+      } catch (e) {
+        console.error("getUserMedia failed:", e);
+        setModelError("Camera permission denied or not available.");
+        return;
+      }
+
       faceMesh = new FaceMesh({
-        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`,
+        locateFile: (file) =>
+          `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`,
       });
 
       faceMesh.setOptions({
         maxNumFaces: 1,
         refineLandmarks: true,
-        minDetectionConfidence: 0.65,
-        minTrackingConfidence: 0.65,
+        selfieMode: true, // ✅ مهم جدًا
+        minDetectionConfidence: 0.75,
+        minTrackingConfidence: 0.75,
       });
 
       faceMesh.onResults((results) => {
         if (!running) return;
 
         const lm = results.multiFaceLandmarks?.[0];
-        const isObj = resolvedModel.kind === "obj";
 
         if (!lm) {
-          if (!trackingLost) setTrackingLost(true);
           lostFrames += 1;
-
           drawDebug(null);
 
-          // keep last but relax slightly
           const prev = transformRef.current;
           const relax = Math.min(0.03 + lostFrames * 0.002, 0.08);
 
@@ -483,6 +525,8 @@ function TryOnModal({ modelUrl, defaultScale = 1, productName, onClose }) {
             ],
             scale: lerp(prev.scale, prev.scale * 0.99, relax),
             rotationZ: lerp(prev.rotationZ, 0, relax),
+            rotationY: lerp(prev.rotationY, 0, relax),
+            rotationX: lerp(prev.rotationX, 0, relax),
           };
 
           transformRef.current = next;
@@ -490,54 +534,64 @@ function TryOnModal({ modelUrl, defaultScale = 1, productName, onClose }) {
           return;
         }
 
-        if (trackingLost) setTrackingLost(false);
         lostFrames = 0;
-
         drawDebug(lm);
 
-        const leftEye = lm[LM_LEFT_EYE_OUTER];
-        const rightEye = lm[LM_RIGHT_EYE_OUTER];
+        // iris landmarks (most stable)
+        const LI = lm[LM_LEFT_IRIS] || lm[LM_LEFT_EYE_OUTER];
+        const RI = lm[LM_RIGHT_IRIS] || lm[LM_RIGHT_EYE_OUTER];
+
         const nose = lm[LM_NOSE_BRIDGE];
+        const noseTip = lm[LM_NOSE_TIP];
         const leftCheek = lm[LM_LEFT_CHEEK];
         const rightCheek = lm[LM_RIGHT_CHEEK];
 
-        // center blended (stable)
-        const eyeCenterX = (leftEye.x + rightEye.x) / 2;
-        const eyeCenterY = (leftEye.y + rightEye.y) / 2;
-        const centerX = lerp(eyeCenterX, nose.x, 0.12);
-        const centerY = lerp(eyeCenterY, nose.y, 0.10);
+        // Center: X from iris center, Y blended with bridge (steadier)
+        const irisCenterX = (LI.x + RI.x) / 2;
+        const irisCenterY = (LI.y + RI.y) / 2;
 
-        // rotation from eye line
-        const dx = rightEye.x - leftEye.x;
-        const dy = rightEye.y - leftEye.y;
-        const angle = Math.atan2(dy, dx);
+        const centerX = lerp(irisCenterX, nose.x, 0.10);
+        const centerY = lerp(irisCenterY, nose.y, 0.18);
 
-        // FACE WIDTH from cheeks
+        // roll from iris line
+        const dx = RI.x - LI.x;
+        const dy = RI.y - LI.y;
+        const roll = Math.atan2(dy, dx);
+
+        // face width scale from cheeks
         const fdx = rightCheek.x - leftCheek.x;
         const fdy = rightCheek.y - leftCheek.y;
-        const faceWidth = Math.sqrt(fdx * fdx + fdy * fdy);
+        const faceWRaw = Math.sqrt(fdx * fdx + fdy * fdy);
+        const faceW = clamp(faceWRaw, MIN_FACE_W, MAX_FACE_W);
 
-        // 3 levels
+        // presets
         const preset = sizePresetRef.current;
         const presetMul = preset === 0 ? 0.92 : preset === 2 ? 1.12 : 1.0;
 
-        // normalize defaultScale
         const dScale = clamp(defaultScale || 1, 0.5, 1.6);
 
-        // scale based on face width
-        let s = faceWidth * 3.25 * dScale * presetMul;
-        if (isObj) s *= 1.12;
+        // scale
+        let s = (faceW / REF_FACE_W) * 0.6 * dScale * presetMul;
+        if (resolvedModel.kind === "obj") s *= 1.12;
         s = clamp(s, MIN_S, MAX_S);
 
-        // position
-        let x = mapX(centerX);
-        let y = mapY(centerY) - 0.10;
-        if (isObj) y += 0.03;
+        // yaw / pitch (subtle)
+        const yaw = clamp((RI.z - LI.z) * 2.2, -0.45, 0.45);
+        const pitch = clamp(((noseTip?.y ?? 0) - (nose?.y ?? 0)) * 2.0, -0.35, 0.35);
 
-        applySmooth(
-          { position: [x, y, 0], scale: s, rotationZ: -angle },
-          isObj
-        );
+        // map to world and move UP to sit on eyes
+        const [wx, wy0] = mapToWorld(centerX, centerY);
+
+        let wy = wy0 - 0.18; // ✅ فوق العين
+        if (resolvedModel.kind === "obj") wy += 0.03;
+
+        applySmooth({
+          position: [wx, wy, 0],
+          scale: s,
+          rotationZ: -roll,
+          rotationY: yaw,
+          rotationX: -pitch,
+        });
       });
 
       const { width, height } = dimensionsRef.current;
@@ -553,7 +607,6 @@ function TryOnModal({ modelUrl, defaultScale = 1, productName, onClose }) {
           width,
           height,
         });
-
         mpCamera.start();
       } catch (err) {
         console.error("Failed to start Mediapipe camera:", err);
@@ -565,18 +618,27 @@ function TryOnModal({ modelUrl, defaultScale = 1, productName, onClose }) {
 
     return () => {
       running = false;
+
       if (mpCamera) {
         try {
           mpCamera.stop();
         } catch (_) {}
       }
+
       if (faceMesh && faceMesh.close) {
         try {
           faceMesh.close();
         } catch (_) {}
       }
+
+      if (streamRef.current) {
+        try {
+          streamRef.current.getTracks().forEach((t) => t.stop());
+        } catch (_) {}
+        streamRef.current = null;
+      }
     };
-  }, [defaultScale, resolvedModel.kind, trackingLost]);
+  }, [defaultScale, resolvedModel.kind]);
 
   return (
     <div className="fixed inset-0 z-[9999] bg-black/80 flex items-center justify-center">
@@ -603,7 +665,7 @@ function TryOnModal({ modelUrl, defaultScale = 1, productName, onClose }) {
           className="relative bg-black flex items-center justify-center"
           style={{ aspectRatio: "4 / 3" }}
         >
-          {/* Video (mirrored for user view) */}
+          {/* ✅ ONLY VIDEO mirrored */}
           <video
             ref={videoRef}
             autoPlay
@@ -613,19 +675,15 @@ function TryOnModal({ modelUrl, defaultScale = 1, productName, onClose }) {
             style={{ transform: "scaleX(-1)" }}
           />
 
-          {/* Debug tracing overlay (mirrored too so it matches the video view) */}
+          {/* ✅ Debug NOT mirrored */}
           <canvas
             ref={debugCanvasRef}
             className="absolute inset-0 pointer-events-none"
-            style={{ transform: "scaleX(-1)" }}
           />
 
-          {/* 3D overlay - mirrored to match the video view */}
+          {/* ✅ 3D overlay NOT mirrored (fixes “moves opposite”) */}
           {modelReady && !modelError && (
-            <div
-              className="absolute inset-0 pointer-events-none"
-              style={{ transform: "scaleX(-1)" }}
-            >
+            <div className="absolute inset-0 pointer-events-none">
               <Canvas
                 gl={{
                   alpha: true,
@@ -633,7 +691,7 @@ function TryOnModal({ modelUrl, defaultScale = 1, productName, onClose }) {
                   powerPreference: "high-performance",
                   preserveDrawingBuffer: false,
                 }}
-                camera={{ position: [0, 0, 2.7], fov: 35 }}
+                camera={{ position: [0, 0, CAMERA_Z], fov: CAMERA_FOV }}
                 style={{
                   width: "100%",
                   height: "100%",
@@ -641,7 +699,6 @@ function TryOnModal({ modelUrl, defaultScale = 1, productName, onClose }) {
                   pointerEvents: "none",
                 }}
                 onCreated={({ gl }) => {
-                  // prevent repeated crash loops
                   gl.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
                 }}
               >
@@ -654,6 +711,8 @@ function TryOnModal({ modelUrl, defaultScale = 1, productName, onClose }) {
                     position={glassesTransform.position}
                     scale={glassesTransform.scale}
                     rotationZ={glassesTransform.rotationZ}
+                    rotationY={glassesTransform.rotationY}
+                    rotationX={glassesTransform.rotationX}
                     onModelError={(msg) => setModelError(msg)}
                   />
                 </Suspense>
@@ -661,7 +720,7 @@ function TryOnModal({ modelUrl, defaultScale = 1, productName, onClose }) {
             </div>
           )}
 
-          {/* Error message (UN-MIRRORED text) */}
+          {/* Error message */}
           {modelError && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="bg-black/80 text-white text-[12px] px-4 py-2 rounded-full border border-white/15">
@@ -706,9 +765,7 @@ function TryOnModal({ modelUrl, defaultScale = 1, productName, onClose }) {
 
         <div className="px-4 py-2 bg-black text-[11px] text-white/70 flex justify-between items-center">
           <span>Tip: Look straight at the camera and move your head slowly.</span>
-          <span className="hidden md:inline">
-            Your camera stays in your browser only.
-          </span>
+          <span className="hidden md:inline">Your camera stays in your browser only.</span>
         </div>
       </div>
     </div>
@@ -717,8 +774,15 @@ function TryOnModal({ modelUrl, defaultScale = 1, productName, onClose }) {
 
 /* ===================== 3D MODELS (SAFE LOADING) ===================== */
 
-// تحميل manual عشان ما يحصلش crash لو mtl/obj/glb فشلوا
-function SafeGlassesModel({ resolved, position, scale, rotationZ, onModelError }) {
+function SafeGlassesModel({
+  resolved,
+  position,
+  scale,
+  rotationZ,
+  rotationY,
+  rotationX,
+  onModelError,
+}) {
   if (!resolved || resolved.kind === "none") return null;
   if (resolved.kind === "unsupported") return null;
 
@@ -729,12 +793,13 @@ function SafeGlassesModel({ resolved, position, scale, rotationZ, onModelError }
         position={position}
         scale={scale}
         rotationZ={rotationZ}
+        rotationY={rotationY}
+        rotationX={rotationX}
         onModelError={onModelError}
       />
     );
   }
 
-  // obj (with optional mtl)
   return (
     <LoadedOBJ
       objUrl={resolved.objUrl}
@@ -742,12 +807,22 @@ function SafeGlassesModel({ resolved, position, scale, rotationZ, onModelError }
       position={position}
       scale={scale}
       rotationZ={rotationZ}
+      rotationY={rotationY}
+      rotationX={rotationX}
       onModelError={onModelError}
     />
   );
 }
 
-function LoadedGLTF({ url, position, scale, rotationZ, onModelError }) {
+function LoadedGLTF({
+  url,
+  position,
+  scale,
+  rotationZ,
+  rotationY,
+  rotationX,
+  onModelError,
+}) {
   const [scene, setScene] = useState(null);
   const [loadedErr, setLoadedErr] = useState(null);
 
@@ -790,13 +865,26 @@ function LoadedGLTF({ url, position, scale, rotationZ, onModelError }) {
   if (!scene) return null;
 
   return (
-    <group position={position} rotation={[0, 0, rotationZ]} scale={[scale, scale, scale]}>
+    <group
+      position={position}
+      rotation={[rotationX || 0, rotationY || 0, rotationZ || 0]}
+      scale={[scale, scale, scale]}
+    >
       <primitive object={scene} />
     </group>
   );
 }
 
-function LoadedOBJ({ objUrl, mtlUrl, position, scale, rotationZ, onModelError }) {
+function LoadedOBJ({
+  objUrl,
+  mtlUrl,
+  position,
+  scale,
+  rotationZ,
+  rotationY,
+  rotationX,
+  onModelError,
+}) {
   const [obj, setObj] = useState(null);
   const [loadedErr, setLoadedErr] = useState(null);
 
@@ -807,7 +895,6 @@ function LoadedOBJ({ objUrl, mtlUrl, position, scale, rotationZ, onModelError })
 
     const manager = undefined;
 
-    // 1) حاول mtl (لو فشل، كمل obj عادي)
     const tryLoadMTL = () =>
       new Promise((resolve) => {
         const mtlLoader = new MTLLoader(manager);
@@ -848,7 +935,7 @@ function LoadedOBJ({ objUrl, mtlUrl, position, scale, rotationZ, onModelError })
 
         const cloned = loaded.clone(true);
 
-        // لو مفيش مواد من mtl، حط material افتراضي (عشان ما يبقاش شفاف/غلط)
+        // fallback material if no MTL
         if (!materials) {
           cloned.traverse((child) => {
             if (child && child.isMesh) {
@@ -866,7 +953,7 @@ function LoadedOBJ({ objUrl, mtlUrl, position, scale, rotationZ, onModelError })
       } catch (err) {
         console.error("OBJ load error:", err);
         if (!alive) return;
-        setLoadedErr("Failed to load OBJ model (check URL / 400 / CORS).");
+        setLoadedErr("Failed to load OBJ model (check URL / CORS).");
       }
     })();
 
@@ -882,7 +969,11 @@ function LoadedOBJ({ objUrl, mtlUrl, position, scale, rotationZ, onModelError })
   if (!obj) return null;
 
   return (
-    <group position={position} rotation={[0, 0, rotationZ]} scale={[scale, scale, scale]}>
+    <group
+      position={position}
+      rotation={[rotationX || 0, rotationY || 0, rotationZ || 0]}
+      scale={[scale, scale, scale]}
+    >
       <primitive object={obj} />
     </group>
   );
@@ -891,7 +982,7 @@ function LoadedOBJ({ objUrl, mtlUrl, position, scale, rotationZ, onModelError })
 /**
  * calibrateObject:
  * - center to origin
- * - lift a bit so frame sits around eyes area
+ * - lift so frame sits around eye level
  * - normalize width
  */
 function calibrateObject(object3d, targetWidth = 1.0, liftRatio = 0.4) {

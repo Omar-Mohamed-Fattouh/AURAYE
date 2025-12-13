@@ -31,6 +31,7 @@ export default function CategoriesSection() {
         <Swiper
           spaceBetween={16}
           slidesPerView={1.1}
+          loop={true}
           breakpoints={{
             640: { slidesPerView: 2.1, spaceBetween: 20 },
             1024: { slidesPerView: 3.2, spaceBetween: 24 },
