@@ -415,9 +415,12 @@ export default function Navbar({ user, setUser }) {
               label="AR Try-On"
               closeMenu={() => setMobileOpen(false)}
             >
+              <DropItemMobile to="/devices" closeMenu={() => setMobileOpen(false)}>
+                Try Now
+              </DropItemMobile>
               <DropItemMobile to="/try" closeMenu={() => setMobileOpen(false)}>
                 Product AR
-              </DropItemMobile>
+              </DropItemMobile> 
               <DropItemMobile
                 to="/how-it-works"
                 closeMenu={() => setMobileOpen(false)}
