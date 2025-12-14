@@ -81,7 +81,7 @@ export default function AppRouter() {
   return (
     <QueryClientProvider client={queryClient}>
       <CartProvider>
-        <Toaster position="top-right" richColors />
+        <Toaster position="bottom-right" />
         <BrowserRouter>
           <ScrollToTop />
 

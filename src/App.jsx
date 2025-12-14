@@ -1,7 +1,7 @@
 // src/App.jsx
-import { ToastContainer } from "react-toastify";
+// import { ToastContainer } from "react-toastify";
 import AppRouter from "./router/AppRouter";
-import "react-toastify/dist/ReactToastify.css";
+// import "react-toastify/dist/ReactToastify.css";
 import ChatWidget from "./components/ChatWidget";
 
 const PROJECT_CONTEXT = `
@@ -27,7 +27,7 @@ export default function App() {
   return (
     <>
       <div className="font-sans  hide-scrollbar">
-        <ToastContainer position="top-right" />
+        {/* <ToastContainer position="top-right" /> */}
         <AppRouter />
         <ChatWidget projectContext={PROJECT_CONTEXT} />
       </div>
