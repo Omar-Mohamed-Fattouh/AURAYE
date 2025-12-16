@@ -44,7 +44,7 @@ export default function CartItem({
             <img
               src={item.imageUrl}
               alt={item.name}
-              className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+              className="w-full h-full object-contain transition-transform duration-300 hover:scale-105"
               loading="lazy"
             />
           </div>
